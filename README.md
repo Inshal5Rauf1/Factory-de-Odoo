@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="orchestrator/assets/factory-logo.svg" alt="Factory de Odoo" width="500"/>
+  <img src="orchestrator/assets/factory-logo.svg?v=2" alt="Factory de Odoo" width="500"/>
 </p>
 
 <h1 align="center">Factory de Odoo</h1>
