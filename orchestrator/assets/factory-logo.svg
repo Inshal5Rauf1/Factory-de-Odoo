@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+  <defs>
+    <linearGradient id="cheetahGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7dcfff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#bb9af7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Cheetah silhouette - running pose -->
+  <g transform="translate(90, 80) scale(0.55)">
+    <!-- Body -->
+    <path d="M 120 200 Q 80 170 60 140 Q 45 115 55 95 Q 65 75 85 80 Q 95 82 100 90
+             L 105 85 Q 110 70 125 65 Q 140 60 150 70 Q 155 75 150 85
+             L 155 95 Q 160 90 175 88 Q 200 85 230 95 Q 280 110 330 120
+             Q 380 130 420 125 Q 460 118 490 100 Q 510 88 520 80
+             Q 530 72 540 78 Q 545 82 540 90 Q 530 105 510 120
+             Q 540 115 560 118 Q 580 122 590 135 Q 595 145 585 148
+             Q 575 150 560 145 Q 540 138 520 135
+             Q 500 145 470 155 Q 430 168 380 175
+             Q 330 185 280 185 Q 240 185 200 180
+             Q 170 175 140 185 Q 130 190 120 200 Z"
+          fill="url(#cheetahGrad)" />
+    <!-- Front leg (extended forward) -->
+    <path d="M 160 175 Q 140 210 115 250 Q 105 270 95 290 Q 90 305 100 310 Q 110 312 115 300
+             Q 125 275 140 250 Q 155 225 170 200"
+          fill="url(#cheetahGrad)" />
+    <!-- Front leg (tucked back) -->
+    <path d="M 210 180 Q 225 210 245 245 Q 255 265 260 285 Q 262 300 252 305 Q 242 303 240 290
+             Q 235 265 220 240 Q 205 215 195 195"
+          fill="url(#cheetahGrad)" />
+    <!-- Rear leg (extended back) -->
+    <path d="M 420 165 Q 445 195 470 230 Q 485 255 495 275 Q 500 290 490 295 Q 480 293 475 280
+             Q 465 255 445 230 Q 425 205 410 185"
+          fill="url(#cheetahGrad)" />
+    <!-- Rear leg (pushing off) -->
+    <path d="M 350 180 Q 330 210 310 245 Q 300 265 295 285 Q 292 300 302 305 Q 312 303 315 290
+             Q 320 265 335 240 Q 350 215 360 195"
+          fill="url(#cheetahGrad)" />
+    <!-- Tail (flowing behind) -->
+    <path d="M 520 130 Q 560 110 590 95 Q 620 82 640 85 Q 655 88 650 100
+             Q 645 108 630 105 Q 610 100 585 108 Q 555 120 530 138"
+          fill="url(#cheetahGrad)" stroke="#D97706" stroke-width="1" />
+    <!-- Spots -->
+    <circle cx="200" cy="120" r="6" fill="#92400E" opacity="0.5" />
+    <circle cx="250" cy="115" r="5" fill="#92400E" opacity="0.5" />
+    <circle cx="300" cy="125" r="7" fill="#92400E" opacity="0.5" />
+    <circle cx="350" cy="130" r="5" fill="#92400E" opacity="0.5" />
+    <circle cx="400" cy="128" r="6" fill="#92400E" opacity="0.5" />
+    <circle cx="230" cy="145" r="5" fill="#92400E" opacity="0.5" />
+    <circle cx="280" cy="150" r="6" fill="#92400E" opacity="0.5" />
+    <circle cx="330" cy="155" r="5" fill="#92400E" opacity="0.5" />
+    <circle cx="380" cy="148" r="6" fill="#92400E" opacity="0.5" />
+    <circle cx="450" cy="125" r="4" fill="#92400E" opacity="0.5" />
+    <circle cx="170" cy="140" r="4" fill="#92400E" opacity="0.5" />
+    <!-- Eye -->
+    <circle cx="92" cy="82" r="4" fill="#1a1b26" />
+    <!-- Ear -->
+    <path d="M 115 68 Q 120 55 130 60 Q 128 70 120 72" fill="#D97706" />
+    <!-- Speed lines -->
+    <line x1="30" y1="150" x2="70" y2="150" stroke="#F59E0B" stroke-width="2" opacity="0.4" />
+    <line x1="15" y1="175" x2="65" y2="175" stroke="#F59E0B" stroke-width="2" opacity="0.3" />
+    <line x1="25" y1="200" x2="60" y2="200" stroke="#F59E0B" stroke-width="2" opacity="0.2" />
+  </g>
+
+  <!-- Text: Factory de Odoo -->
+  <text x="400" y="330" font-family="'SF Mono', 'Fira Code', 'JetBrains Mono', monospace"
+        font-size="48" font-weight="bold" fill="url(#textGrad)" text-anchor="middle"
+        letter-spacing="2">Factory de Odoo</text>
+
+  <!-- Subtitle -->
+  <text x="400" y="365" font-family="'SF Mono', 'Fira Code', 'JetBrains Mono', monospace"
+        font-size="16" fill="#565f89" text-anchor="middle"
+        letter-spacing="3">AI-POWERED ODOO MODULE FACTORY</text>
+</svg>
