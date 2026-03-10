@@ -4,7 +4,7 @@ Mechanically fixes known pylint-odoo violation codes and Docker error
 patterns, re-validates, and escalates remaining issues in a grouped
 file:line + suggestion format.
 
-QUAL-09: pylint auto-fix (5 fixable codes, configurable iterations)
+QUAL-09: pylint auto-fix (6 fixable codes, configurable iterations)
 QUAL-10: Docker auto-fix (5 fixable patterns, configurable iterations)
 AFIX-01: missing mail.thread auto-fix
 AFIX-02: unused import auto-fix
@@ -36,6 +36,7 @@ FIXABLE_PYLINT_CODES: frozenset[str] = frozenset({
     "C8116",  # superfluous manifest key
     "W8150",  # absolute import should be relative
     "C8107",  # missing required manifest key
+    "W8161",  # use self.env._() instead of _() in model methods
 })
 
 DEFAULT_MAX_FIX_ITERATIONS: int = 5
@@ -342,6 +343,7 @@ def fix_pylint_violation(violation: Violation, module_path: Path) -> bool:
         "C8116": _fix_c8116_superfluous_manifest_key,
         "W8150": _fix_w8150_absolute_import,
         "C8107": _fix_c8107_missing_manifest_key,
+        "W8161": _fix_w8161_env_translate,
     }
 
     handler = handlers.get(violation.rule_code)
@@ -599,6 +601,100 @@ def _fix_c8107_missing_manifest_key(violation: Violation, file_path: Path) -> bo
     lines = content.split("\n")
     insert_idx = dict_node.lineno  # Insert after the { line (0-based: lineno is already the line after)
     new_lines = lines[:insert_idx] + [insert_line] + lines[insert_idx:]
+    new_content = "\n".join(new_lines)
+
+    if new_content == content:
+        return False
+
+    file_path.write_text(new_content, encoding="utf-8")
+    return True
+
+
+def _fix_w8161_env_translate(violation: Violation, file_path: Path) -> bool:
+    """W8161: Replace _('msg') with self.env._('msg') in method bodies.
+
+    Uses AST to find FunctionDef nodes containing Name('_') calls,
+    and replaces them with self.env._() via text substitution at precise
+    AST positions. Also removes the standalone _ import.
+
+    Only transforms _() calls inside def blocks — class-level _() calls
+    (e.g., _description = _("...")) are left untouched.
+    """
+    content = file_path.read_text(encoding="utf-8")
+
+    try:
+        tree = ast.parse(content)
+    except SyntaxError:
+        return False
+
+    # Collect line numbers of all _("...") calls inside FunctionDef nodes
+    call_positions: list[tuple[int, int]] = []  # (line_0based, col_offset)
+
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        # Walk this function's body for _() calls
+        for child in ast.walk(node):
+            if (
+                isinstance(child, ast.Call)
+                and isinstance(child.func, ast.Name)
+                and child.func.id == "_"
+            ):
+                call_positions.append(
+                    (child.func.lineno - 1, child.func.col_offset)
+                )
+
+    if not call_positions:
+        return False
+
+    lines = content.split("\n")
+    changed = False
+
+    # Process in reverse order so line/col positions stay valid
+    for line_idx, col in sorted(call_positions, reverse=True):
+        line = lines[line_idx]
+        # Verify the character at col is actually "_" followed by "("
+        if col < len(line) and line[col] == "_":
+            rest = line[col + 1:].lstrip()
+            if rest.startswith("("):
+                # Replace bare "_" with "self.env._"
+                lines[line_idx] = line[:col] + "self.env._" + line[col + 1:]
+                changed = True
+
+    if not changed:
+        return False
+
+    # Remove standalone _ from imports:
+    # "from odoo import _" or "from odoo import _, models" etc.
+    # "from odoo.tools.translate import _"
+    new_lines: list[str] = []
+    for line in lines:
+        stripped = line.strip()
+        # Handle "from odoo import _" (sole import)
+        if stripped == "from odoo import _":
+            continue
+        if stripped == "from odoo.tools.translate import _":
+            continue
+        # Handle "from odoo import _, X, Y" -> "from odoo import X, Y"
+        if re.match(r"^from\s+odoo\s+import\s+", stripped):
+            new_line = re.sub(r"\b_\s*,\s*", "", line)
+            # Also handle trailing: "X, _" -> "X"
+            new_line = re.sub(r",\s*_\s*$", "", new_line)
+            # Handle "from odoo import _\n" (already caught above, but safety)
+            check = re.sub(r"^from\s+odoo\s+import\s*", "", new_line.strip())
+            if not check.strip():
+                continue
+            new_lines.append(new_line)
+        elif re.match(r"^from\s+odoo\.tools\.translate\s+import\s+", stripped):
+            new_line = re.sub(r"\b_\s*,\s*", "", line)
+            new_line = re.sub(r",\s*_\s*$", "", new_line)
+            check = re.sub(r"^from\s+odoo\.tools\.translate\s+import\s*", "", new_line.strip())
+            if not check.strip():
+                continue
+            new_lines.append(new_line)
+        else:
+            new_lines.append(line)
+
     new_content = "\n".join(new_lines)
 
     if new_content == content:
