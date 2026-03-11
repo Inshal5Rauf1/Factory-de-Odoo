@@ -1361,7 +1361,8 @@ _DOCKER_UNUSED_IMPORT_KEYWORDS: tuple[str, ...] = (
 def _dispatch_docker_fix(
     module_path: Path,
     error_output: str,
-) -> bool:
+    tried_patterns: set[str] | None = None,
+) -> tuple[bool, str | None]:
     """Dispatch a single Docker fix based on error pattern identification.
 
     Internal helper used by run_docker_fix_loop. Identifies the error pattern
@@ -1370,18 +1371,23 @@ def _dispatch_docker_fix(
     Args:
         module_path: Root path of the Odoo module.
         error_output: The error text from Docker validation.
+        tried_patterns: Set of pattern IDs already attempted. These are
+            skipped to avoid wasting iterations. None means no filtering.
+            The "unused_import" pattern is exempt (cumulative fix).
 
     Returns:
-        True if a fix was applied, False otherwise.
+        Tuple of (fix_applied, pattern_id). pattern_id is the ID of the
+        pattern that was attempted, or None if no fix was applied.
     """
     import logging
 
     logger = logging.getLogger(__name__)
 
     if not error_output or not error_output.strip():
-        return False
+        return (False, None)
 
     # Check for unused-import pattern first (not in Docker patterns)
+    # Unused imports are exempt from tried_patterns — they are cumulative fixes
     error_lower = error_output.lower()
     if any(kw in error_lower for kw in _DOCKER_UNUSED_IMPORT_KEYWORDS):
         logger.info("run_docker_fix_loop: detected unused-import pattern")
@@ -1395,14 +1401,22 @@ def _dispatch_docker_fix(
                     logger.info("run_docker_fix_loop: fixed unused imports in %s", py_file)
                     applied = True
             if applied:
-                return True
+                return (True, "unused_import")
 
     # Standard Docker pattern identification
     pattern_id = identify_docker_fix(error_output)
 
     if pattern_id is None:
         logger.debug("run_docker_fix_loop: no fixable pattern identified")
-        return False
+        return (False, None)
+
+    # Skip patterns already tried (except unused_import which is cumulative)
+    if tried_patterns is not None and pattern_id in tried_patterns:
+        logger.info(
+            "run_docker_fix_loop: skipping already-tried pattern '%s'",
+            pattern_id,
+        )
+        return (False, pattern_id)
 
     logger.info("run_docker_fix_loop: detected pattern '%s'", pattern_id)
 
@@ -1419,7 +1433,7 @@ def _dispatch_docker_fix(
     entry = dispatch.get(pattern_id)
     if entry is None:
         logger.debug("run_docker_fix_loop: no fix function for pattern '%s'", pattern_id)
-        return False
+        return (False, pattern_id)
 
     fix_func, needs_error = entry
     if needs_error:
@@ -1427,7 +1441,7 @@ def _dispatch_docker_fix(
     else:
         result = fix_func(module_path)  # type: ignore[operator]
     logger.info("run_docker_fix_loop: fix for '%s' returned %s", pattern_id, result)
-    return result
+    return (result, pattern_id)
 
 
 def run_docker_fix_loop(
@@ -1459,17 +1473,22 @@ def run_docker_fix_loop(
 
     any_fix_applied = False
     current_error = error_output
+    tried_patterns: set[str] = set()
 
     for iteration in range(max_iterations):
         logger.debug("run_docker_fix_loop: iteration %d/%d", iteration + 1, max_iterations)
 
-        fixed = _dispatch_docker_fix(module_path, current_error)
+        fixed, pattern_id = _dispatch_docker_fix(
+            module_path, current_error, tried_patterns,
+        )
 
         if not fixed:
             logger.debug("run_docker_fix_loop: no fix applied in iteration %d", iteration + 1)
             break
 
         any_fix_applied = True
+        if pattern_id is not None:
+            tried_patterns.add(pattern_id)
 
         if revalidate_fn is None:
             # Single-pass mode (no re-validation)

@@ -41,9 +41,9 @@ from odoo_gen_utils.validation.types import Result, Violation
 
 
 class TestConstants:
-    def test_fixable_pylint_codes_contains_exactly_five(self):
-        assert len(FIXABLE_PYLINT_CODES) == 5
-        assert FIXABLE_PYLINT_CODES == frozenset({"W8113", "W8111", "C8116", "W8150", "C8107"})
+    def test_fixable_pylint_codes_contains_exactly_six(self):
+        assert len(FIXABLE_PYLINT_CODES) == 6
+        assert FIXABLE_PYLINT_CODES == frozenset({"W8113", "W8111", "C8116", "W8150", "C8107", "W8161"})
 
     def test_fixable_docker_patterns_contains_exactly_five(self):
         assert len(FIXABLE_DOCKER_PATTERNS) == 5
@@ -1598,8 +1598,12 @@ class TestDockerFixLoopIterations:
         any_fixed, remaining = result.data
         assert any_fixed is False
 
-    def test_stops_at_max_iterations_with_cap_message(self, tmp_path: Path):
-        """run_docker_fix_loop stops at max_iterations and includes cap message."""
+    def test_stops_when_tried_pattern_repeated(self, tmp_path: Path):
+        """run_docker_fix_loop stops when same pattern is tried again (smart guard).
+
+        With tried_patterns tracking, the loop no longer hits the iteration cap
+        for repeated patterns — it breaks early when the pattern is skipped.
+        """
         from odoo_gen_utils.auto_fix import run_docker_fix_loop
 
         revalidate_count = 0
@@ -1648,58 +1652,47 @@ class TestDockerFixLoopIterations:
 
         error_text = "No access rule for model test.m. ir.model.access required"
         result = run_docker_fix_loop(
-            module_dir, error_text, max_iterations=2, revalidate_fn=revalidate_fn
+            module_dir, error_text, max_iterations=5, revalidate_fn=revalidate_fn
         )
         assert result.success
         any_fixed, remaining = result.data
         assert any_fixed is True
-        assert "iteration cap" in remaining.lower() or "Iteration cap" in remaining
+        # Smart guard: loop breaks after 2 iterations (fix + skip) not at cap
+        assert revalidate_count == 1
 
     def test_iteration_cap_message_text(self, tmp_path: Path):
-        """Cap message includes 'Iteration cap (N) reached'."""
+        """Cap message includes 'Iteration cap (N) reached'.
+
+        Uses mocked dispatch returning different patterns each time to avoid
+        smart guard dedup, ensuring the loop actually hits the cap.
+        """
         from odoo_gen_utils.auto_fix import run_docker_fix_loop
 
         module_dir = tmp_path / "test_module"
-        (module_dir / "models").mkdir(parents=True)
-        (module_dir / "models" / "__init__.py").write_text("from . import m\n", encoding="utf-8")
+        module_dir.mkdir()
 
-        def make_model():
-            (module_dir / "models" / "m.py").write_text(textwrap.dedent("""\
-                from odoo import fields, models
-
-                class M(models.Model):
-                    _name = "test.m"
-                    _description = "Test"
-                    name = fields.Char(required=True)
-            """), encoding="utf-8")
-            (module_dir / "__manifest__.py").write_text(textwrap.dedent("""\
-                {
-                    "name": "Test",
-                    "version": "17.0.1.0.0",
-                    "license": "LGPL-3",
-                    "depends": ["base"],
-                    "data": [],
-                }
-            """), encoding="utf-8")
-            csv = module_dir / "security" / "ir.model.access.csv"
-            if csv.exists():
-                csv.unlink()
-
-        make_model()
+        iteration_count = 0
 
         def revalidate_fn():
-            make_model()
+            nonlocal iteration_count
+            iteration_count += 1
             from odoo_gen_utils.validation.types import InstallResult
             return Result.ok(InstallResult(
                 success=False,
-                log_output="No access rule for model test.m. ir.model.access required",
+                log_output="some error remains",
                 error_message="still broken",
             ))
 
-        error_text = "No access rule for model test.m. ir.model.access required"
-        result = run_docker_fix_loop(
-            module_dir, error_text, max_iterations=3, revalidate_fn=revalidate_fn
-        )
+        with patch('odoo_gen_utils.auto_fix._dispatch_docker_fix') as mock_dispatch:
+            # Return a different pattern_id each time so smart guard doesn't skip
+            mock_dispatch.side_effect = [
+                (True, "pattern_a"),
+                (True, "pattern_b"),
+                (True, "pattern_c"),
+            ]
+            result = run_docker_fix_loop(
+                module_dir, "some error", max_iterations=3, revalidate_fn=revalidate_fn
+            )
         assert result.success
         any_fixed, remaining = result.data
         assert "Iteration cap (3) reached" in remaining
@@ -2122,3 +2115,152 @@ class TestFixMissingMailThreadEdgeCases:
         )
         result = fix_missing_mail_thread(module_dir)
         assert result is False
+
+
+# ---------------------------------------------------------------------------
+# Gap 8: Auto-Fix Smart Guard — tried_patterns tracking
+# ---------------------------------------------------------------------------
+
+
+class TestDispatchDockerFixReturnsTuple:
+    """_dispatch_docker_fix returns (bool, str | None) tuples."""
+
+    def test_dispatch_docker_fix_returns_tuple(self, tmp_path: Path):
+        """Call with a known error pattern, assert result is a tuple."""
+        from odoo_gen_utils.auto_fix import _dispatch_docker_fix
+
+        module_dir = tmp_path / "test_module"
+        (module_dir / "views").mkdir(parents=True)
+        (module_dir / "models").mkdir(parents=True)
+        # Create a model file with chatter in view but missing mail.thread
+        (module_dir / "views" / "form.xml").write_text(
+            '<odoo><div class="oe_chatter"/></odoo>', encoding="utf-8"
+        )
+        (module_dir / "models" / "m.py").write_text(
+            'from odoo import models\nclass M(models.Model):\n'
+            '    _name = "test.m"\n    _description = "T"\n',
+            encoding="utf-8",
+        )
+        error_text = "mail.thread: AttributeError: type object 'M' has no attribute 'message_ids'"
+        result = _dispatch_docker_fix(module_dir, error_text)
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+        fix_applied, pattern_id = result
+        assert isinstance(fix_applied, bool)
+        assert pattern_id == "missing_mail_thread"
+
+    def test_dispatch_docker_fix_skips_tried_pattern(self, tmp_path: Path):
+        """Pass tried_patterns={'missing_acl'}, feed error matching missing_acl, assert skipped."""
+        from odoo_gen_utils.auto_fix import _dispatch_docker_fix
+
+        module_dir = tmp_path / "test_module"
+        module_dir.mkdir()
+        error_text = "Access Denied: ir.model.access for model 'test.model'"
+        result = _dispatch_docker_fix(module_dir, error_text, tried_patterns={"missing_acl"})
+        assert result == (False, "missing_acl")
+
+    def test_dispatch_docker_fix_unused_import_exempt(self, tmp_path: Path):
+        """Unused imports are exempt from tried_patterns dedup — cumulative fix."""
+        from odoo_gen_utils.auto_fix import _dispatch_docker_fix
+
+        module_dir = tmp_path / "test_module"
+        (module_dir / "models").mkdir(parents=True)
+        (module_dir / "models" / "__init__.py").write_text("from . import m\n", encoding="utf-8")
+        (module_dir / "models" / "m.py").write_text(
+            'from odoo import models, fields, api\n\n'
+            'class M(models.Model):\n'
+            '    _name = "test.m"\n'
+            '    _description = "T"\n'
+            '    name = fields.Char()\n',
+            encoding="utf-8",
+        )
+        error_text = "unused-import: 'odoo.api' imported but unused"
+        # Even with tried_patterns containing "unused_import", should still fix
+        result = _dispatch_docker_fix(
+            module_dir, error_text, tried_patterns={"unused_import"}
+        )
+        fix_applied, pattern_id = result
+        assert fix_applied is True
+        assert pattern_id == "unused_import"
+
+    def test_dispatch_docker_fix_tried_patterns_none(self, tmp_path: Path):
+        """tried_patterns=None means no filtering occurs (backward compat)."""
+        from odoo_gen_utils.auto_fix import _dispatch_docker_fix
+
+        module_dir = tmp_path / "test_module"
+        module_dir.mkdir()
+        # Unrecognized error — no pattern matched
+        result = _dispatch_docker_fix(module_dir, "some random error", tried_patterns=None)
+        assert result == (False, None)
+
+    def test_dispatch_docker_fix_empty_error(self, tmp_path: Path):
+        """Empty error text returns (False, None)."""
+        from odoo_gen_utils.auto_fix import _dispatch_docker_fix
+
+        module_dir = tmp_path / "test_module"
+        module_dir.mkdir()
+        result = _dispatch_docker_fix(module_dir, "")
+        assert result == (False, None)
+
+
+class TestRunDockerFixLoopTriedPatterns:
+    """run_docker_fix_loop tracks tried_patterns to avoid retrying."""
+
+    def test_run_docker_fix_loop_tracks_tried_patterns(self, tmp_path: Path):
+        """Mock dispatch to succeed on first pattern, skip on second (same pattern).
+        Assert loop breaks after 2 iterations instead of hitting cap."""
+        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+
+        module_dir = tmp_path / "test_module"
+        module_dir.mkdir()
+
+        call_count = 0
+
+        def mock_revalidate():
+            """Return a failed Result so the loop tries again."""
+            nonlocal call_count
+            call_count += 1
+            return Result.ok(type('InstallResult', (), {
+                'success': False,
+                'log_output': "Access Denied: ir.model.access for model 'test.m'",
+                'error_message': '',
+            })())
+
+        with patch('odoo_gen_utils.auto_fix._dispatch_docker_fix') as mock_dispatch:
+            # First call: fix applied, returns missing_acl pattern
+            # Second call: same pattern in tried_patterns, returns skip
+            mock_dispatch.side_effect = [
+                (True, "missing_acl"),
+                (False, "missing_acl"),
+            ]
+            result = run_docker_fix_loop(
+                module_dir,
+                "Access Denied: ir.model.access for model 'test.m'",
+                max_iterations=5,
+                revalidate_fn=mock_revalidate,
+            )
+            assert result.success
+            any_fixed, _ = result.data
+            assert any_fixed is True
+            # Should have called dispatch exactly 2 times (not 5)
+            assert mock_dispatch.call_count == 2
+
+    def test_run_docker_fix_loop_breaks_early_when_all_tried(self, tmp_path: Path):
+        """All patterns already tried — loop breaks on iteration 1."""
+        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+
+        module_dir = tmp_path / "test_module"
+        module_dir.mkdir()
+
+        with patch('odoo_gen_utils.auto_fix._dispatch_docker_fix') as mock_dispatch:
+            # First call: no fix applied (pattern already tried externally)
+            mock_dispatch.return_value = (False, None)
+            result = run_docker_fix_loop(
+                module_dir,
+                "some error that doesn't match",
+                max_iterations=5,
+            )
+            assert result.success
+            any_fixed, _ = result.data
+            assert any_fixed is False
+            assert mock_dispatch.call_count == 1

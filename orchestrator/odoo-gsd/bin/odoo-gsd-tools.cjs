@@ -649,6 +649,27 @@ async function main() {
       break;
     }
 
+    case 'cycle-log': {
+      const cycleLog = require('./lib/cycle-log.cjs');
+      const subCmd = args[1]; // init, append, blocked, coherence, finalize
+      if (subCmd === 'init') {
+        const projectName = args[2] || 'ERP Project';
+        console.log(cycleLog.initLog(cwd, projectName));
+      } else if (subCmd === 'append') {
+        const entryJson = args[2];
+        cycleLog.appendEntry(cwd, JSON.parse(entryJson));
+      } else if (subCmd === 'blocked') {
+        cycleLog.appendBlockedModule(cwd, args[2], args[3]);
+      } else if (subCmd === 'coherence') {
+        cycleLog.appendCoherenceEvent(cwd, JSON.parse(args[2]));
+      } else if (subCmd === 'finalize') {
+        cycleLog.finalizeLog(cwd, JSON.parse(args[2]));
+      } else {
+        error('Unknown cycle-log subcommand. Available: init, append, blocked, coherence, finalize');
+      }
+      break;
+    }
+
     case 'coherence': {
       const subcommand = args[1];
       if (subcommand === 'check') {
