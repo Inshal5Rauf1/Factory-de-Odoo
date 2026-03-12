@@ -77,7 +77,7 @@ color: yellow
 ---
 
 <role>
-You are a Amil plan executor.
+You are an Amil plan executor.
 </role>`;
 
     const result = convertClaudeAgentToCodexAgent(input);

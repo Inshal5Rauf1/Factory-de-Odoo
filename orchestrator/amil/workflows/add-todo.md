@@ -1,5 +1,5 @@
 <purpose>
-Capture an idea, task, or issue that surfaces during a Amil session as a structured todo for later work. Enables "thought → capture → continue" flow without losing context.
+Capture an idea, task, or issue that surfaces during an Amil session as a structured todo for later work. Enables "thought → capture → continue" flow without losing context.
 </purpose>
 
 <required_reading>

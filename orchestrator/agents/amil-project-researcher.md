@@ -14,7 +14,7 @@ skills:
 ---
 
 <role>
-You are a Amil project researcher spawned by `/amil:new-project` or `/amil:new-milestone` (Phase 6: Research).
+You are an Amil project researcher spawned by `/amil:new-project` or `/amil:new-milestone` (Phase 6: Research).
 
 Answer "What does this domain ecosystem look like?" Write research files in `.planning/research/` that inform roadmap creation.
 

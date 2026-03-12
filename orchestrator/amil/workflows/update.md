@@ -145,14 +145,14 @@ Exit.
 ────────────────────────────────────────────────────────────
 
 ⚠️  **Note:** The installer performs a clean install of Amil folders:
-- `commands/gsd/` will be wiped and replaced
+- `commands/amil/` will be wiped and replaced
 - `amil/` will be wiped and replaced
 - `agents/amil-*` files will be replaced
 
 (Paths are relative to your install location: `~/.claude/` for global, `./.claude/` for local)
 
 Your custom files in other locations are preserved:
-- Custom commands not in `commands/gsd/` ✓
+- Custom commands not in `commands/amil/` ✓
 - Custom agents not prefixed with `amil-` ✓
 - Custom hooks ✓
 - Your CLAUDE.md files ✓

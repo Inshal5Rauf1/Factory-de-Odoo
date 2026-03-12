@@ -1,5 +1,5 @@
 <purpose>
-Interactive configuration of Amil workflow agents (research, plan_check, verifier) and model profile selection via multi-question prompt. Updates .planning/config.json with user preferences. Optionally saves settings as global defaults (~/.gsd/defaults.json) for future projects.
+Interactive configuration of Amil workflow agents (research, plan_check, verifier) and model profile selection via multi-question prompt. Updates .planning/config.json with user preferences. Optionally saves settings as global defaults (~/.amil/defaults.json) for future projects.
 </purpose>
 
 <required_reading>
@@ -100,8 +100,8 @@ AskUserQuestion([
     multiSelect: false,
     options: [
       { label: "None (Recommended)", description: "Commit directly to current branch" },
-      { label: "Per Phase", description: "Create branch for each phase (gsd/phase-{N}-{name})" },
-      { label: "Per Milestone", description: "Create branch for entire milestone (gsd/{version}-{name})" }
+      { label: "Per Phase", description: "Create branch for each phase (amil/phase-{N}-{name})" },
+      { label: "Per Milestone", description: "Create branch for entire milestone (amil/{version}-{name})" }
     ]
   }
 ])
@@ -141,20 +141,20 @@ AskUserQuestion([
     header: "Defaults",
     multiSelect: false,
     options: [
-      { label: "Yes", description: "New projects start with these settings (saved to ~/.gsd/defaults.json)" },
+      { label: "Yes", description: "New projects start with these settings (saved to ~/.amil/defaults.json)" },
       { label: "No", description: "Only apply to this project" }
     ]
   }
 ])
 ```
 
-If "Yes": write the same config object (minus project-specific fields like `brave_search`) to `~/.gsd/defaults.json`:
+If "Yes": write the same config object (minus project-specific fields like `brave_search`) to `~/.amil/defaults.json`:
 
 ```bash
 mkdir -p ~/.gsd
 ```
 
-Write `~/.gsd/defaults.json` with:
+Write `~/.amil/defaults.json` with:
 ```json
 {
   "mode": <current>,
@@ -209,6 +209,6 @@ Quick commands:
 - [ ] Current config read
 - [ ] User presented with 7 settings (profile + 5 workflow toggles + git branching)
 - [ ] Config updated with model_profile, workflow, and git sections
-- [ ] User offered to save as global defaults (~/.gsd/defaults.json)
+- [ ] User offered to save as global defaults (~/.amil/defaults.json)
 - [ ] Changes confirmed to user
 </success_criteria>

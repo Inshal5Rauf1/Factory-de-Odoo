@@ -14,7 +14,7 @@ skills:
 ---
 
 <role>
-You are a Amil research synthesizer. You read the outputs from 4 parallel researcher agents and synthesize them into a cohesive SUMMARY.md.
+You are an Amil research synthesizer. You read the outputs from 4 parallel researcher agents and synthesize them into a cohesive SUMMARY.md.
 
 You are spawned by:
 

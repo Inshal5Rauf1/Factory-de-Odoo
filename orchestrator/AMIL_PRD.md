@@ -42,7 +42,7 @@ The Amil repo contains ~110 files across these directories:
 | `bin/amil-tools.cjs` | Main CLI router (~2,000+ lines). Dispatches to lib modules. Handles JSON output, `@file:` temp payloads, `--raw` mode. | **Rename** entry points from `gsd` to `amil`. Add new subcommands for registry, module-status, computation-chains. Extend `main()` router with new command handlers. |
 | `bin/lib/core.js` | State reading/writing, config management, project init | **Extend** with model registry CRUD, module status tracking, computation chain management. Add `odoo` config block parsing. |
 | `bin/lib/commands.js` | Command registration, dispatch, help generation | **Modify** command prefix from `gsd` to `amil`. Register new commands (new-erp, map-erp, discuss-module, plan-module, generate-module, check-module, audit-erp). |
-| `bin/lib/phase.js` | Phase CRUD, transitions, status tracking | **Extend** to support module-as-phase semantics. Each Odoo module maps to a Amil phase. Add module dependency ordering within phase transitions. |
+| `bin/lib/phase.js` | Phase CRUD, transitions, status tracking | **Extend** to support module-as-phase semantics. Each Odoo module maps to an Amil phase. Add module dependency ordering within phase transitions. |
 | `bin/lib/roadmap.js` | ROADMAP.md parsing, phase detail sections | **Extend** parser to understand module dependency tiers (foundation → core → operations → communication) and wave-based execution mapping. |
 | `bin/lib/state.js` | STATE.md frontmatter read/write, status sync | **Extend** with module-level state fields (current_module, modules_completed, modules_remaining, registry_version). |
 | `bin/lib/config.js` | `.planning/config.json` read/write, schema validation | **Extend** schema with `odoo` block (version, multi_company, localization, belt_repo_path, default_depends, security_framework, scope_levels, notification_channels, canvas_integration). |
@@ -50,7 +50,7 @@ The Amil repo contains ~110 files across these directories:
 | `bin/lib/verify.js` | Verification logic, pass/fail tracking | **Extend** with Odoo-specific verification: model registry consistency check, cross-module Many2one validation, security scope completeness. |
 | `bin/install.js` | Installer (~1,400 lines). Multi-runtime support, path replacement, hook registration, manifest generation. | **Heavy rewrite.** Change package name to `amil`. Change install path to `~/.claude/amil/`. Remove OpenCode/Gemini/Codex runtime support (Claude Code only). Add amil dependency check (verify `~/.claude/amil/` exists). Add Python dependency check (amil-utils). |
 
-### 2.2 Commands (`commands/gsd/*.md`)
+### 2.2 Commands (`commands/amil/*.md`)
 
 Amil has 32 command files. Each is a markdown file with frontmatter defining the slash command and body containing the orchestration instructions.
 
@@ -58,33 +58,33 @@ Amil has 32 command files. Each is a markdown file with frontmatter defining the
 
 | Amil Command File | New Name | What Changes |
 |------------------|----------|-------------|
-| `commands/gsd/new-project.md` | `commands/amil/new-erp.md` | Replace generic project questions with Odoo-specific init: version, multi-company, localization, module count, existing modules, LMS integration, notification channels, deployment target. Spawn 4 parallel research agents (module boundary analysis, OCA registry check, cross-module dependency mapping, computation chain identification). Output: module dependency graph with phased generation order, not generic roadmap. |
-| `commands/gsd/map-codebase.md` | `commands/amil/map-erp.md` | Replace generic codebase scanning with 4 Odoo-specific agents: manifest parser (`__manifest__.py` → dependency graph), model AST analyzer (fields, methods, inheritance → registry), security scanner (`ir.model.access.csv` + record rules), view pattern detector (XML → tabs, smart buttons, kanban). Output: `model_registry.json` + `erp_map.md`. Can also use amil's MCP server for live XML-RPC introspection of running instances. |
-| `commands/gsd/plan-phase.md` | `commands/amil/plan-module.md` | Replace generic planning with spec.json generation. Spawn odoo-spec-generator agent to produce structured spec (models, business_rules, computation_chains, workflow, view_hints, reports, notifications, cron_jobs, security, portal, api_endpoints). Inject `_available_models` from registry. Run cross-module coherence check before human approval: Many2one targets exist, computation chain depends match, security scope fields present, no duplicate model names. |
-| `commands/gsd/execute-phase.md` | `commands/amil/generate-module.md` | Replace generic execution with belt invocation. Load spec.json, inject current model registry, spawn amil pipeline as `Task()` subagent with fresh 200K context. Belt runs multi-pass pipeline (scaffold → models → views → logic → security → reports → tests → validate). On success: update model registry atomically, git commit. On failure: present errors with retry/manual-fix/skip options. |
-| `commands/gsd/verify-work.md` | `commands/amil/check-module.md` | Replace generic verification with 4-level checker: CHK-01 structural (Many2one targets, ACLs, mail.thread, syntax), CHK-02 cross-module (foreign keys, computed chains, security scopes, dependency graph), CHK-03 spec coverage (manifest vs spec — implemented vs stubbed), CHK-04 integration (Docker install, run tests across boundaries). Structured pass/fail for human sign-off. |
-| `commands/gsd/audit-milestone.md` | `commands/amil/audit-erp.md` | Replace generic audit with full ERP audit: Docker install all modules together, run integration tests across boundaries, trace computation chains end-to-end, verify security scopes, check portal route conflicts, validate cron jobs reference existing methods, production readiness checklist. |
+| `commands/amil/new-project.md` | `commands/amil/new-erp.md` | Replace generic project questions with Odoo-specific init: version, multi-company, localization, module count, existing modules, LMS integration, notification channels, deployment target. Spawn 4 parallel research agents (module boundary analysis, OCA registry check, cross-module dependency mapping, computation chain identification). Output: module dependency graph with phased generation order, not generic roadmap. |
+| `commands/amil/map-codebase.md` | `commands/amil/map-erp.md` | Replace generic codebase scanning with 4 Odoo-specific agents: manifest parser (`__manifest__.py` → dependency graph), model AST analyzer (fields, methods, inheritance → registry), security scanner (`ir.model.access.csv` + record rules), view pattern detector (XML → tabs, smart buttons, kanban). Output: `model_registry.json` + `erp_map.md`. Can also use amil's MCP server for live XML-RPC introspection of running instances. |
+| `commands/amil/plan-phase.md` | `commands/amil/plan-module.md` | Replace generic planning with spec.json generation. Spawn odoo-spec-generator agent to produce structured spec (models, business_rules, computation_chains, workflow, view_hints, reports, notifications, cron_jobs, security, portal, api_endpoints). Inject `_available_models` from registry. Run cross-module coherence check before human approval: Many2one targets exist, computation chain depends match, security scope fields present, no duplicate model names. |
+| `commands/amil/execute-phase.md` | `commands/amil/generate-module.md` | Replace generic execution with belt invocation. Load spec.json, inject current model registry, spawn amil pipeline as `Task()` subagent with fresh 200K context. Belt runs multi-pass pipeline (scaffold → models → views → logic → security → reports → tests → validate). On success: update model registry atomically, git commit. On failure: present errors with retry/manual-fix/skip options. |
+| `commands/amil/verify-work.md` | `commands/amil/check-module.md` | Replace generic verification with 4-level checker: CHK-01 structural (Many2one targets, ACLs, mail.thread, syntax), CHK-02 cross-module (foreign keys, computed chains, security scopes, dependency graph), CHK-03 spec coverage (manifest vs spec — implemented vs stubbed), CHK-04 integration (Docker install, run tests across boundaries). Structured pass/fail for human sign-off. |
+| `commands/amil/audit-milestone.md` | `commands/amil/audit-erp.md` | Replace generic audit with full ERP audit: Docker install all modules together, run integration tests across boundaries, trace computation chains end-to-end, verify security scopes, check portal route conflicts, validate cron jobs reference existing methods, production readiness checklist. |
 
 #### Commands to MEDIUM REWRITE (adapt to module context)
 
 | Amil Command File | New Name | What Changes |
 |------------------|----------|-------------|
-| `commands/gsd/discuss-phase.md` | `commands/amil/discuss-module.md` | Replace generic discussion with module-type-specific question templates. Spawn odoo-module-questioner agent with module type context. Fee module: monetary vs float, fee structure, penalty method, payment channels, challan format, partial payments, waivers, scholarships. Exam module: grading scales, makeup policy, proctoring. Student module: enrollment states, program transfers, academic holds. Output: `{module}-CONTEXT.md`. |
-| `commands/gsd/complete-milestone.md` | `commands/amil/complete-phase.md` | Add: registry archival (snapshot model_registry.json at completion), release tagging per module tier, update module_status.json to "shipped". |
-| `commands/gsd/progress.md` | `commands/amil/progress.md` | Add: module status table (planned/spec_approved/generated/checked/shipped), registry stats (total models, total fields, cross-module references), computation chain completion status, overall ERP readiness percentage. |
-| `commands/gsd/quick.md` | `commands/amil/quick.md` | Add: quick field addition (add field to existing generated module + update registry), quick bug fix (fix without full cycle), quick view modification. Must update registry on any model change. |
+| `commands/amil/discuss-phase.md` | `commands/amil/discuss-module.md` | Replace generic discussion with module-type-specific question templates. Spawn odoo-module-questioner agent with module type context. Fee module: monetary vs float, fee structure, penalty method, payment channels, challan format, partial payments, waivers, scholarships. Exam module: grading scales, makeup policy, proctoring. Student module: enrollment states, program transfers, academic holds. Output: `{module}-CONTEXT.md`. |
+| `commands/amil/complete-milestone.md` | `commands/amil/complete-phase.md` | Add: registry archival (snapshot model_registry.json at completion), release tagging per module tier, update module_status.json to "shipped". |
+| `commands/amil/progress.md` | `commands/amil/progress.md` | Add: module status table (planned/spec_approved/generated/checked/shipped), registry stats (total models, total fields, cross-module references), computation chain completion status, overall ERP readiness percentage. |
+| `commands/amil/quick.md` | `commands/amil/quick.md` | Add: quick field addition (add field to existing generated module + update registry), quick bug fix (fix without full cycle), quick view modification. Must update registry on any model change. |
 
 #### Commands to LIGHT REWRITE (rename prefix, minimal changes)
 
 | Amil Command File | New Name | What Changes |
 |------------------|----------|-------------|
-| `commands/gsd/pause-work.md` | `commands/amil/pause-work.md` | Rename prefix only. Add: save current module context on pause. |
-| `commands/gsd/resume-work.md` | `commands/amil/resume-work.md` | Rename prefix only. Add: reload model registry on resume. |
-| `commands/gsd/help.md` | `commands/amil/help.md` | Update help text with Odoo-specific commands and workflow description. |
-| `commands/gsd/add-todo.md` | `commands/amil/add-todo.md` | Rename prefix only. |
-| `commands/gsd/debug.md` | `commands/amil/debug.md` | Rename prefix only. Add: Odoo-specific debug context (check Docker logs, pylint-odoo output, model registry state). |
-| `commands/gsd/settings.md` | `commands/amil/settings.md` | Rename prefix. Add `odoo` config block editing (version, multi_company, localization, etc.). |
-| `commands/gsd/set-profile.md` | `commands/amil/set-profile.md` | Rename prefix only. |
+| `commands/amil/pause-work.md` | `commands/amil/pause-work.md` | Rename prefix only. Add: save current module context on pause. |
+| `commands/amil/resume-work.md` | `commands/amil/resume-work.md` | Rename prefix only. Add: reload model registry on resume. |
+| `commands/amil/help.md` | `commands/amil/help.md` | Update help text with Odoo-specific commands and workflow description. |
+| `commands/amil/add-todo.md` | `commands/amil/add-todo.md` | Rename prefix only. |
+| `commands/amil/debug.md` | `commands/amil/debug.md` | Rename prefix only. Add: Odoo-specific debug context (check Docker logs, pylint-odoo output, model registry state). |
+| `commands/amil/settings.md` | `commands/amil/settings.md` | Rename prefix. Add `odoo` config block editing (version, multi_company, localization, etc.). |
+| `commands/amil/set-profile.md` | `commands/amil/set-profile.md` | Rename prefix only. |
 
 #### All remaining Amil commands
 

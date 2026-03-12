@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "amil-utils"
 version = "0.1.0"
-description = "Python utilities for amil Amil extension"
+description = "Python utilities for Amil Odoo module generation"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "jinja2>=3.1",

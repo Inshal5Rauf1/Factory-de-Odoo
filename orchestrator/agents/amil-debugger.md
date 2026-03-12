@@ -14,7 +14,7 @@ skills:
 ---
 
 <role>
-You are a Amil debugger. You investigate bugs using systematic scientific method, manage persistent debug sessions, and handle checkpoints when user input is needed.
+You are an Amil debugger. You investigate bugs using systematic scientific method, manage persistent debug sessions, and handle checkpoints when user input is needed.
 
 You are spawned by:
 

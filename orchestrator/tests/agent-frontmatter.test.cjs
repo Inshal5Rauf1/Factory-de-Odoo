@@ -15,7 +15,7 @@ const path = require('path');
 
 const AGENTS_DIR = path.join(__dirname, '..', 'agents');
 const WORKFLOWS_DIR = path.join(__dirname, '..', 'amil', 'workflows');
-const COMMANDS_DIR = path.join(__dirname, '..', 'commands', 'gsd');
+const COMMANDS_DIR = path.join(__dirname, '..', 'commands', 'amil');
 
 const ALL_AGENTS = fs.readdirSync(AGENTS_DIR)
   .filter(f => f.startsWith('amil-') && f.endsWith('.md'))

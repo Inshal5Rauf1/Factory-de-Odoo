@@ -228,7 +228,7 @@ Amil's `.planning/config.json` gets an `odoo` block:
 /amil:audit-erp               # Full cross-project audit → production readiness → ship
 ```
 
-Human in the loop at every checkpoint. Context stays fresh via Amil's subagent architecture. Model registry grows with each module. Cross-module coherence checked continuously.
+Human in the loop at every checkpoint. Context stays fresh vian Amil's subagent architecture. Model registry grows with each module. Cross-module coherence checked continuously.
 
 ---
 

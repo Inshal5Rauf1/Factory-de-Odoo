@@ -5,11 +5,11 @@ dist/
 build/
 .eggs/
 
-# Planning artifacts (GSD workflow)
+# Planning artifacts (Amil workflow)
 .planning/
 !.planning/model_registry.json
 
-# GSD checkpoint files
+# Amil checkpoint files
 .continue-here.md
 
 # Local MCP config

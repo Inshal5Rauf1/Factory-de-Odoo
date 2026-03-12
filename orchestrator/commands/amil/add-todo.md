@@ -10,7 +10,7 @@ allowed-tools:
 ---
 
 <objective>
-Capture an idea, task, or issue that surfaces during a Amil session as a structured todo for later work.
+Capture an idea, task, or issue that surfaces during an Amil session as a structured todo for later work.
 
 Routes to the add-todo workflow which handles:
 - Directory structure creation

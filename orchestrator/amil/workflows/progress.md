@@ -378,5 +378,5 @@ Ready to plan the next milestone.
 - [ ] What's next clearly explained
 - [ ] Smart routing: /amil:execute-phase if plans exist, /amil:plan-phase if not
 - [ ] User confirms before any action
-- [ ] Seamless handoff to appropriate gsd command
+- [ ] Seamless handoff to appropriate amil command
       </success_criteria>

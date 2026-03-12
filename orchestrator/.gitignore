@@ -23,9 +23,9 @@ reports/
 RAILROAD_ARCHITECTURE.md
 # .planning/ — tracked for this project
 analysis/
-docs/GSD-MASTER-ARCHITECTURE.md
-docs/GSD-RUST-IMPLEMENTATION-GUIDE.md
-docs/GSD-SYSTEM-SPECIFICATION.md
+docs/AMIL-MASTER-ARCHITECTURE.md
+docs/AMIL-RUST-IMPLEMENTATION-GUIDE.md
+docs/AMIL-SYSTEM-SPECIFICATION.md
 gaps.md
 improve.md
 philosophy.md

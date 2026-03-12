@@ -1,6 +1,23 @@
 # Amil Rebrand Implementation Plan
 
-> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Status: COMPLETE** — All 46 steps executed, verified, and committed on `factory-upgrades` branch (6 rebrand commits: 84a8dad → 10d92df + 1 audit-fix commit). Executed 2026-03-12.
+
+> **Verification Results (fresh run 2026-03-12):**
+> - Orchestrator: 797 tests pass, 0 fail
+> - Pipeline: 2244 pass, 155 fail (all pre-existing), 4 Docker errors (Docker unavailable)
+> - Brand audit: 0 remaining old references in active source
+> - All 46 commands verified with `amil:` prefix
+>
+> **Post-execution audit fixes (code review):**
+> - C1: `agent-frontmatter.test.cjs` — `commands/gsd` → `commands/amil` (test would crash)
+> - C2: `install.js` — 15+ `commands/gsd` path refs + `'gsd'` prefix literals → `amil` (installer broken)
+> - C3: `uv.lock` — regenerated (`odoo-gen-utils` → `amil-utils`)
+> - H1-H4: Workflow/reference/template files — `~/.gsd/`, `commands/gsd/`, `gsd/phase-` → `amil` equivalents
+> - H5: Grammar — "a Amil" → "an Amil" across 17 files
+> - H6: `pyproject.toml` description — double-replacement artifact fixed
+> - L: `.gitignore` comments, stale gitignore entries updated
+
+> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Total rebrand of Factory de Odoo from `gsd`/`odoo-gsd`/`odoo-gen` to `amil` — single namespace, single brand across all 221 affected files.
 
@@ -19,7 +36,7 @@
 **Files:**
 - All uncommitted changes on `factory-upgrades` branch
 
-- [ ] **Step 1: Verify branch and status**
+- [x] **Step 1: Verify branch and status**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -28,7 +45,7 @@ git status --short | head -20
 ```
 Expected: On `factory-upgrades`, 64+ modified files (Odoo 19.0 upgrade changes).
 
-- [ ] **Step 2: Commit Odoo 19.0 upgrade changes**
+- [x] **Step 2: Commit Odoo 19.0 upgrade changes**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -43,7 +60,7 @@ Apply FACTORY-UPGRADE-BUILD-GUIDE.md phases 1-10:
 - 797 orchestrator tests passing, 94+ pipeline tests passing"
 ```
 
-- [ ] **Step 3: Create safety tag**
+- [x] **Step 3: Create safety tag**
 
 ```bash
 git tag pre-amil-rebrand
@@ -58,7 +75,7 @@ git tag pre-amil-rebrand
 
 **Files renamed:** 19 orchestrator agents + 9 pipeline agents + 3 hooks + 3 other files = 34 file renames
 
-- [ ] **Step 1: Rename directories**
+- [x] **Step 1: Rename directories**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -67,7 +84,7 @@ git mv orchestrator/commands/odoo-gsd orchestrator/commands/amil
 git mv pipeline/python/src/odoo_gen_utils pipeline/python/src/amil_utils
 ```
 
-- [ ] **Step 2: Rename orchestrator agent files (19)**
+- [x] **Step 2: Rename orchestrator agent files (19)**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -78,7 +95,7 @@ done
 
 Produces: `amil-belt-executor.md`, `amil-belt-verifier.md`, `amil-codebase-mapper.md`, `amil-debugger.md`, `amil-erp-decomposer.md`, `amil-executor.md`, `amil-integration-checker.md`, `amil-module-questioner.md`, `amil-module-researcher.md`, `amil-nyquist-auditor.md`, `amil-phase-researcher.md`, `amil-plan-checker.md`, `amil-planner.md`, `amil-project-researcher.md`, `amil-roadmapper.md`, `amil-research-synthesizer.md`, `amil-spec-generator.md`, `amil-spec-reviewer.md`, `amil-verifier.md`
 
-- [ ] **Step 3: Rename pipeline agent files (9)**
+- [x] **Step 3: Rename pipeline agent files (9)**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -89,7 +106,7 @@ done
 
 Produces: `amil-scaffold.md`, `amil-validator.md`, `amil-model-gen.md`, `amil-view-gen.md`, `amil-security-gen.md`, `amil-test-gen.md`, `amil-search.md`, `amil-extend.md`, `amil-logic-writer.md`
 
-- [ ] **Step 4: Rename hook files (3) + other files (3)**
+- [x] **Step 4: Rename hook files (3) + other files (3)**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -108,7 +125,7 @@ git mv orchestrator/amil/bin/odoo-gsd-tools.cjs orchestrator/amil/bin/amil-tools
 git mv pipeline/bin/odoo-gen-utils pipeline/bin/amil-utils
 ```
 
-- [ ] **Step 5: Verify renames**
+- [x] **Step 5: Verify renames**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -128,7 +145,7 @@ ls pipeline/python/src/amil_utils/__init__.py
 
 Expected: 0, 19, 0, 9, and all paths exist.
 
-- [ ] **Step 6: Commit file renames**
+- [x] **Step 6: Commit file renames**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -153,7 +170,7 @@ Big Bang rebrand Phase 1 — file system renames:
 
 **Patterns:** 23 replacements applied most-specific-first (see spec Section 5)
 
-- [ ] **Step 1: Create replacement script**
+- [x] **Step 1: Create replacement script**
 
 Create: `/home/inshal-rauf/Factory-de-Odoo/amil-rebrand.sh`
 
@@ -220,7 +237,7 @@ sed -i -E \
 echo "Processed extensionless files"
 ```
 
-- [ ] **Step 2: Run replacement script**
+- [x] **Step 2: Run replacement script**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -230,7 +247,7 @@ bash amil-rebrand.sh
 
 Expected: `Processed ~200+ files`
 
-- [ ] **Step 3: Spot-check critical files**
+- [x] **Step 3: Spot-check critical files**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -252,13 +269,13 @@ grep 'amil_utils' pipeline/bin/amil-utils
 
 Expected: `"amil"` in package.json, 100+ amil refs in install.js, `amil-utils`/`amil_utils` in pyproject.toml, 0 old refs in __init__.py, `amil-tools.cjs` in helpers.
 
-- [ ] **Step 4: Remove temporary script**
+- [x] **Step 4: Remove temporary script**
 
 ```bash
 rm /home/inshal-rauf/Factory-de-Odoo/amil-rebrand.sh
 ```
 
-- [ ] **Step 5: Commit string replacements**
+- [x] **Step 5: Commit string replacements**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -281,7 +298,7 @@ Big Bang rebrand Phase 2 — content replacements:
 - `pipeline/workflows/` (4 files) — logic absorbed into orchestrator workflows
 - `orchestrator/commands/amil/join-discord.md` — not relevant to Amil
 
-- [ ] **Step 1: Delete pipeline commands and workflows**
+- [x] **Step 1: Delete pipeline commands and workflows**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -289,13 +306,13 @@ rm -rf pipeline/commands/
 rm -rf pipeline/workflows/
 ```
 
-- [ ] **Step 2: Delete join-discord command**
+- [x] **Step 2: Delete join-discord command**
 
 ```bash
 rm orchestrator/commands/amil/join-discord.md
 ```
 
-- [ ] **Step 3: Verify deletions**
+- [x] **Step 3: Verify deletions**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -308,7 +325,7 @@ ls orchestrator/commands/amil/*.md | wc -l
 
 Expected: 3x OK, 39 files.
 
-- [ ] **Step 4: Commit deletions**
+- [x] **Step 4: Commit deletions**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -335,7 +352,7 @@ Big Bang rebrand Phase 3 — cleanup:
 
 Each stub currently has only YAML frontmatter. Add full `<context>`, `<objective>`, `<execution_context>`, and `<process>` sections following the pattern in `new-erp.md`.
 
-- [ ] **Step 1: Complete run-prd.md**
+- [x] **Step 1: Complete run-prd.md**
 
 Write full content to `orchestrator/commands/amil/run-prd.md`:
 
@@ -377,7 +394,7 @@ Execute the run-prd workflow end-to-end. The workflow handles priority selection
 </process>
 ```
 
-- [ ] **Step 2: Complete batch-discuss.md**
+- [x] **Step 2: Complete batch-discuss.md**
 
 Write full content to `orchestrator/commands/amil/batch-discuss.md`:
 
@@ -452,7 +469,7 @@ For each batch of up to 5 modules:
 </process>
 ```
 
-- [ ] **Step 3: Complete live-uat.md**
+- [x] **Step 3: Complete live-uat.md**
 
 Write full content to `orchestrator/commands/amil/live-uat.md`:
 
@@ -489,7 +506,7 @@ Execute the live-uat workflow end-to-end. The workflow handles Docker verificati
 </process>
 ```
 
-- [ ] **Step 4: Complete coherence-report.md**
+- [x] **Step 4: Complete coherence-report.md**
 
 Write full content to `orchestrator/commands/amil/coherence-report.md`:
 
@@ -566,7 +583,7 @@ Write structured JSON to `.planning/coherence-report.json`.
 </process>
 ```
 
-- [ ] **Step 5: Fix reapply-patches frontmatter**
+- [x] **Step 5: Fix reapply-patches frontmatter**
 
 Edit `orchestrator/commands/amil/reapply-patches.md` — add missing `name:` field to YAML frontmatter:
 
@@ -589,7 +606,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion
 
 Note: The sed script already changed "GSD" to "Amil" in this file's content. We just need to add the `name:` field and fix the article ("a Amil" → "an Amil").
 
-- [ ] **Step 6: Commit stub completions**
+- [x] **Step 6: Commit stub completions**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -618,7 +635,7 @@ git commit -m "feat: complete 4 stub commands and fix reapply-patches frontmatte
 - Create: `orchestrator/commands/amil/module-history.md`
 - Create: `orchestrator/commands/amil/phases.md`
 
-- [ ] **Step 1: Create validate-module.md**
+- [x] **Step 1: Create validate-module.md**
 
 ```markdown
 ---
@@ -659,7 +676,7 @@ Spawn the `amil-validator` pipeline agent to execute validation.
 </process>
 ```
 
-- [ ] **Step 2: Create search-modules.md**
+- [x] **Step 2: Create search-modules.md**
 
 ```markdown
 ---
@@ -698,7 +715,7 @@ Spawn the `amil-search` pipeline agent to execute search.
 </process>
 ```
 
-- [ ] **Step 3: Create research-module.md**
+- [x] **Step 3: Create research-module.md**
 
 ```markdown
 ---
@@ -739,7 +756,7 @@ Spawn the `amil-module-researcher` agent with knowledge base access.
 </process>
 ```
 
-- [ ] **Step 4: Create extend-module.md**
+- [x] **Step 4: Create extend-module.md**
 
 ```markdown
 ---
@@ -779,7 +796,7 @@ Spawn the `amil-extend` pipeline agent to execute extension generation.
 </process>
 ```
 
-- [ ] **Step 5: Create index-modules.md**
+- [x] **Step 5: Create index-modules.md**
 
 ```markdown
 ---
@@ -816,7 +833,7 @@ Build or update the local ChromaDB index of OCA modules for semantic search.
 </process>
 ```
 
-- [ ] **Step 6: Create module-history.md**
+- [x] **Step 6: Create module-history.md**
 
 ```markdown
 ---
@@ -856,7 +873,7 @@ Show generation history — timeline of modules with status, file counts, and co
 </process>
 ```
 
-- [ ] **Step 7: Create phases.md**
+- [x] **Step 7: Create phases.md**
 
 ```markdown
 ---
@@ -897,7 +914,7 @@ Show generation phases and overall ERP project progress with phase-by-phase comp
 </process>
 ```
 
-- [ ] **Step 8: Verify command count**
+- [x] **Step 8: Verify command count**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -906,7 +923,7 @@ ls orchestrator/commands/amil/*.md | wc -l
 
 Expected: **46** (39 existing after delete + 7 new = 46).
 
-- [ ] **Step 9: Verify all commands have name: frontmatter**
+- [x] **Step 9: Verify all commands have name: frontmatter**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -919,7 +936,7 @@ done
 
 Expected: No output (all commands have `name:` field).
 
-- [ ] **Step 10: Verify all name: fields use amil: prefix**
+- [x] **Step 10: Verify all name: fields use amil: prefix**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -928,7 +945,7 @@ grep '^name:' orchestrator/commands/amil/*.md | grep -v 'amil:' || echo "All com
 
 Expected: `All commands use amil: prefix`
 
-- [ ] **Step 11: Commit new commands**
+- [x] **Step 11: Commit new commands**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -963,7 +980,7 @@ Total command count: 46 (34 renamed + 5 completed stubs + 7 new)"
 - Modify: `orchestrator/CLAUDE.md`
 - Modify: `pipeline/CLAUDE.md`
 
-- [ ] **Step 1: Update root CLAUDE.md**
+- [x] **Step 1: Update root CLAUDE.md**
 
 The sed script already changed most references. Manually verify and fix the Key Paths table and any remaining issues:
 
@@ -984,7 +1001,7 @@ Verify these paths are correct in root `CLAUDE.md`:
 
 The sed script should have handled all of these. Read the file and verify.
 
-- [ ] **Step 2: Rewrite orchestrator CLAUDE.md**
+- [x] **Step 2: Rewrite orchestrator CLAUDE.md**
 
 The sed script changed inline references, but the file needs structural updates. Replace the full content of `orchestrator/CLAUDE.md` with:
 
@@ -1147,7 +1164,7 @@ npm run test:coverage       # Run with coverage (80%+ required)
 - Proper error handling at every level
 ```
 
-- [ ] **Step 3: Rewrite pipeline CLAUDE.md**
+- [x] **Step 3: Rewrite pipeline CLAUDE.md**
 
 Replace full content of `pipeline/CLAUDE.md` with:
 
@@ -1221,7 +1238,7 @@ pytest --cov=amil_utils         # With coverage
 *Pipeline is a library component of Factory de Odoo. See orchestrator/CLAUDE.md for the full command reference.*
 ```
 
-- [ ] **Step 4: Commit CLAUDE.md rebuilds**
+- [x] **Step 4: Commit CLAUDE.md rebuilds**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -1235,7 +1252,7 @@ git commit -m "docs: rebuild CLAUDE.md files for amil rebrand
 
 ### Task 8: Verification
 
-- [ ] **Step 1: Run orchestrator tests**
+- [x] **Step 1: Run orchestrator tests**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo/orchestrator
@@ -1249,7 +1266,7 @@ Expected: All tests pass (797 tests). Some tests may fail due to renamed paths �
 - Test fixtures referencing `odoo-gsd` should have been caught by sed
 - If a test creates temp directories with old names, update the test
 
-- [ ] **Step 2: Run pipeline tests**
+- [x] **Step 2: Run pipeline tests**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo/pipeline/python
@@ -1263,7 +1280,7 @@ Expected: Tests pass (excluding pre-existing failures). Watch for import errors 
 - `conftest.py` fixtures referencing old paths
 - Test files importing from old package name
 
-- [ ] **Step 3: Grep audit — verify zero remaining old brand references**
+- [x] **Step 3: Grep audit — verify zero remaining old brand references**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -1315,7 +1332,7 @@ Expected: Zero matches for all 7 checks (excluding `docs/superpowers/` which is 
 
 **If matches found:** Fix each remaining reference manually, then re-run the grep.
 
-- [ ] **Step 4: Verify all command name: frontmatter uses amil: prefix**
+- [x] **Step 4: Verify all command name: frontmatter uses amil: prefix**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo
@@ -1332,7 +1349,7 @@ ls orchestrator/commands/amil/*.md | wc -l
 
 Expected: No BAD lines, 46 total commands.
 
-- [ ] **Step 5: Commit any test/audit fixes**
+- [x] **Step 5: Commit any test/audit fixes**
 
 If Steps 1-4 revealed issues that needed fixing:
 
@@ -1346,7 +1363,7 @@ Clean up any references missed by the bulk sed replacement."
 
 Skip this step if no fixes were needed.
 
-- [ ] **Step 6: Final verification commit**
+- [x] **Step 6: Final verification commit**
 
 ```bash
 cd /home/inshal-rauf/Factory-de-Odoo

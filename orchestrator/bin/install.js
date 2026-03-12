@@ -987,11 +987,11 @@ function convertClaudeToGeminiToml(content) {
 /**
  * Copy commands to a flat structure for OpenCode
  * OpenCode expects: command/amil-help.md (invoked as /amil-help)
- * Source structure: commands/gsd/help.md
+ * Source structure: commands/amil/help.md
  * 
- * @param {string} srcDir - Source directory (e.g., commands/gsd/)
+ * @param {string} srcDir - Source directory (e.g., commands/amil/)
  * @param {string} destDir - Destination directory (e.g., command/)
- * @param {string} prefix - Prefix for filenames (e.g., 'gsd')
+ * @param {string} prefix - Prefix for filenames (e.g., 'amil')
  * @param {string} pathPrefix - Path prefix for file references
  * @param {string} runtime - Target runtime ('claude' or 'opencode')
  */
@@ -1018,7 +1018,7 @@ function copyFlattenedCommands(srcDir, destDir, prefix, pathPrefix, runtime) {
     
     if (entry.isDirectory()) {
       // Recurse into subdirectories, adding to prefix
-      // e.g., commands/gsd/debug/start.md -> command/amil-debug-start.md
+      // e.g., commands/amil/debug/start.md -> command/amil-debug-start.md
       copyFlattenedCommands(srcPath, destDir, `${prefix}-${entry.name}`, pathPrefix, runtime);
     } else if (entry.name.endsWith('.md')) {
       // Flatten: help.md -> amil-help.md
@@ -1348,12 +1348,12 @@ function uninstall(isGlobal, runtime = 'claude') {
       }
     }
   } else {
-    // Claude Code & Gemini: remove commands/gsd/ directory
-    const gsdCommandsDir = path.join(targetDir, 'commands', 'gsd');
+    // Claude Code & Gemini: remove commands/amil/ directory
+    const gsdCommandsDir = path.join(targetDir, 'commands', 'amil');
     if (fs.existsSync(gsdCommandsDir)) {
       fs.rmSync(gsdCommandsDir, { recursive: true });
       removedCount++;
-      console.log(`  ${green}✓${reset} Removed commands/gsd/`);
+      console.log(`  ${green}✓${reset} Removed commands/amil/`);
     }
   }
 
@@ -1756,7 +1756,7 @@ function writeManifest(configDir, runtime = 'claude') {
   const isOpencode = runtime === 'opencode';
   const isCodex = runtime === 'codex';
   const gsdDir = path.join(configDir, 'amil');
-  const commandsDir = path.join(configDir, 'commands', 'gsd');
+  const commandsDir = path.join(configDir, 'commands', 'amil');
   const opencodeCommandDir = path.join(configDir, 'command');
   const codexSkillsDir = path.join(configDir, 'skills');
   const agentsDir = path.join(configDir, 'agents');
@@ -1769,7 +1769,7 @@ function writeManifest(configDir, runtime = 'claude') {
   if (!isOpencode && !isCodex && fs.existsSync(commandsDir)) {
     const cmdHashes = generateManifest(commandsDir);
     for (const [rel, hash] of Object.entries(cmdHashes)) {
-      manifest.files['commands/gsd/' + rel] = hash;
+      manifest.files['commands/amil/' + rel] = hash;
     }
   }
   if (isOpencode && fs.existsSync(opencodeCommandDir)) {
@@ -1911,15 +1911,15 @@ function install(isGlobal, runtime = 'claude') {
   // Clean up orphaned files from previous versions
   cleanupOrphanedFiles(targetDir);
 
-  // OpenCode uses command/ (flat), Codex uses skills/, Claude/Gemini use commands/gsd/
+  // OpenCode uses command/ (flat), Codex uses skills/, Claude/Gemini use commands/amil/
   if (isOpencode) {
     // OpenCode: flat structure in command/ directory
     const commandDir = path.join(targetDir, 'command');
     fs.mkdirSync(commandDir, { recursive: true });
     
-    // Copy commands/gsd/*.md as command/amil-*.md (flatten structure)
-    const gsdSrc = path.join(src, 'commands', 'gsd');
-    copyFlattenedCommands(gsdSrc, commandDir, 'gsd', pathPrefix, runtime);
+    // Copy commands/amil/*.md as command/amil-*.md (flatten structure)
+    const gsdSrc = path.join(src, 'commands', 'amil');
+    copyFlattenedCommands(gsdSrc, commandDir, 'amil', pathPrefix, runtime);
     if (verifyInstalled(commandDir, 'command/amil-*')) {
       const count = fs.readdirSync(commandDir).filter(f => f.startsWith('amil-')).length;
       console.log(`  ${green}✓${reset} Installed ${count} commands to command/`);
@@ -1928,8 +1928,8 @@ function install(isGlobal, runtime = 'claude') {
     }
   } else if (isCodex) {
     const skillsDir = path.join(targetDir, 'skills');
-    const gsdSrc = path.join(src, 'commands', 'gsd');
-    copyCommandsAsCodexSkills(gsdSrc, skillsDir, 'gsd', pathPrefix, runtime);
+    const gsdSrc = path.join(src, 'commands', 'amil');
+    copyCommandsAsCodexSkills(gsdSrc, skillsDir, 'amil', pathPrefix, runtime);
     const installedSkillNames = listCodexSkillNames(skillsDir);
     if (installedSkillNames.length > 0) {
       console.log(`  ${green}✓${reset} Installed ${installedSkillNames.length} skills to skills/`);
@@ -1941,13 +1941,13 @@ function install(isGlobal, runtime = 'claude') {
     const commandsDir = path.join(targetDir, 'commands');
     fs.mkdirSync(commandsDir, { recursive: true });
     
-    const gsdSrc = path.join(src, 'commands', 'gsd');
-    const gsdDest = path.join(commandsDir, 'gsd');
+    const gsdSrc = path.join(src, 'commands', 'amil');
+    const gsdDest = path.join(commandsDir, 'amil');
     copyWithPathReplacement(gsdSrc, gsdDest, pathPrefix, runtime, true);
-    if (verifyInstalled(gsdDest, 'commands/gsd')) {
-      console.log(`  ${green}✓${reset} Installed commands/gsd`);
+    if (verifyInstalled(gsdDest, 'commands/amil')) {
+      console.log(`  ${green}✓${reset} Installed commands/amil`);
     } else {
-      failures.push('commands/gsd');
+      failures.push('commands/amil');
     }
   }
 
