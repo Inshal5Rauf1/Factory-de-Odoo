@@ -1,4 +1,4 @@
-<p align="center-left">
+<p align="center">
   <img src="orchestrator/assets/factory-logo.svg?v=2" alt="Factory de Odoo" width="500"/>
 </p>
 
