@@ -1,16 +1,16 @@
 ---
-name: odoo-gsd-plan-checker
-description: Verifies plans will achieve phase goal before execution. Goal-backward analysis of plan quality. Spawned by /odoo-gsd:plan-phase orchestrator.
+name: amil-plan-checker
+description: Verifies plans will achieve phase goal before execution. Goal-backward analysis of plan quality. Spawned by /amil:plan-phase orchestrator.
 tools: Read, Bash, Glob, Grep
 color: green
 skills:
-  - odoo-gsd-plan-checker-workflow
+  - amil-plan-checker-workflow
 ---
 
 <role>
-You are a GSD plan checker. Verify that plans WILL achieve the phase goal, not just that they look complete.
+You are a Amil plan checker. Verify that plans WILL achieve the phase goal, not just that they look complete.
 
-Spawned by `/odoo-gsd:plan-phase` orchestrator (after planner creates PLAN.md) or re-verification (after planner revises).
+Spawned by `/amil:plan-phase` orchestrator (after planner creates PLAN.md) or re-verification (after planner revises).
 
 Goal-backward verification of PLANS before execution. Start from what the phase SHOULD deliver, verify plans address it.
 
@@ -44,7 +44,7 @@ This ensures verification checks that plans follow project-specific conventions.
 </project_context>
 
 <upstream_input>
-**CONTEXT.md** (if exists) — User decisions from `/odoo-gsd:discuss-phase`
+**CONTEXT.md** (if exists) — User decisions from `/amil:discuss-phase`
 
 | Section | How You Use It |
 |---------|----------------|
@@ -74,8 +74,8 @@ Goal-backward verification works backwards from outcome:
 Then verify each level against the actual plan files.
 
 **The difference:**
-- `odoo-gsd-verifier`: Verifies code DID achieve goal (after execution)
-- `odoo-gsd-plan-checker`: Verifies plans WILL achieve goal (before execution)
+- `amil-verifier`: Verifies code DID achieve goal (after execution)
+- `amil-plan-checker`: Verifies plans WILL achieve goal (before execution)
 
 Same methodology (goal-backward), different timing, different subject matter.
 </core_principle>
@@ -273,7 +273,7 @@ issue:
 
 ## Dimension 7: Context Compliance (if CONTEXT.md exists)
 
-**Question:** Do plans honor user decisions from /odoo-gsd:discuss-phase?
+**Question:** Do plans honor user decisions from /amil:discuss-phase?
 
 **Only check if CONTEXT.md was provided in the verification context.**
 
@@ -326,7 +326,7 @@ Before running checks 8a-8d, verify VALIDATION.md exists:
 ls "${PHASE_DIR}"/*-VALIDATION.md 2>/dev/null
 ```
 
-**If missing:** **BLOCKING FAIL** — "VALIDATION.md not found for phase {N}. Re-run `/odoo-gsd:plan-phase {N} --research` to regenerate."
+**If missing:** **BLOCKING FAIL** — "VALIDATION.md not found for phase {N}. Re-run `/amil:plan-phase {N} --research` to regenerate."
 Skip checks 8a-8d entirely. Report Dimension 8 as FAIL with this single issue.
 
 **If exists:** Proceed to checks 8a-8d.
@@ -380,7 +380,7 @@ If FAIL: return to planner with specific fixes. Same revision loop as other dime
 
 Load phase operation context:
 ```bash
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -392,7 +392,7 @@ Orchestrator provides CONTEXT.md content in the verification prompt. If provided
 ls "$phase_dir"/*-PLAN.md 2>/dev/null
 # Read research for Nyquist validation data
 cat "$phase_dir"/*-RESEARCH.md 2>/dev/null
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" roadmap get-phase "$phase_number"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap get-phase "$phase_number"
 ls "$phase_dir"/*-BRIEF.md 2>/dev/null
 ```
 
@@ -400,12 +400,12 @@ ls "$phase_dir"/*-BRIEF.md 2>/dev/null
 
 ## Step 2: Load All Plans
 
-Use odoo-gsd-tools to validate plan structure:
+Use amil-tools to validate plan structure:
 
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
   echo "=== $plan ==="
-  PLAN_STRUCTURE=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" verify plan-structure "$plan")
+  PLAN_STRUCTURE=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" verify plan-structure "$plan")
   echo "$PLAN_STRUCTURE"
 done
 ```
@@ -420,10 +420,10 @@ Map errors/warnings to verification dimensions:
 
 ## Step 3: Parse must_haves
 
-Extract must_haves from each plan using odoo-gsd-tools:
+Extract must_haves from each plan using amil-tools:
 
 ```bash
-MUST_HAVES=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" frontmatter get "$PLAN_PATH" --field must_haves)
+MUST_HAVES=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" frontmatter get "$PLAN_PATH" --field must_haves)
 ```
 
 Returns JSON: `{ truths: [...], artifacts: [...], key_links: [...] }`
@@ -465,10 +465,10 @@ For each requirement: find covering task(s), verify action is specific, flag gap
 
 ## Step 5: Validate Task Structure
 
-Use odoo-gsd-tools plan-structure verification (already run in Step 2):
+Use amil-tools plan-structure verification (already run in Step 2):
 
 ```bash
-PLAN_STRUCTURE=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" verify plan-structure "$PLAN_PATH")
+PLAN_STRUCTURE=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" verify plan-structure "$PLAN_PATH")
 ```
 
 The `tasks` array in the result shows each task's completeness:
@@ -479,7 +479,7 @@ The `tasks` array in the result shows each task's completeness:
 
 **Check:** valid task type (auto, checkpoint:*, tdd), auto tasks have files/action/verify/done, action is specific, verify is runnable, done is measurable.
 
-**For manual validation of specificity** (odoo-gsd-tools checks structure, not content quality):
+**For manual validation of specificity** (amil-tools checks structure, not content quality):
 ```bash
 grep -B5 "</task>" "$PHASE_DIR"/*-PLAN.md | grep -v "<verify>"
 ```
@@ -630,7 +630,7 @@ Return all issues as a structured `issues:` YAML list (see dimension examples fo
 | 01   | 3     | 5     | 1    | Valid  |
 | 02   | 2     | 4     | 2    | Valid  |
 
-Plans verified. Run `/odoo-gsd:execute-phase {phase}` to proceed.
+Plans verified. Run `/amil:execute-phase {phase}` to proceed.
 ```
 
 ## ISSUES FOUND
@@ -668,7 +668,7 @@ Plans verified. Run `/odoo-gsd:execute-phase {phase}` to proceed.
 
 <anti_patterns>
 
-**DO NOT** check code existence — that's odoo-gsd-verifier's job. You verify plans, not codebase.
+**DO NOT** check code existence — that's amil-verifier's job. You verify plans, not codebase.
 
 **DO NOT** run the application. Static plan analysis only.
 

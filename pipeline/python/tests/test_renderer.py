@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.renderer import (
+from amil_utils.renderer import (
     MONETARY_FIELD_PATTERNS,
     _build_model_context,
     _build_module_context,
@@ -25,7 +25,7 @@ from odoo_gen_utils.renderer import (
     get_template_dir,
     render_module,
 )
-from odoo_gen_utils.preprocessors import _parse_crud
+from amil_utils.preprocessors import _parse_crud
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -1924,7 +1924,7 @@ class TestProcessRelationshipsM2MThrough:
         }
 
     def test_synthesizes_through_model(self):
-        from odoo_gen_utils.renderer import _process_relationships
+        from amil_utils.renderer import _process_relationships
 
         spec = self._make_through_spec()
         result = _process_relationships(spec)
@@ -1954,7 +1954,7 @@ class TestProcessRelationshipsM2MThrough:
         assert student_fk["comodel_name"] == "test_university.student"
 
     def test_injects_one2many_on_parents(self):
-        from odoo_gen_utils.renderer import _process_relationships
+        from amil_utils.renderer import _process_relationships
 
         spec = self._make_through_spec()
         result = _process_relationships(spec)
@@ -1968,7 +1968,7 @@ class TestProcessRelationshipsM2MThrough:
         assert "enrollment_ids" in student_field_names
 
     def test_no_duplicate_injection(self):
-        from odoo_gen_utils.renderer import _process_relationships
+        from amil_utils.renderer import _process_relationships
 
         spec = self._make_through_spec()
         # Pre-add enrollment_ids on course model
@@ -1984,7 +1984,7 @@ class TestProcessRelationshipsM2MThrough:
         assert len(enrollment_fields) == 1
 
     def test_fk_name_collision_with_through_fields(self):
-        from odoo_gen_utils.renderer import _process_relationships
+        from amil_utils.renderer import _process_relationships
 
         spec = self._make_through_spec()
         # Add a through_field that collides with auto-generated FK name
@@ -1995,7 +1995,7 @@ class TestProcessRelationshipsM2MThrough:
             _process_relationships(spec)
 
     def test_through_model_has_synthesized_flag(self):
-        from odoo_gen_utils.renderer import _process_relationships
+        from amil_utils.renderer import _process_relationships
 
         spec = self._make_through_spec()
         result = _process_relationships(spec)
@@ -2003,7 +2003,7 @@ class TestProcessRelationshipsM2MThrough:
         assert through.get("_synthesized") is True
 
     def test_immutability(self):
-        from odoo_gen_utils.renderer import _process_relationships
+        from amil_utils.renderer import _process_relationships
         import copy
 
         spec = self._make_through_spec()
@@ -2045,7 +2045,7 @@ class TestProcessRelationshipsSelfM2M:
         }
 
     def test_enriches_primary_field(self):
-        from odoo_gen_utils.renderer import _process_relationships
+        from amil_utils.renderer import _process_relationships
 
         spec = self._make_self_m2m_spec()
         result = _process_relationships(spec)
@@ -2058,7 +2058,7 @@ class TestProcessRelationshipsSelfM2M:
         assert "column2" in prereq
 
     def test_enriches_inverse_field(self):
-        from odoo_gen_utils.renderer import _process_relationships
+        from amil_utils.renderer import _process_relationships
 
         spec = self._make_self_m2m_spec(with_inverse=True)
         result = _process_relationships(spec)
@@ -2072,7 +2072,7 @@ class TestProcessRelationshipsSelfM2M:
         assert dep["relation"] == prereq["relation"]
 
     def test_relation_table_naming(self):
-        from odoo_gen_utils.renderer import _process_relationships
+        from amil_utils.renderer import _process_relationships
 
         spec = self._make_self_m2m_spec()
         result = _process_relationships(spec)
@@ -2081,7 +2081,7 @@ class TestProcessRelationshipsSelfM2M:
         assert prereq["relation"] == "test_university_course_prerequisite_ids_rel"
 
     def test_no_inverse_when_not_specified(self):
-        from odoo_gen_utils.renderer import _process_relationships
+        from amil_utils.renderer import _process_relationships
 
         spec = self._make_self_m2m_spec(with_inverse=False)
         result = _process_relationships(spec)
@@ -2091,7 +2091,7 @@ class TestProcessRelationshipsSelfM2M:
         assert "dependent_ids" not in field_names
 
     def test_replaces_existing_field(self):
-        from odoo_gen_utils.renderer import _process_relationships
+        from amil_utils.renderer import _process_relationships
 
         spec = self._make_self_m2m_spec(with_inverse=False)
         # Pre-add a placeholder prerequisite_ids field
@@ -4115,7 +4115,7 @@ class TestSecurityViewAutoFix:
         spec["models"][0]["fields"].append(
             {"name": "ssn", "type": "Char", "sensitive": True},
         )
-        with caplog.at_level(logging.INFO, logger="odoo_gen_utils.preprocessors"):
+        with caplog.at_level(logging.INFO, logger="amil_utils.preprocessors"):
             _process_security_patterns(spec)
         assert any("Auto-applied groups=" in msg for msg in caplog.messages)
 
@@ -4126,7 +4126,7 @@ class TestSecurityViewAutoFix:
         spec["models"][0]["fields"].append(
             {"name": "ssn", "type": "Char", "sensitive": True},
         )
-        with caplog.at_level(logging.WARNING, logger="odoo_gen_utils.preprocessors"):
+        with caplog.at_level(logging.WARNING, logger="amil_utils.preprocessors"):
             _process_security_patterns(spec)
         assert any(
             "may appear in search view" in msg and "ssn" in msg
@@ -4140,7 +4140,7 @@ class TestSecurityViewAutoFix:
         spec["models"][0]["fields"].append(
             {"name": "secret_partner_id", "type": "Many2one", "comodel": "res.partner", "sensitive": True},
         )
-        with caplog.at_level(logging.WARNING, logger="odoo_gen_utils.preprocessors"):
+        with caplog.at_level(logging.WARNING, logger="amil_utils.preprocessors"):
             _process_security_patterns(spec)
         assert any(
             "may appear in search view" in msg and "secret_partner_id" in msg
@@ -4154,7 +4154,7 @@ class TestSecurityViewAutoFix:
         spec["models"][0]["fields"].append(
             {"name": "salary", "type": "Integer", "sensitive": True},
         )
-        with caplog.at_level(logging.WARNING, logger="odoo_gen_utils.preprocessors"):
+        with caplog.at_level(logging.WARNING, logger="amil_utils.preprocessors"):
             _process_security_patterns(spec)
         assert not any(
             "may appear in search view" in msg and "salary" in msg
@@ -4169,7 +4169,7 @@ class TestSecurityViewAutoFix:
             {"name": "salary", "type": "Float", "sensitive": True},
             {"name": "salary_display", "type": "Char", "compute": "_compute_salary_display", "depends": ["salary"]},
         ])
-        with caplog.at_level(logging.WARNING, logger="odoo_gen_utils.preprocessors"):
+        with caplog.at_level(logging.WARNING, logger="amil_utils.preprocessors"):
             _process_security_patterns(spec)
         assert any(
             "depends on restricted field" in msg and "salary_display" in msg
@@ -4184,7 +4184,7 @@ class TestSecurityViewAutoFix:
             {"name": "qty", "type": "Integer"},
             {"name": "total", "type": "Float", "compute": "_compute_total", "depends": ["qty"]},
         ])
-        with caplog.at_level(logging.WARNING, logger="odoo_gen_utils.preprocessors"):
+        with caplog.at_level(logging.WARNING, logger="amil_utils.preprocessors"):
             _process_security_patterns(spec)
         assert not any(
             "depends on restricted field" in msg
@@ -4199,7 +4199,7 @@ class TestSecurityViewAutoFix:
             {"name": "salary", "type": "Float", "sensitive": True},
             {"name": "annual_salary", "type": "Float", "compute": "_compute_annual", "depends": ["salary.amount"]},
         ])
-        with caplog.at_level(logging.WARNING, logger="odoo_gen_utils.preprocessors"):
+        with caplog.at_level(logging.WARNING, logger="amil_utils.preprocessors"):
             _process_security_patterns(spec)
         assert any(
             "depends on restricted field 'salary'" in msg and "annual_salary" in msg
@@ -4263,7 +4263,7 @@ class TestAuditIntegration:
 
     def test_audit_context_keys_on_audit_model(self):
         """Audit model gets has_audit=True and populated audit_fields from context builder."""
-        from odoo_gen_utils.preprocessors import _process_audit_patterns, _process_security_patterns
+        from amil_utils.preprocessors import _process_audit_patterns, _process_security_patterns
         spec = self._make_audit_spec()
         spec = _process_security_patterns(spec)
         spec = _process_audit_patterns(spec)
@@ -4277,7 +4277,7 @@ class TestAuditIntegration:
 
     def test_module_context_has_audit_log_key(self):
         """Module context includes has_audit_log=True when audit models present."""
-        from odoo_gen_utils.preprocessors import _process_audit_patterns, _process_security_patterns
+        from amil_utils.preprocessors import _process_audit_patterns, _process_security_patterns
         spec = self._make_audit_spec()
         spec = _process_security_patterns(spec)
         spec = _process_audit_patterns(spec)
@@ -4581,7 +4581,7 @@ class TestAuditTemplateRendering:
 
     def test_audit_model_has_needs_api_true(self):
         """Audited model sets needs_api=True (for @api.model on _audit_tracked_fields)."""
-        from odoo_gen_utils.preprocessors import _process_audit_patterns, _process_security_patterns
+        from amil_utils.preprocessors import _process_audit_patterns, _process_security_patterns
         spec = self._make_audit_spec()
         spec = _process_security_patterns(spec)
         spec = _process_audit_patterns(spec)
@@ -4779,7 +4779,7 @@ class TestApprovalIntegration:
 
     def test_approval_model_context_propagates_enriched_keys(self):
         """Approval model context propagates all enriched keys from preprocessor."""
-        from odoo_gen_utils.preprocessors import _process_approval_patterns, _process_security_patterns
+        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
         spec = self._make_approval_spec()
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -4800,7 +4800,7 @@ class TestApprovalIntegration:
 
     def test_needs_translate_true_when_has_approval(self):
         """needs_translate is True when has_approval is True."""
-        from odoo_gen_utils.preprocessors import _process_approval_patterns, _process_security_patterns
+        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
         spec = self._make_approval_spec()
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -4810,7 +4810,7 @@ class TestApprovalIntegration:
 
     def test_module_context_has_approval_models_true(self):
         """Module context has has_approval_models=True when any model has approval."""
-        from odoo_gen_utils.preprocessors import _process_approval_patterns, _process_security_patterns
+        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
         spec = self._make_approval_spec()
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -4829,7 +4829,7 @@ class TestApprovalIntegration:
 
     def test_module_context_has_record_rules_with_approval(self):
         """Module context has_record_rules is True when approval models have record_rule_scopes."""
-        from odoo_gen_utils.preprocessors import _process_approval_patterns, _process_security_patterns
+        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
         spec = self._make_approval_spec()
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -4889,8 +4889,8 @@ class TestApprovalTemplateRendering:
 
     def _render_model(self, spec: dict) -> str:
         """Preprocess spec and render model.py.j2 template for the approval model."""
-        from odoo_gen_utils.preprocessors import _process_approval_patterns, _process_security_patterns
-        from odoo_gen_utils.renderer import create_versioned_renderer, _process_constraints, _process_production_patterns
+        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
+        from amil_utils.renderer import create_versioned_renderer, _process_constraints, _process_production_patterns
 
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -4902,8 +4902,8 @@ class TestApprovalTemplateRendering:
 
     def _render_view(self, spec: dict) -> str:
         """Preprocess spec and render view_form.xml.j2 template for the approval model."""
-        from odoo_gen_utils.preprocessors import _process_approval_patterns, _process_security_patterns
-        from odoo_gen_utils.renderer import create_versioned_renderer
+        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
+        from amil_utils.renderer import create_versioned_renderer
 
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -4915,8 +4915,8 @@ class TestApprovalTemplateRendering:
 
     def _render_record_rules(self, spec: dict) -> str:
         """Preprocess spec and render record_rules.xml.j2 template."""
-        from odoo_gen_utils.preprocessors import _process_approval_patterns, _process_security_patterns
-        from odoo_gen_utils.renderer import create_versioned_renderer
+        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
+        from amil_utils.renderer import create_versioned_renderer
 
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -5071,7 +5071,7 @@ class TestApprovalTemplateRendering:
                 {"name": "value", "type": "Integer"},
             ],
         }])
-        from odoo_gen_utils.renderer import create_versioned_renderer
+        from amil_utils.renderer import create_versioned_renderer
         env = create_versioned_renderer("17.0")
         ctx = _build_model_context(spec, spec["models"][0])
         template = env.get_template("model.py.j2")
@@ -5417,13 +5417,13 @@ class TestNotificationTemplateRendering:
 
     def _render_model(self, spec: dict, version: str = "17.0") -> str:
         """Preprocess spec and render model.py.j2 template for the notification model."""
-        from odoo_gen_utils.preprocessors import (
+        from amil_utils.preprocessors import (
             _process_approval_patterns,
             _process_notification_patterns,
             _process_security_patterns,
             _process_webhook_patterns,
         )
-        from odoo_gen_utils.renderer import create_versioned_renderer
+        from amil_utils.renderer import create_versioned_renderer
 
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -5437,12 +5437,12 @@ class TestNotificationTemplateRendering:
 
     def _render_mail_template(self, spec: dict) -> str:
         """Preprocess spec and render mail_template_data.xml.j2 template."""
-        from odoo_gen_utils.preprocessors import (
+        from amil_utils.preprocessors import (
             _process_approval_patterns,
             _process_notification_patterns,
             _process_security_patterns,
         )
-        from odoo_gen_utils.renderer import create_versioned_renderer
+        from amil_utils.renderer import create_versioned_renderer
 
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -5467,7 +5467,7 @@ class TestNotificationTemplateRendering:
             "description": "Plain Model",
             "fields": [{"name": "name", "type": "Char", "required": True}],
         }])
-        from odoo_gen_utils.renderer import create_versioned_renderer
+        from amil_utils.renderer import create_versioned_renderer
         env = create_versioned_renderer("17.0")
         ctx = _build_model_context(spec, spec["models"][0])
         template = env.get_template("model.py.j2")
@@ -5609,14 +5609,14 @@ class TestWebhookTemplateRendering:
 
     def _render_model(self, spec: dict, version: str = "17.0") -> str:
         """Preprocess spec and render model.py.j2 template for webhook model."""
-        from odoo_gen_utils.preprocessors import (
+        from amil_utils.preprocessors import (
             _process_approval_patterns,
             _process_audit_patterns,
             _process_notification_patterns,
             _process_security_patterns,
             _process_webhook_patterns,
         )
-        from odoo_gen_utils.renderer import (
+        from amil_utils.renderer import (
             _process_constraints,
             _process_production_patterns,
             create_versioned_renderer,
@@ -5665,7 +5665,7 @@ class TestWebhookTemplateRendering:
             "description": "Plain Model",
             "fields": [{"name": "name", "type": "Char", "required": True}],
         }])
-        from odoo_gen_utils.renderer import create_versioned_renderer
+        from amil_utils.renderer import create_versioned_renderer
         env = create_versioned_renderer("17.0")
         ctx = _build_model_context(spec, spec["models"][0])
         template = env.get_template("model.py.j2")

@@ -120,10 +120,10 @@ If found, delete them — phase is complete, handoffs are stale.
 
 <step name="update_roadmap_and_state">
 
-**Delegate ROADMAP.md and STATE.md updates to odoo-gsd-tools:**
+**Delegate ROADMAP.md and STATE.md updates to amil-tools:**
 
 ```bash
-TRANSITION=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" phase complete "${current_phase}")
+TRANSITION=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" phase complete "${current_phase}")
 ```
 
 The CLI handles:
@@ -233,12 +233,12 @@ After (Phase 2 shipped JWT auth, discovered rate limiting needed):
 
 <step name="update_current_position_after_transition">
 
-**Note:** Basic position updates (Current Phase, Status, Current Plan, Last Activity) were already handled by `odoo-gsd-tools phase complete` in the update_roadmap_and_state step.
+**Note:** Basic position updates (Current Phase, Status, Current Plan, Last Activity) were already handled by `amil-tools phase complete` in the update_roadmap_and_state step.
 
 Verify the updates are correct by reading STATE.md. If the progress bar needs updating, use:
 
 ```bash
-PROGRESS=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" progress bar --raw)
+PROGRESS=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" progress bar --raw)
 ```
 
 Update the progress bar line in STATE.md with the result.
@@ -337,7 +337,7 @@ Resume file: None
 
 **MANDATORY: Verify milestone status before presenting next steps.**
 
-**Use the transition result from `odoo-gsd-tools phase complete`:**
+**Use the transition result from `amil-tools phase complete`:**
 
 The `is_last_phase` field from the phase complete result tells you directly:
 - `is_last_phase: false` → More phases remain → Go to **Route A**
@@ -347,7 +347,7 @@ The `next_phase` and `next_phase_name` fields give you the next phase details.
 
 If you need additional context, use:
 ```bash
-ROADMAP=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" roadmap analyze)
+ROADMAP=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap analyze)
 ```
 
 This returns all phases with goals, disk status, and completion info.
@@ -378,7 +378,7 @@ Next: Phase [X+1] — [Name]
 ⚡ Auto-continuing: Plan Phase [X+1] in detail
 ```
 
-Exit skill and invoke SlashCommand("/odoo-gsd:plan-phase [X+1] --auto")
+Exit skill and invoke SlashCommand("/amil:plan-phase [X+1] --auto")
 
 **If CONTEXT.md does NOT exist:**
 
@@ -390,7 +390,7 @@ Next: Phase [X+1] — [Name]
 ⚡ Auto-continuing: Discuss Phase [X+1] first
 ```
 
-Exit skill and invoke SlashCommand("/odoo-gsd:discuss-phase [X+1] --auto")
+Exit skill and invoke SlashCommand("/amil:discuss-phase [X+1] --auto")
 
 </if>
 
@@ -407,15 +407,15 @@ Exit skill and invoke SlashCommand("/odoo-gsd:discuss-phase [X+1] --auto")
 
 **Phase [X+1]: [Name]** — [Goal from ROADMAP.md]
 
-`/odoo-gsd:discuss-phase [X+1]` — gather context and clarify approach
+`/amil:discuss-phase [X+1]` — gather context and clarify approach
 
 <sub>`/clear` first → fresh context window</sub>
 
 ---
 
 **Also available:**
-- `/odoo-gsd:plan-phase [X+1]` — skip discussion, plan directly
-- `/odoo-gsd:research-phase [X+1]` — investigate unknowns
+- `/amil:plan-phase [X+1]` — skip discussion, plan directly
+- `/amil:research-phase [X+1]` — investigate unknowns
 
 ---
 ```
@@ -432,15 +432,15 @@ Exit skill and invoke SlashCommand("/odoo-gsd:discuss-phase [X+1] --auto")
 **Phase [X+1]: [Name]** — [Goal from ROADMAP.md]
 <sub>✓ Context gathered, ready to plan</sub>
 
-`/odoo-gsd:plan-phase [X+1]`
+`/amil:plan-phase [X+1]`
 
 <sub>`/clear` first → fresh context window</sub>
 
 ---
 
 **Also available:**
-- `/odoo-gsd:discuss-phase [X+1]` — revisit context
-- `/odoo-gsd:research-phase [X+1]` — investigate unknowns
+- `/amil:discuss-phase [X+1]` — revisit context
+- `/amil:research-phase [X+1]` — investigate unknowns
 
 ---
 ```
@@ -453,7 +453,7 @@ Exit skill and invoke SlashCommand("/odoo-gsd:discuss-phase [X+1] --auto")
 
 **Clear auto-advance chain flag** — milestone boundary is the natural stopping point:
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set workflow._auto_chain_active false
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set workflow._auto_chain_active false
 ```
 
 <if mode="yolo">
@@ -466,7 +466,7 @@ Phase {X} marked complete.
 ⚡ Auto-continuing: Complete milestone and archive
 ```
 
-Exit skill and invoke SlashCommand("/odoo-gsd:complete-milestone {version}")
+Exit skill and invoke SlashCommand("/amil:complete-milestone {version}")
 
 </if>
 
@@ -483,7 +483,7 @@ Exit skill and invoke SlashCommand("/odoo-gsd:complete-milestone {version}")
 
 **Complete Milestone {version}** — archive and prepare for next
 
-`/odoo-gsd:complete-milestone {version}`
+`/amil:complete-milestone {version}`
 
 <sub>`/clear` first → fresh context window</sub>
 

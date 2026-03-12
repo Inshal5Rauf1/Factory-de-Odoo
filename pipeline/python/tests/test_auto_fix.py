@@ -18,7 +18,7 @@ from unittest.mock import patch
 
 import pytest
 
-from odoo_gen_utils.auto_fix import (
+from amil_utils.auto_fix import (
     DEFAULT_MAX_FIX_ITERATIONS,
     FIXABLE_DOCKER_PATTERNS,
     FIXABLE_PYLINT_CODES,
@@ -32,7 +32,7 @@ from odoo_gen_utils.auto_fix import (
     is_fixable_pylint,
     run_pylint_fix_loop,
 )
-from odoo_gen_utils.validation.types import Result, Violation
+from amil_utils.validation.types import Result, Violation
 
 
 # ---------------------------------------------------------------------------
@@ -337,7 +337,7 @@ class TestRunPylintFixLoop:
                 encoding="utf-8",
             )
 
-            with patch("odoo_gen_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
+            with patch("amil_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
                 result = run_pylint_fix_loop(mod)
 
             assert result.success
@@ -362,7 +362,7 @@ class TestRunPylintFixLoop:
 
         with tempfile.TemporaryDirectory() as d:
             mod = Path(d)
-            with patch("odoo_gen_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
+            with patch("amil_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
                 result = run_pylint_fix_loop(mod)
 
             assert result.success
@@ -950,7 +950,7 @@ class TestRunDockerFixLoop:
 
     def test_mail_thread_error_calls_fix_and_returns_true(self, tmp_path: Path):
         """run_docker_fix_loop with mail.thread error text dispatches fix_missing_mail_thread."""
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         module_dir = tmp_path / "test_module"
         (module_dir / "models").mkdir(parents=True)
@@ -990,7 +990,7 @@ class TestRunDockerFixLoop:
 
     def test_unused_import_error_returns_true(self, tmp_path: Path):
         """run_docker_fix_loop with unused import keywords dispatches fix."""
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         module_dir = tmp_path / "test_module"
         (module_dir / "models").mkdir(parents=True)
@@ -1014,7 +1014,7 @@ class TestRunDockerFixLoop:
 
     def test_unrecognized_error_returns_false(self, tmp_path: Path):
         """run_docker_fix_loop with unrecognized error returns False."""
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir(parents=True)
@@ -1027,7 +1027,7 @@ class TestRunDockerFixLoop:
 
     def test_empty_error_returns_false(self, tmp_path: Path):
         """run_docker_fix_loop with empty error text returns False."""
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir(parents=True)
@@ -1047,7 +1047,7 @@ class TestRunDockerFixLoopImport:
     """Verify run_docker_fix_loop is importable and callable."""
 
     def test_import_run_docker_fix_loop(self):
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         assert callable(run_docker_fix_loop)
 
@@ -1081,7 +1081,7 @@ class TestPylintFixLoopUnusedImports:
                     name = fields.Char(required=True)
             """), encoding="utf-8")
 
-            with patch("odoo_gen_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
+            with patch("amil_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
                 result = run_pylint_fix_loop(mod)
                 total_fixed, remaining = result.data
 
@@ -1108,7 +1108,7 @@ class TestFixXmlParseError:
 
     def test_fixes_mismatched_closing_tag(self, tmp_path: Path):
         """Mismatched closing tag <fom> instead of <form> is detected and fixed."""
-        from odoo_gen_utils.auto_fix import fix_xml_parse_error
+        from amil_utils.auto_fix import fix_xml_parse_error
 
         xml = """\
             <?xml version="1.0" encoding="UTF-8"?>
@@ -1137,7 +1137,7 @@ class TestFixXmlParseError:
 
     def test_well_formed_xml_returns_false(self, tmp_path: Path):
         """Well-formed XML returns False (no change needed)."""
-        from odoo_gen_utils.auto_fix import fix_xml_parse_error
+        from amil_utils.auto_fix import fix_xml_parse_error
 
         xml = """\
             <?xml version="1.0" encoding="UTF-8"?>
@@ -1199,7 +1199,7 @@ class TestFixMissingAcl:
 
     def test_creates_csv_when_missing(self, tmp_path: Path):
         """Creates security/ir.model.access.csv with access rule when missing."""
-        from odoo_gen_utils.auto_fix import fix_missing_acl
+        from amil_utils.auto_fix import fix_missing_acl
 
         module_dir = self._make_module(tmp_path, has_csv=False)
         error_output = "No access rule defined for model my.model ir.model.access"
@@ -1215,7 +1215,7 @@ class TestFixMissingAcl:
 
     def test_returns_false_when_csv_has_model(self, tmp_path: Path):
         """Returns False when ir.model.access.csv already has the model."""
-        from odoo_gen_utils.auto_fix import fix_missing_acl
+        from amil_utils.auto_fix import fix_missing_acl
 
         csv_content = (
             "id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink\n"
@@ -1228,7 +1228,7 @@ class TestFixMissingAcl:
 
     def test_manifest_updated_with_csv_path(self, tmp_path: Path):
         """Manifest data list is updated to include security/ir.model.access.csv."""
-        from odoo_gen_utils.auto_fix import fix_missing_acl
+        from amil_utils.auto_fix import fix_missing_acl
 
         module_dir = self._make_module(tmp_path, has_csv=False)
         error_output = "No access rule for model ir.model.access"
@@ -1286,7 +1286,7 @@ class TestFixManifestLoadOrder:
 
     def test_reorders_menus_after_actions(self, tmp_path: Path):
         """Menus listed before actions get reordered so actions come first."""
-        from odoo_gen_utils.auto_fix import fix_manifest_load_order
+        from amil_utils.auto_fix import fix_manifest_load_order
 
         # menus.xml before actions.xml -- wrong order
         module_dir = self._make_module(tmp_path, ["views/menus.xml", "views/actions.xml"])
@@ -1301,7 +1301,7 @@ class TestFixManifestLoadOrder:
 
     def test_correct_order_returns_false(self, tmp_path: Path):
         """Already correct order returns False."""
-        from odoo_gen_utils.auto_fix import fix_manifest_load_order
+        from amil_utils.auto_fix import fix_manifest_load_order
 
         # actions.xml before menus.xml -- correct order
         module_dir = self._make_module(tmp_path, ["views/actions.xml", "views/menus.xml"])
@@ -1320,7 +1320,7 @@ class TestRunDockerFixLoopNewDispatch:
 
     def test_dispatches_xml_parse_error(self, tmp_path: Path):
         """run_docker_fix_loop dispatches to fix_xml_parse_error for XML errors."""
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         module_dir = tmp_path / "test_module"
         (module_dir / "views").mkdir(parents=True)
@@ -1348,7 +1348,7 @@ class TestRunDockerFixLoopNewDispatch:
 
     def test_dispatches_missing_acl(self, tmp_path: Path):
         """run_docker_fix_loop dispatches to fix_missing_acl for ACL errors."""
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         module_dir = tmp_path / "test_module"
         (module_dir / "models").mkdir(parents=True)
@@ -1380,7 +1380,7 @@ class TestRunDockerFixLoopNewDispatch:
 
     def test_dispatches_manifest_load_order(self, tmp_path: Path):
         """run_docker_fix_loop dispatches to fix_manifest_load_order for action reference errors."""
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         module_dir = tmp_path / "test_module"
         (module_dir / "views").mkdir(parents=True)
@@ -1423,7 +1423,7 @@ class TestDefaultMaxFixIterations:
     """DEFAULT_MAX_FIX_ITERATIONS replaces MAX_FIX_CYCLES."""
 
     def test_default_max_fix_iterations_equals_five(self):
-        from odoo_gen_utils.auto_fix import DEFAULT_MAX_FIX_ITERATIONS
+        from amil_utils.auto_fix import DEFAULT_MAX_FIX_ITERATIONS
 
         assert DEFAULT_MAX_FIX_ITERATIONS == 5
 
@@ -1464,7 +1464,7 @@ class TestPylintFixLoopMaxIterations:
             model_file.parent.mkdir(parents=True)
             model_file.write_text(src, encoding="utf-8")
 
-            with patch("odoo_gen_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
+            with patch("amil_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
                 result = run_pylint_fix_loop(mod)
                 total_fixed, remaining = result.data
 
@@ -1497,7 +1497,7 @@ class TestPylintFixLoopMaxIterations:
             model_file.parent.mkdir(parents=True)
             model_file.write_text(src, encoding="utf-8")
 
-            with patch("odoo_gen_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
+            with patch("amil_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
                 result = run_pylint_fix_loop(mod, max_iterations=1)
                 total_fixed, remaining = result.data
 
@@ -1530,7 +1530,7 @@ class TestPylintFixLoopMaxIterations:
             model_file.parent.mkdir(parents=True)
             model_file.write_text(src, encoding="utf-8")
 
-            with patch("odoo_gen_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
+            with patch("amil_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
                 result = run_pylint_fix_loop(mod, max_iterations=5)
                 total_fixed, remaining = result.data
 
@@ -1542,7 +1542,7 @@ class TestDockerFixLoopIterations:
 
     def test_loops_with_revalidate_fn(self, tmp_path: Path):
         """run_docker_fix_loop loops: fix -> revalidate -> fix again."""
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         call_count = 0
         module_dir = tmp_path / "test_module"
@@ -1569,7 +1569,7 @@ class TestDockerFixLoopIterations:
         def revalidate_fn():
             nonlocal call_count
             call_count += 1
-            from odoo_gen_utils.validation.types import InstallResult
+            from amil_utils.validation.types import InstallResult
             # First revalidation: still has an error (different one this time)
             if call_count == 1:
                 return Result.ok(InstallResult(success=False, log_output="", error_message="fixed now"))
@@ -1585,7 +1585,7 @@ class TestDockerFixLoopIterations:
 
     def test_stops_when_no_fix_applied(self, tmp_path: Path):
         """run_docker_fix_loop stops when fix function returns False."""
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir(parents=True)
@@ -1604,7 +1604,7 @@ class TestDockerFixLoopIterations:
         With tried_patterns tracking, the loop no longer hits the iteration cap
         for repeated patterns — it breaks early when the pattern is skipped.
         """
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         revalidate_count = 0
         module_dir = tmp_path / "test_module"
@@ -1643,7 +1643,7 @@ class TestDockerFixLoopIterations:
             revalidate_count += 1
             # Always return error to force continued iterations
             make_model()  # Reset state so fix is needed again
-            from odoo_gen_utils.validation.types import InstallResult
+            from amil_utils.validation.types import InstallResult
             return Result.ok(InstallResult(
                 success=False,
                 log_output="No access rule for model test.m. ir.model.access required",
@@ -1666,7 +1666,7 @@ class TestDockerFixLoopIterations:
         Uses mocked dispatch returning different patterns each time to avoid
         smart guard dedup, ensuring the loop actually hits the cap.
         """
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir()
@@ -1676,14 +1676,14 @@ class TestDockerFixLoopIterations:
         def revalidate_fn():
             nonlocal iteration_count
             iteration_count += 1
-            from odoo_gen_utils.validation.types import InstallResult
+            from amil_utils.validation.types import InstallResult
             return Result.ok(InstallResult(
                 success=False,
                 log_output="some error remains",
                 error_message="still broken",
             ))
 
-        with patch('odoo_gen_utils.auto_fix._dispatch_docker_fix') as mock_dispatch:
+        with patch('amil_utils.auto_fix._dispatch_docker_fix') as mock_dispatch:
             # Return a different pattern_id each time so smart guard doesn't skip
             mock_dispatch.side_effect = [
                 (True, "pattern_a"),
@@ -1907,7 +1907,7 @@ class TestFixXmlParseErrorEdgeCases:
     def test_heuristic_fallback_no_mismatch_pattern(self, tmp_path: Path):
         """When error output lacks explicit mismatch info, heuristic tag
         counting still fixes the orphaned closing tag."""
-        from odoo_gen_utils.auto_fix import fix_xml_parse_error
+        from amil_utils.auto_fix import fix_xml_parse_error
 
         module_dir = tmp_path / "test_module"
         (module_dir / "views").mkdir(parents=True)
@@ -1925,7 +1925,7 @@ class TestFixXmlParseErrorEdgeCases:
 
     def test_no_xml_files_returns_false(self, tmp_path: Path):
         """Returns False when module has no views/ directory."""
-        from odoo_gen_utils.auto_fix import fix_xml_parse_error
+        from amil_utils.auto_fix import fix_xml_parse_error
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir()
@@ -1934,7 +1934,7 @@ class TestFixXmlParseErrorEdgeCases:
 
     def test_path_traversal_blocked(self, tmp_path: Path):
         """Path traversal in error output file reference is blocked (SEC-06)."""
-        from odoo_gen_utils.auto_fix import fix_xml_parse_error
+        from amil_utils.auto_fix import fix_xml_parse_error
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir()
@@ -1953,7 +1953,7 @@ class TestFixMissingAclEdgeCases:
 
     def test_multiple_models_all_get_acl(self, tmp_path: Path):
         """When module defines multiple models, all get ACL entries."""
-        from odoo_gen_utils.auto_fix import fix_missing_acl
+        from amil_utils.auto_fix import fix_missing_acl
 
         module_dir = tmp_path / "test_module"
         (module_dir / "models").mkdir(parents=True)
@@ -1985,7 +1985,7 @@ class TestFixMissingAclEdgeCases:
 
     def test_no_models_dir_returns_false(self, tmp_path: Path):
         """Returns False when module has no models/ directory."""
-        from odoo_gen_utils.auto_fix import fix_missing_acl
+        from amil_utils.auto_fix import fix_missing_acl
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir()
@@ -1998,7 +1998,7 @@ class TestFixManifestLoadOrderEdgeCases:
 
     def test_no_manifest_returns_false(self, tmp_path: Path):
         """Returns False when __manifest__.py is missing."""
-        from odoo_gen_utils.auto_fix import fix_manifest_load_order
+        from amil_utils.auto_fix import fix_manifest_load_order
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir()
@@ -2007,7 +2007,7 @@ class TestFixManifestLoadOrderEdgeCases:
 
     def test_single_data_file_returns_false(self, tmp_path: Path):
         """Returns False when data list has only one file (nothing to reorder)."""
-        from odoo_gen_utils.auto_fix import fix_manifest_load_order
+        from amil_utils.auto_fix import fix_manifest_load_order
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir()
@@ -2020,7 +2020,7 @@ class TestFixManifestLoadOrderEdgeCases:
 
     def test_preserves_non_action_files(self, tmp_path: Path):
         """Non-action/non-menu files (security, data) stay in their group."""
-        from odoo_gen_utils.auto_fix import fix_manifest_load_order
+        from amil_utils.auto_fix import fix_manifest_load_order
 
         module_dir = tmp_path / "test_module"
         (module_dir / "views").mkdir(parents=True)
@@ -2062,7 +2062,7 @@ class TestMissingImportPatternDispatch:
     def test_missing_import_identified_but_not_fixable(self, tmp_path: Path):
         """Dispatch loop identifies missing_import but returns no-fix since there's
         no fix function registered for it."""
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir()
@@ -2127,7 +2127,7 @@ class TestDispatchDockerFixReturnsTuple:
 
     def test_dispatch_docker_fix_returns_tuple(self, tmp_path: Path):
         """Call with a known error pattern, assert result is a tuple."""
-        from odoo_gen_utils.auto_fix import _dispatch_docker_fix
+        from amil_utils.auto_fix import _dispatch_docker_fix
 
         module_dir = tmp_path / "test_module"
         (module_dir / "views").mkdir(parents=True)
@@ -2151,7 +2151,7 @@ class TestDispatchDockerFixReturnsTuple:
 
     def test_dispatch_docker_fix_skips_tried_pattern(self, tmp_path: Path):
         """Pass tried_patterns={'missing_acl'}, feed error matching missing_acl, assert skipped."""
-        from odoo_gen_utils.auto_fix import _dispatch_docker_fix
+        from amil_utils.auto_fix import _dispatch_docker_fix
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir()
@@ -2161,7 +2161,7 @@ class TestDispatchDockerFixReturnsTuple:
 
     def test_dispatch_docker_fix_unused_import_exempt(self, tmp_path: Path):
         """Unused imports are exempt from tried_patterns dedup — cumulative fix."""
-        from odoo_gen_utils.auto_fix import _dispatch_docker_fix
+        from amil_utils.auto_fix import _dispatch_docker_fix
 
         module_dir = tmp_path / "test_module"
         (module_dir / "models").mkdir(parents=True)
@@ -2185,7 +2185,7 @@ class TestDispatchDockerFixReturnsTuple:
 
     def test_dispatch_docker_fix_tried_patterns_none(self, tmp_path: Path):
         """tried_patterns=None means no filtering occurs (backward compat)."""
-        from odoo_gen_utils.auto_fix import _dispatch_docker_fix
+        from amil_utils.auto_fix import _dispatch_docker_fix
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir()
@@ -2195,7 +2195,7 @@ class TestDispatchDockerFixReturnsTuple:
 
     def test_dispatch_docker_fix_empty_error(self, tmp_path: Path):
         """Empty error text returns (False, None)."""
-        from odoo_gen_utils.auto_fix import _dispatch_docker_fix
+        from amil_utils.auto_fix import _dispatch_docker_fix
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir()
@@ -2209,7 +2209,7 @@ class TestRunDockerFixLoopTriedPatterns:
     def test_run_docker_fix_loop_tracks_tried_patterns(self, tmp_path: Path):
         """Mock dispatch to succeed on first pattern, skip on second (same pattern).
         Assert loop breaks after 2 iterations instead of hitting cap."""
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir()
@@ -2226,7 +2226,7 @@ class TestRunDockerFixLoopTriedPatterns:
                 'error_message': '',
             })())
 
-        with patch('odoo_gen_utils.auto_fix._dispatch_docker_fix') as mock_dispatch:
+        with patch('amil_utils.auto_fix._dispatch_docker_fix') as mock_dispatch:
             # First call: fix applied, returns missing_acl pattern
             # Second call: same pattern in tried_patterns, returns skip
             mock_dispatch.side_effect = [
@@ -2247,12 +2247,12 @@ class TestRunDockerFixLoopTriedPatterns:
 
     def test_run_docker_fix_loop_breaks_early_when_all_tried(self, tmp_path: Path):
         """All patterns already tried — loop breaks on iteration 1."""
-        from odoo_gen_utils.auto_fix import run_docker_fix_loop
+        from amil_utils.auto_fix import run_docker_fix_loop
 
         module_dir = tmp_path / "test_module"
         module_dir.mkdir()
 
-        with patch('odoo_gen_utils.auto_fix._dispatch_docker_fix') as mock_dispatch:
+        with patch('amil_utils.auto_fix._dispatch_docker_fix') as mock_dispatch:
             # First call: no fix applied (pattern already tried externally)
             mock_dispatch.return_value = (False, None)
             result = run_docker_fix_loop(

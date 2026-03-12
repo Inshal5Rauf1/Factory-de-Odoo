@@ -111,7 +111,7 @@ cd ..
 
 # Install the pipeline
 cd pipeline
-bash install.sh  # Sets up Python venv, installs odoo-gen-utils, links agents
+bash install.sh  # Sets up Python venv, installs amil-utils, links agents
 cd ..
 ```
 
@@ -133,13 +133,13 @@ The orchestrator needs to know where the pipeline lives. In your ERP project's `
 Or set the environment variable:
 
 ```bash
-export ODOO_GEN_PATH="/path/to/Factory-de-Odoo/pipeline"
+export AMIL_GEN_PATH="/path/to/Factory-de-Odoo/pipeline"
 ```
 
 ### Your First Module
 
 ```
-/odoo-gsd:new-erp
+/amil:new-erp
 > "I need a university ERP with student registration,
 >  fee invoicing, exam scheduling, and timetable management"
 ```
@@ -153,7 +153,7 @@ The orchestrator will:
 For a single module without orchestration:
 
 ```
-/odoo-gen:new
+/amil:new
 > "Employee training course tracker with sessions and certificates"
 ```
 
@@ -165,16 +165,16 @@ For a single module without orchestration:
 Factory-de-Odoo/
 |
 +-- orchestrator/                 # Cross-module brain
-|   +-- odoo-gsd/bin/lib/         # 43 CJS modules (registry, coherence, status)
+|   +-- amil/bin/lib/         # 43 CJS modules (registry, coherence, status)
 |   +-- agents/                   # 20 orchestration agents
-|   +-- commands/odoo-gsd/        # 30 slash commands (/odoo-gsd:*)
+|   +-- commands/amil/        # 30 slash commands (/amil:*)
 |   +-- tests/                    # 747 tests (Node.js native test runner)
 |   +-- .planning/                # State files (config, roadmap, registry)
 |
 +-- pipeline/                     # Single-module generation belt
-    +-- python/src/odoo_gen_utils/ # Rendering engine, validation, search
+    +-- python/src/amil_utils/ # Rendering engine, validation, search
     +-- agents/                   # 8 specialized generation agents
-    +-- commands/                 # 13 slash commands (/odoo-gen:*)
+    +-- commands/                 # 13 slash commands (/amil:*)
     +-- knowledge/                # 13 Odoo knowledge files (80+ examples)
     +-- templates/                # 24 Jinja2 templates (17.0 / 18.0 / 19.0 / shared)
     +-- docker/                   # Odoo 19 + PostgreSQL 16 validation
@@ -198,8 +198,8 @@ planned --> spec_approved --> generated --> checked --> shipped
 | Coherence Checker | `lib/coherence.cjs` | 4 structural checks (Many2one targets, duplicates, dependencies, security) |
 | Module Status | `lib/module-status.cjs` | State machine with valid transitions |
 | Dependency Graph | `lib/dependency-graph.cjs` | Topological sort for generation order |
-| Spec Generator | `agents/odoo-gsd-spec-generator.md` | Produces `spec.json` from module discussions |
-| Belt Executor | `agents/odoo-gsd-belt-executor.md` | Invokes pipeline, captures output |
+| Spec Generator | `agents/amil-spec-generator.md` | Produces `spec.json` from module discussions |
+| Belt Executor | `agents/amil-belt-executor.md` | Invokes pipeline, captures output |
 
 **PRD Decomposition (4 parallel agents):**
 1. Module Boundary Analyzer — functional domains, model proposals
@@ -215,14 +215,14 @@ The pipeline generates a single Odoo module from a JSON specification.
 
 | Agent | Role |
 |-------|------|
-| `odoo-scaffold` | Initial module structure |
-| `odoo-model-gen` | Python model classes with ORM fields |
-| `odoo-view-gen` | XML views (form, tree, kanban, search) |
-| `odoo-security-gen` | ACLs, record rules, security groups |
-| `odoo-test-gen` | Python test cases |
-| `odoo-validator` | pylint-odoo + Docker validation |
-| `odoo-search` | ChromaDB semantic search across OCA |
-| `odoo-extend` | Fork-and-extend existing modules |
+| `amil-scaffold` | Initial module structure |
+| `amil-model-gen` | Python model classes with ORM fields |
+| `amil-view-gen` | XML views (form, tree, kanban, search) |
+| `amil-security-gen` | ACLs, record rules, security groups |
+| `amil-test-gen` | Python test cases |
+| `amil-validator` | pylint-odoo + Docker validation |
+| `amil-search` | ChromaDB semantic search across OCA |
+| `amil-extend` | Fork-and-extend existing modules |
 
 **Validation Pipeline:**
 ```
@@ -250,7 +250,7 @@ pylint-odoo --> Docker Install --> Docker Tests --> Auto-Fix Loop (5 iterations 
 
 ## Commands
 
-### Orchestrator Commands (`/odoo-gsd:*`)
+### Orchestrator Commands (`/amil:*`)
 
 | Command | Description |
 |---------|-------------|
@@ -265,7 +265,7 @@ pylint-odoo --> Docker Install --> Docker Tests --> Auto-Fix Loop (5 iterations 
 | `health` | Diagnose planning directory health |
 | `help` | Show all available commands |
 
-### Pipeline Commands (`/odoo-gen:*`)
+### Pipeline Commands (`/amil:*`)
 
 | Command | Description |
 |---------|-------------|
@@ -313,7 +313,7 @@ uv run pytest tests/test_golden_path.py -v
 uv run pytest tests/test_integration_e2e.py -v
 
 # Coverage report
-uv run pytest tests/ --cov=odoo_gen_utils --cov-report=html
+uv run pytest tests/ --cov=amil_utils --cov-report=html
 ```
 
 **Test Markers:**
@@ -327,7 +327,7 @@ uv run pytest tests/ --cov=odoo_gen_utils --cov-report=html
 
 | Variable | Required | Default | Purpose |
 |----------|----------|---------|---------|
-| `ODOO_GEN_PATH` | No | Config file | Path to pipeline directory |
+| `AMIL_GEN_PATH` | No | Config file | Path to pipeline directory |
 | `GITHUB_TOKEN` | No | — | GitHub API for OCA search (10 req/min) |
 | `CONTEXT7_API_KEY` | No | — | Context7 API for live Odoo docs |
 | `ODOO_VERSION` | No | `19.0` | Target Odoo version |

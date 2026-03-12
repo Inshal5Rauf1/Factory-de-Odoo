@@ -16,7 +16,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from odoo_gen_utils.logic_writer.stub_detector import _find_stub_zones
+from amil_utils.logic_writer.stub_detector import _find_stub_zones
 
 
 def _is_unfilled(content_lines: list[str]) -> bool:

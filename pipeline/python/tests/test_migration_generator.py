@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.spec_differ import diff_specs
+from amil_utils.spec_differ import diff_specs
 
 
 # ---------------------------------------------------------------------------
@@ -241,7 +241,7 @@ class TestPreMigrate:
     """Tests pre-migrate script generation for destructive/possibly-destructive changes."""
 
     def test_removed_field_generates_backup_helper(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -251,7 +251,7 @@ class TestPreMigrate:
         assert "old_ref_backup" in pre or "_backup" in pre
 
     def test_type_change_generates_backup_helper(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_type_change("fee.invoice", "amount", "Float", "Monetary", "possibly_destructive")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -260,7 +260,7 @@ class TestPreMigrate:
         assert "cr.execute" in pre
 
     def test_required_false_to_true_generates_validation_helper(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_required_change("fee.invoice", "due_date", False, True)
         result = generate_migration(diff, "17.0.1.1.0")
@@ -269,7 +269,7 @@ class TestPreMigrate:
         assert "NULL" in pre or "null" in pre.lower() or "IS NULL" in pre.upper() or "COUNT" in pre.upper()
 
     def test_selection_removed_generates_validation_helper(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_selection_removed("fee.invoice", "state")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -278,7 +278,7 @@ class TestPreMigrate:
         assert "cr.execute" in pre
 
     def test_model_removed_generates_backup(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_model_removed("fee.old_model")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -288,7 +288,7 @@ class TestPreMigrate:
 
     def test_pre_only_references_old_schema(self) -> None:
         """Pre-migrate should reference the OLD field name, not new schema."""
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -303,7 +303,7 @@ class TestPostMigrate:
     """Tests post-migrate script generation (data restore, cleanup)."""
 
     def test_removed_field_generates_drop_helper(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -314,7 +314,7 @@ class TestPostMigrate:
         assert "DROP" in post or "drop" in post.lower()
 
     def test_type_change_generates_restore_helper(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_type_change("fee.invoice", "amount", "Float", "Monetary", "possibly_destructive")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -324,7 +324,7 @@ class TestPostMigrate:
         assert "DROP" in post or "drop" in post.lower()
 
     def test_model_removed_generates_drop_table(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_model_removed("fee.old_model")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -340,7 +340,7 @@ class TestBackupRestore:
     """Tests the full backup/restore pattern for type changes and field removal."""
 
     def test_type_change_backup_in_pre_restore_in_post(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_type_change("fee.invoice", "amount", "Float", "Monetary", "possibly_destructive")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -356,7 +356,7 @@ class TestBackupRestore:
         assert "DROP" in post.upper()
 
     def test_field_removal_backup_in_pre_drop_in_post(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -379,7 +379,7 @@ class TestScriptStructure:
     """Tests migrate() entry point, _logger, helper docstrings, DESTRUCTIVE prefixes."""
 
     def test_both_scripts_have_logger_setup(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -388,7 +388,7 @@ class TestScriptStructure:
         assert "_logger = logging.getLogger(__name__)" in result["post_migrate_code"]
 
     def test_both_scripts_have_migrate_entry_point(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -397,7 +397,7 @@ class TestScriptStructure:
         assert "def migrate(cr, version):" in result["post_migrate_code"]
 
     def test_helpers_have_docstrings(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -416,7 +416,7 @@ class TestScriptStructure:
                         break
 
     def test_destructive_helpers_have_prefix(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -425,7 +425,7 @@ class TestScriptStructure:
         assert "DESTRUCTIVE:" in pre
 
     def test_possibly_destructive_helpers_have_prefix(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_required_change("fee.invoice", "due_date", False, True)
         result = generate_migration(diff, "17.0.1.1.0")
@@ -434,7 +434,7 @@ class TestScriptStructure:
         assert "POSSIBLY DESTRUCTIVE:" in pre
 
     def test_helpers_have_logger_info(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -444,7 +444,7 @@ class TestScriptStructure:
         assert "cr.rowcount" in pre or "rowcount" in pre
 
     def test_each_helper_takes_only_cr(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -458,7 +458,7 @@ class TestScriptStructure:
                 assert "(cr):" in stripped, f"Helper '{stripped}' should take only cr"
 
     def test_migrate_calls_all_helpers(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -478,7 +478,7 @@ class TestScriptStructure:
             assert f"{name}(cr)" in migrate_section, f"migrate() should call {name}(cr)"
 
     def test_no_changes_returns_empty_scripts(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _make_diff()
         result = generate_migration(diff, "17.0.1.1.0")
@@ -496,7 +496,7 @@ class TestScriptStructure:
                 pytest.fail(f"No helpers expected in empty diff, found: {stripped}")
 
     def test_no_destructive_changes_returns_migration_not_required(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_non_destructive_change("fee.invoice", "name")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -510,7 +510,7 @@ class TestNonDestructive:
     """Tests that non-destructive changes produce no helpers."""
 
     def test_added_field_no_pre_helper(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_added("fee.invoice", "penalty_amount", "Monetary")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -523,7 +523,7 @@ class TestNonDestructive:
                 pytest.fail(f"No helpers expected for added field, found: {stripped}")
 
     def test_non_destructive_attribute_change_no_helpers(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_non_destructive_change("fee.invoice", "name")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -535,7 +535,7 @@ class TestNonDestructive:
                 pytest.fail(f"No helpers expected for non-destructive change, found: {stripped}")
 
     def test_model_added_no_migration(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_model_added("fee.penalty")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -554,7 +554,7 @@ class TestModelChanges:
     """Tests model added/removed migration generation."""
 
     def test_model_removed_pre_backup(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_model_removed("fee.old_model")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -563,7 +563,7 @@ class TestModelChanges:
         assert "cr.execute" in pre
 
     def test_model_removed_post_drop(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_model_removed("fee.old_model")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -572,7 +572,7 @@ class TestModelChanges:
         assert "DROP" in post.upper()
 
     def test_model_added_no_helpers(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_model_added("fee.penalty")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -592,17 +592,17 @@ class TestTableNameConversion:
     """Tests Odoo table name convention."""
 
     def test_model_to_table_dot_to_underscore(self) -> None:
-        from odoo_gen_utils.migration_generator import _model_to_table
+        from amil_utils.migration_generator import _model_to_table
 
         assert _model_to_table("fee.invoice") == "fee_invoice"
 
     def test_model_to_table_multiple_dots(self) -> None:
-        from odoo_gen_utils.migration_generator import _model_to_table
+        from amil_utils.migration_generator import _model_to_table
 
         assert _model_to_table("fee.invoice.line") == "fee_invoice_line"
 
     def test_model_to_table_no_dot(self) -> None:
-        from odoo_gen_utils.migration_generator import _model_to_table
+        from amil_utils.migration_generator import _model_to_table
 
         assert _model_to_table("account") == "account"
 
@@ -614,35 +614,35 @@ class TestSyntaxValidity:
     """Tests that generated scripts are syntactically valid Python via compile()."""
 
     def test_pre_migrate_valid_python_empty(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _make_diff()
         result = generate_migration(diff, "17.0.1.1.0")
         compile(result["pre_migrate_code"], "pre-migrate.py", "exec")
 
     def test_post_migrate_valid_python_empty(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _make_diff()
         result = generate_migration(diff, "17.0.1.1.0")
         compile(result["post_migrate_code"], "post-migrate.py", "exec")
 
     def test_pre_migrate_valid_python_with_helpers(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
         compile(result["pre_migrate_code"], "pre-migrate.py", "exec")
 
     def test_post_migrate_valid_python_with_helpers(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
         compile(result["post_migrate_code"], "post-migrate.py", "exec")
 
     def test_type_change_scripts_valid_python(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_type_change("fee.invoice", "amount", "Float", "Monetary", "possibly_destructive")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -650,7 +650,7 @@ class TestSyntaxValidity:
         compile(result["post_migrate_code"], "post-migrate.py", "exec")
 
     def test_model_removed_scripts_valid_python(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_model_removed("fee.old_model")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -658,7 +658,7 @@ class TestSyntaxValidity:
         compile(result["post_migrate_code"], "post-migrate.py", "exec")
 
     def test_required_change_scripts_valid_python(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_required_change("fee.invoice", "due_date", False, True)
         result = generate_migration(diff, "17.0.1.1.0")
@@ -666,7 +666,7 @@ class TestSyntaxValidity:
         compile(result["post_migrate_code"], "post-migrate.py", "exec")
 
     def test_selection_removed_scripts_valid_python(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_selection_removed("fee.invoice", "state")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -719,7 +719,7 @@ class TestMultipleChanges:
         )
 
     def test_multiple_helpers_generated(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = self._multi_change_diff()
         result = generate_migration(diff, "17.0.1.1.0")
@@ -734,7 +734,7 @@ class TestMultipleChanges:
         assert helper_count >= 3, f"Expected at least 3 helpers, got {helper_count}"
 
     def test_all_helpers_called_from_migrate(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = self._multi_change_diff()
         result = generate_migration(diff, "17.0.1.1.0")
@@ -754,7 +754,7 @@ class TestMultipleChanges:
             assert f"{name}(cr)" in migrate_section
 
     def test_multiple_changes_valid_python(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = self._multi_change_diff()
         result = generate_migration(diff, "17.0.1.1.0")
@@ -763,7 +763,7 @@ class TestMultipleChanges:
 
     def test_multiple_changes_independent_helpers(self) -> None:
         """Each change should have its own independent helper function."""
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = self._multi_change_diff()
         result = generate_migration(diff, "17.0.1.1.0")
@@ -782,7 +782,7 @@ class TestMigrationResult:
     """Tests the MigrationResult return structure."""
 
     def test_result_has_required_keys(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -793,21 +793,21 @@ class TestMigrationResult:
         assert "version" in result
 
     def test_version_stored(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
         assert result["version"] == "17.0.1.1.0"
 
     def test_migration_required_true_for_destructive(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
         assert result["migration_required"] is True
 
     def test_migration_required_false_for_non_destructive(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_added("fee.invoice", "penalty_amount", "Monetary")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -821,7 +821,7 @@ class TestFileOutput:
     """Tests that generate_migration writes files when output_dir is provided."""
 
     def test_writes_pre_and_post_migrate(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0", output_dir=tmp_path)
@@ -833,7 +833,7 @@ class TestFileOutput:
         assert post_path.exists()
 
     def test_written_files_are_valid_python(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         generate_migration(diff, "17.0.1.1.0", output_dir=tmp_path)
@@ -845,7 +845,7 @@ class TestFileOutput:
         compile(post_path.read_text(encoding="utf-8"), "post-migrate.py", "exec")
 
     def test_result_still_returned_with_output_dir(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0", output_dir=tmp_path)
@@ -854,7 +854,7 @@ class TestFileOutput:
         assert "post_migrate_code" in result
 
     def test_no_files_without_output_dir(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import generate_migration
+        from amil_utils.migration_generator import generate_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_migration(diff, "17.0.1.1.0")
@@ -870,7 +870,7 @@ class TestOdooVersion:
     """Tests Odoo version parsing, validation, and bumping."""
 
     def test_parse_valid_version(self) -> None:
-        from odoo_gen_utils.migration_generator import OdooVersion
+        from amil_utils.migration_generator import OdooVersion
 
         v = OdooVersion.parse("17.0.1.0.0")
         assert v.odoo_major == 17
@@ -880,7 +880,7 @@ class TestOdooVersion:
         assert v.patch == 0
 
     def test_parse_nonzero_segments(self) -> None:
-        from odoo_gen_utils.migration_generator import OdooVersion
+        from amil_utils.migration_generator import OdooVersion
 
         v = OdooVersion.parse("17.0.2.3.1")
         assert v.major == 2
@@ -888,54 +888,54 @@ class TestOdooVersion:
         assert v.patch == 1
 
     def test_parse_invalid_format_raises(self) -> None:
-        from odoo_gen_utils.migration_generator import OdooVersion
+        from amil_utils.migration_generator import OdooVersion
 
         with pytest.raises(ValueError, match="Invalid Odoo version"):
             OdooVersion.parse("1.0.0")
 
     def test_parse_non_numeric_raises(self) -> None:
-        from odoo_gen_utils.migration_generator import OdooVersion
+        from amil_utils.migration_generator import OdooVersion
 
         with pytest.raises(ValueError, match="Invalid Odoo version"):
             OdooVersion.parse("17.0.x.0.0")
 
     def test_str_roundtrip(self) -> None:
-        from odoo_gen_utils.migration_generator import OdooVersion
+        from amil_utils.migration_generator import OdooVersion
 
         original = "17.0.1.2.3"
         v = OdooVersion.parse(original)
         assert str(v) == original
 
     def test_bump_patch(self) -> None:
-        from odoo_gen_utils.migration_generator import OdooVersion
+        from amil_utils.migration_generator import OdooVersion
 
         v = OdooVersion.parse("17.0.1.0.0")
         bumped = v.bump("patch")
         assert str(bumped) == "17.0.1.0.1"
 
     def test_bump_minor(self) -> None:
-        from odoo_gen_utils.migration_generator import OdooVersion
+        from amil_utils.migration_generator import OdooVersion
 
         v = OdooVersion.parse("17.0.1.0.3")
         bumped = v.bump("minor")
         assert str(bumped) == "17.0.1.1.0"
 
     def test_bump_major(self) -> None:
-        from odoo_gen_utils.migration_generator import OdooVersion
+        from amil_utils.migration_generator import OdooVersion
 
         v = OdooVersion.parse("17.0.1.2.3")
         bumped = v.bump("major")
         assert str(bumped) == "17.0.2.0.0"
 
     def test_bump_minor_resets_patch(self) -> None:
-        from odoo_gen_utils.migration_generator import OdooVersion
+        from amil_utils.migration_generator import OdooVersion
 
         v = OdooVersion.parse("17.0.1.0.5")
         bumped = v.bump("minor")
         assert bumped.patch == 0
 
     def test_bump_major_resets_minor_and_patch(self) -> None:
-        from odoo_gen_utils.migration_generator import OdooVersion
+        from amil_utils.migration_generator import OdooVersion
 
         v = OdooVersion.parse("17.0.1.3.5")
         bumped = v.bump("major")
@@ -943,14 +943,14 @@ class TestOdooVersion:
         assert bumped.patch == 0
 
     def test_bump_invalid_type_raises(self) -> None:
-        from odoo_gen_utils.migration_generator import OdooVersion
+        from amil_utils.migration_generator import OdooVersion
 
         v = OdooVersion.parse("17.0.1.0.0")
         with pytest.raises(ValueError, match="bump_type"):
             v.bump("invalid")
 
     def test_comparison_ordering(self) -> None:
-        from odoo_gen_utils.migration_generator import OdooVersion
+        from amil_utils.migration_generator import OdooVersion
 
         v1 = OdooVersion.parse("17.0.1.0.0")
         v2 = OdooVersion.parse("17.0.1.1.0")
@@ -959,7 +959,7 @@ class TestOdooVersion:
 
     def test_odoo_series_preserved(self) -> None:
         """Bumping never changes the Odoo series (17.0)."""
-        from odoo_gen_utils.migration_generator import OdooVersion
+        from amil_utils.migration_generator import OdooVersion
 
         v = OdooVersion.parse("17.0.1.0.0")
         for bump_type in ("patch", "minor", "major"):
@@ -975,7 +975,7 @@ class TestComputeMigrationVersion:
     """Tests auto-computing version from diff severity."""
 
     def test_destructive_bumps_minor(self) -> None:
-        from odoo_gen_utils.migration_generator import compute_migration_version
+        from amil_utils.migration_generator import compute_migration_version
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         # Force same versions so auto-bump kicks in
@@ -986,7 +986,7 @@ class TestComputeMigrationVersion:
         assert version == "17.0.1.1.0"
 
     def test_model_removal_bumps_major(self) -> None:
-        from odoo_gen_utils.migration_generator import compute_migration_version
+        from amil_utils.migration_generator import compute_migration_version
 
         diff = _diff_model_removed("fee.old_model")
         diff["old_version"] = "17.0.1.0.0"
@@ -996,7 +996,7 @@ class TestComputeMigrationVersion:
         assert version == "17.0.2.0.0"
 
     def test_non_destructive_bumps_patch(self) -> None:
-        from odoo_gen_utils.migration_generator import compute_migration_version
+        from amil_utils.migration_generator import compute_migration_version
 
         diff = _diff_field_added("fee.invoice", "new_field", "Char")
         diff["old_version"] = "17.0.1.0.0"
@@ -1007,7 +1007,7 @@ class TestComputeMigrationVersion:
 
     def test_uses_new_version_when_present(self) -> None:
         """When diff has distinct new_version, use it directly."""
-        from odoo_gen_utils.migration_generator import compute_migration_version
+        from amil_utils.migration_generator import compute_migration_version
 
         diff = _make_diff(migration_required=True)
         diff["new_version"] = "17.0.3.0.0"
@@ -1016,7 +1016,7 @@ class TestComputeMigrationVersion:
         assert version == "17.0.3.0.0"
 
     def test_falls_back_to_old_version_bump_when_new_equals_old(self) -> None:
-        from odoo_gen_utils.migration_generator import compute_migration_version
+        from amil_utils.migration_generator import compute_migration_version
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         diff["old_version"] = "17.0.1.0.0"
@@ -1026,7 +1026,7 @@ class TestComputeMigrationVersion:
         assert version == "17.0.1.1.0"
 
     def test_unknown_version_returns_fallback(self) -> None:
-        from odoo_gen_utils.migration_generator import compute_migration_version
+        from amil_utils.migration_generator import compute_migration_version
 
         diff = _make_diff()
         diff["old_version"] = "unknown"
@@ -1042,20 +1042,20 @@ class TestDiscoverMigrations:
     """Tests scanning existing migration directories."""
 
     def test_empty_module_dir(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import discover_migrations
+        from amil_utils.migration_generator import discover_migrations
 
         result = discover_migrations(tmp_path)
         assert result == []
 
     def test_no_migrations_dir(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import discover_migrations
+        from amil_utils.migration_generator import discover_migrations
 
         (tmp_path / "__manifest__.py").touch()
         result = discover_migrations(tmp_path)
         assert result == []
 
     def test_discovers_version_directories(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import discover_migrations
+        from amil_utils.migration_generator import discover_migrations
 
         mig_dir = tmp_path / "migrations"
         (mig_dir / "17.0.1.0.0").mkdir(parents=True)
@@ -1065,7 +1065,7 @@ class TestDiscoverMigrations:
         assert result == ["17.0.1.0.0", "17.0.1.1.0", "17.0.2.0.0"]
 
     def test_sorted_by_version_not_string(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import discover_migrations
+        from amil_utils.migration_generator import discover_migrations
 
         mig_dir = tmp_path / "migrations"
         (mig_dir / "17.0.1.0.0").mkdir(parents=True)
@@ -1076,7 +1076,7 @@ class TestDiscoverMigrations:
         assert result == ["17.0.1.0.0", "17.0.1.2.0", "17.0.1.10.0"]
 
     def test_ignores_non_version_directories(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import discover_migrations
+        from amil_utils.migration_generator import discover_migrations
 
         mig_dir = tmp_path / "migrations"
         (mig_dir / "17.0.1.0.0").mkdir(parents=True)
@@ -1086,7 +1086,7 @@ class TestDiscoverMigrations:
         assert result == ["17.0.1.0.0"]
 
     def test_nonexistent_dir_returns_empty(self) -> None:
-        from odoo_gen_utils.migration_generator import discover_migrations
+        from amil_utils.migration_generator import discover_migrations
 
         result = discover_migrations(Path("/nonexistent/path"))
         assert result == []
@@ -1099,7 +1099,7 @@ class TestGenerateVersionedMigration:
     """Tests the full versioned migration pipeline."""
 
     def test_creates_versioned_directory(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import generate_versioned_migration
+        from amil_utils.migration_generator import generate_versioned_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_versioned_migration(diff, module_dir=tmp_path)
@@ -1111,7 +1111,7 @@ class TestGenerateVersionedMigration:
         assert post_path.exists()
 
     def test_auto_computes_version(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import generate_versioned_migration
+        from amil_utils.migration_generator import generate_versioned_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         diff["old_version"] = "17.0.1.0.0"
@@ -1122,7 +1122,7 @@ class TestGenerateVersionedMigration:
 
     def test_avoids_version_collision(self, tmp_path: Path) -> None:
         """If computed version already exists, bump further."""
-        from odoo_gen_utils.migration_generator import generate_versioned_migration
+        from amil_utils.migration_generator import generate_versioned_migration
 
         # Pre-create the version that would be computed
         mig_dir = tmp_path / "migrations" / "17.0.1.1.0"
@@ -1140,7 +1140,7 @@ class TestGenerateVersionedMigration:
 
     def test_respects_explicit_version(self, tmp_path: Path) -> None:
         """When version override is given, use it."""
-        from odoo_gen_utils.migration_generator import generate_versioned_migration
+        from amil_utils.migration_generator import generate_versioned_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_versioned_migration(
@@ -1149,7 +1149,7 @@ class TestGenerateVersionedMigration:
         assert result["version"] == "17.0.5.0.0"
 
     def test_result_has_all_keys(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import generate_versioned_migration
+        from amil_utils.migration_generator import generate_versioned_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_versioned_migration(diff, module_dir=tmp_path)
@@ -1161,7 +1161,7 @@ class TestGenerateVersionedMigration:
         assert "computed_version" in result
 
     def test_generated_scripts_valid_python(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import generate_versioned_migration
+        from amil_utils.migration_generator import generate_versioned_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         result = generate_versioned_migration(diff, module_dir=tmp_path)
@@ -1169,7 +1169,7 @@ class TestGenerateVersionedMigration:
         compile(result["post_migrate_code"], "post-migrate.py", "exec")
 
     def test_non_destructive_still_bumps_patch(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.migration_generator import generate_versioned_migration
+        from amil_utils.migration_generator import generate_versioned_migration
 
         diff = _diff_field_added("fee.invoice", "new_field", "Char")
         diff["old_version"] = "17.0.1.0.0"
@@ -1178,7 +1178,7 @@ class TestGenerateVersionedMigration:
         assert result["version"] == "17.0.1.0.1"
 
     def test_without_module_dir_no_files(self) -> None:
-        from odoo_gen_utils.migration_generator import generate_versioned_migration
+        from amil_utils.migration_generator import generate_versioned_migration
 
         diff = _diff_field_removed("fee.invoice", "old_ref", "Char")
         diff["old_version"] = "17.0.1.0.0"

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Copy GSD hooks to dist for installation.
+ * Copy Amil hooks to dist for installation.
  */
 
 const fs = require('fs');
@@ -11,9 +11,9 @@ const DIST_DIR = path.join(HOOKS_DIR, 'dist');
 
 // Hooks to copy (pure Node.js, no bundling needed)
 const HOOKS_TO_COPY = [
-  'odoo-gsd-check-update.js',
-  'odoo-gsd-context-monitor.js',
-  'odoo-gsd-statusline.js'
+  'amil-check-update.js',
+  'amil-context-monitor.js',
+  'amil-statusline.js'
 ];
 
 function build() {

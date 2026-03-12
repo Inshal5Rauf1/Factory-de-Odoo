@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Claude Code Statusline - GSD Edition
+// Claude Code Statusline - Amil Edition
 // Shows: model | current task | directory | context usage
 
 const fs = require('fs');
@@ -90,14 +90,14 @@ process.stdin.on('end', () => {
       }
     }
 
-    // GSD update available?
+    // Amil update available?
     let gsdUpdate = '';
-    const cacheFile = path.join(claudeDir, 'cache', 'odoo-gsd-update-check.json');
+    const cacheFile = path.join(claudeDir, 'cache', 'amil-update-check.json');
     if (fs.existsSync(cacheFile)) {
       try {
         const cache = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
         if (cache.update_available) {
-          gsdUpdate = '\x1b[33m⬆ /odoo-gsd:update\x1b[0m │ ';
+          gsdUpdate = '\x1b[33m⬆ /amil:update\x1b[0m │ ';
         }
       } catch (e) { /* update cache JSON parse error — non-critical */ }
     }

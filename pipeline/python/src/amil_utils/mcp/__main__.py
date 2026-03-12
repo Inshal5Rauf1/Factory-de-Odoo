@@ -1,4 +1,4 @@
-"""Allow running the MCP server as a module: python -m odoo_gen_utils.mcp"""
+"""Allow running the MCP server as a module: python -m amil_utils.mcp"""
 from .server import main
 
 main()

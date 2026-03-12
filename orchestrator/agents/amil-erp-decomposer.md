@@ -1,5 +1,5 @@
 ---
-name: odoo-gsd-erp-decomposer
+name: amil-erp-decomposer
 description: Analyze a PRD to identify functional domains and propose Odoo module boundaries
 tools: Read, Write, Bash
 color: green
@@ -7,7 +7,7 @@ model_tier: quality
 input: PRD text + existing_modules list
 output: .planning/research/module-boundaries.json
 skills:
-  - odoo-gsd-erp-decomposer-workflow
+  - amil-erp-decomposer-workflow
 # hooks:
 #   PostToolUse:
 #     - matcher: "Write|Edit"

@@ -1,5 +1,5 @@
 ---
-name: odoo-gen:search
+name: amil:search
 description: Semantically search OCA/GitHub for existing Odoo modules matching your description
 argument-hint: "<search query>"
 ---
@@ -12,5 +12,5 @@ Use `--github` flag to include broader GitHub search results beyond OCA reposito
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gen/agents/odoo-search.md
+@~/.claude/amil/agents/amil-search.md
 </execution_context>

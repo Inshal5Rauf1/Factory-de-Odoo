@@ -1,4 +1,4 @@
-"""Shared pytest fixtures and configuration for the odoo-gen-utils test suite.
+"""Shared pytest fixtures and configuration for the amil-utils test suite.
 
 Provides:
 - Auto-skip fixture for tests marked ``@pytest.mark.docker`` when Docker
@@ -19,7 +19,7 @@ import pytest
 def _is_docker_functional() -> bool:
     """Return True when Docker daemon is reachable and responsive."""
     try:
-        from odoo_gen_utils.validation.docker_runner import check_docker_available
+        from amil_utils.validation.docker_runner import check_docker_available
 
         return check_docker_available()
     except Exception:

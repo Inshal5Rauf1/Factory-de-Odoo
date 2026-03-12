@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.spec_differ import (
+from amil_utils.spec_differ import (
     SpecDiff,
     diff_specs,
     format_human_summary,
@@ -48,7 +48,7 @@ class TestSpecToDiffable:
     """Tests list-to-dict conversion for stable deepdiff paths."""
 
     def test_models_converted_to_dict_keyed_by_name(self, spec_v1: dict) -> None:
-        from odoo_gen_utils.spec_differ import _spec_to_diffable
+        from amil_utils.spec_differ import _spec_to_diffable
 
         result = _spec_to_diffable(spec_v1)
         assert isinstance(result["models"], dict)
@@ -56,7 +56,7 @@ class TestSpecToDiffable:
         assert "fee.payment" in result["models"]
 
     def test_fields_converted_to_dict_keyed_by_name(self, spec_v1: dict) -> None:
-        from odoo_gen_utils.spec_differ import _spec_to_diffable
+        from amil_utils.spec_differ import _spec_to_diffable
 
         result = _spec_to_diffable(spec_v1)
         fields = result["models"]["fee.invoice"]["fields"]
@@ -66,42 +66,42 @@ class TestSpecToDiffable:
         assert "student_id" in fields
 
     def test_field_name_not_duplicated_in_value(self, spec_v1: dict) -> None:
-        from odoo_gen_utils.spec_differ import _spec_to_diffable
+        from amil_utils.spec_differ import _spec_to_diffable
 
         result = _spec_to_diffable(spec_v1)
         amount = result["models"]["fee.invoice"]["fields"]["amount"]
         assert "name" not in amount
 
     def test_model_name_not_duplicated_in_value(self, spec_v1: dict) -> None:
-        from odoo_gen_utils.spec_differ import _spec_to_diffable
+        from amil_utils.spec_differ import _spec_to_diffable
 
         result = _spec_to_diffable(spec_v1)
         invoice = result["models"]["fee.invoice"]
         assert "name" not in invoice
 
     def test_non_model_keys_preserved(self, spec_v1: dict) -> None:
-        from odoo_gen_utils.spec_differ import _spec_to_diffable
+        from amil_utils.spec_differ import _spec_to_diffable
 
         result = _spec_to_diffable(spec_v1)
         assert result["module_name"] == "uni_fee"
         assert result["version"] == "19.0.1.0.0"
 
     def test_cron_jobs_converted_to_dict(self, spec_v1: dict) -> None:
-        from odoo_gen_utils.spec_differ import _spec_to_diffable
+        from amil_utils.spec_differ import _spec_to_diffable
 
         result = _spec_to_diffable(spec_v1)
         assert isinstance(result.get("cron_jobs"), dict)
         assert "check_overdue_invoices" in result["cron_jobs"]
 
     def test_reports_converted_to_dict(self, spec_v1: dict) -> None:
-        from odoo_gen_utils.spec_differ import _spec_to_diffable
+        from amil_utils.spec_differ import _spec_to_diffable
 
         result = _spec_to_diffable(spec_v1)
         assert isinstance(result.get("reports"), dict)
         assert "fee_invoice_report" in result["reports"]
 
     def test_constraints_converted_to_dict(self, spec_v1: dict) -> None:
-        from odoo_gen_utils.spec_differ import _spec_to_diffable
+        from amil_utils.spec_differ import _spec_to_diffable
 
         result = _spec_to_diffable(spec_v1)
         constraints = result["models"]["fee.invoice"].get("constraints")
@@ -109,7 +109,7 @@ class TestSpecToDiffable:
         assert "check_amount_positive" in constraints
 
     def test_approval_levels_converted_to_dict(self, spec_v1: dict) -> None:
-        from odoo_gen_utils.spec_differ import _spec_to_diffable
+        from amil_utils.spec_differ import _spec_to_diffable
 
         result = _spec_to_diffable(spec_v1)
         approval = result["models"]["fee.invoice"].get("approval", {})
@@ -213,80 +213,80 @@ class TestDestructiveness:
     """Tests all three severity levels with exhaustive type change matrix."""
 
     def test_type_widening_char_to_text_non_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("type", "Char", "Text", "type")
         assert result == "non_destructive"
 
     def test_type_widening_integer_to_float_non_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("type", "Integer", "Float", "type")
         assert result == "non_destructive"
 
     def test_type_narrowing_text_to_char_always_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("type", "Text", "Char", "type")
         assert result == "always_destructive"
 
     def test_type_narrowing_float_to_integer_always_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("type", "Float", "Integer", "type")
         assert result == "always_destructive"
 
     def test_type_incompatible_many2one_to_char_always_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("type", "Many2one", "Char", "type")
         assert result == "always_destructive"
 
     def test_type_incompatible_char_to_many2one_always_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("type", "Char", "Many2one", "type")
         assert result == "always_destructive"
 
     def test_type_incompatible_selection_to_integer_always_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("type", "Selection", "Integer", "type")
         assert result == "always_destructive"
 
     def test_type_incompatible_boolean_to_many2one_always_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("type", "Boolean", "Many2one", "type")
         assert result == "always_destructive"
 
     def test_type_monetary_to_integer_always_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("type", "Monetary", "Integer", "type")
         assert result == "always_destructive"
 
     def test_type_text_to_integer_always_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("type", "Text", "Integer", "type")
         assert result == "always_destructive"
 
     def test_float_to_monetary_possibly_destructive(self) -> None:
         """Float->Monetary involves precision change, possibly destructive."""
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("type", "Float", "Monetary", "type")
         assert result == "possibly_destructive"
 
     def test_required_false_to_true_possibly_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("required", False, True, "required")
         assert result == "possibly_destructive"
 
     def test_selection_options_removed_possibly_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness(
             "selection_removed",
@@ -297,25 +297,25 @@ class TestDestructiveness:
         assert result == "possibly_destructive"
 
     def test_field_added_non_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("field_added", None, "new_field", "field")
         assert result == "non_destructive"
 
     def test_string_changed_non_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("attribute", "Old Label", "New Label", "string")
         assert result == "non_destructive"
 
     def test_help_changed_non_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("attribute", "Old Help", "New Help", "help")
         assert result == "non_destructive"
 
     def test_selection_added_non_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness(
             "selection_added",
@@ -326,19 +326,19 @@ class TestDestructiveness:
         assert result == "non_destructive"
 
     def test_required_true_to_false_non_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("required", True, False, "required")
         assert result == "non_destructive"
 
     def test_field_removed_always_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("field_removed", "old_field", None, "field")
         assert result == "always_destructive"
 
     def test_model_removed_always_destructive(self) -> None:
-        from odoo_gen_utils.spec_differ import _classify_destructiveness
+        from amil_utils.spec_differ import _classify_destructiveness
 
         result = _classify_destructiveness("model_removed", "fee.old", None, "model")
         assert result == "always_destructive"

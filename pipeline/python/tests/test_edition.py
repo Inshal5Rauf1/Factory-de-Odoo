@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.edition import (
+from amil_utils.edition import (
     check_enterprise_dependencies,
     load_enterprise_registry,
 )

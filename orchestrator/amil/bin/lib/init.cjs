@@ -24,8 +24,8 @@ function cmdInitExecutePhase(cwd, phase, raw) {
 
   const result = {
     // Models
-    executor_model: resolveModelInternal(cwd, 'odoo-gsd-executor'),
-    verifier_model: resolveModelInternal(cwd, 'odoo-gsd-verifier'),
+    executor_model: resolveModelInternal(cwd, 'amil-executor'),
+    verifier_model: resolveModelInternal(cwd, 'amil-verifier'),
 
     // Config flags
     commit_docs: config.commit_docs,
@@ -96,9 +96,9 @@ function cmdInitPlanPhase(cwd, phase, raw) {
 
   const result = {
     // Models
-    researcher_model: resolveModelInternal(cwd, 'odoo-gsd-phase-researcher'),
-    planner_model: resolveModelInternal(cwd, 'odoo-gsd-planner'),
-    checker_model: resolveModelInternal(cwd, 'odoo-gsd-plan-checker'),
+    researcher_model: resolveModelInternal(cwd, 'amil-phase-researcher'),
+    planner_model: resolveModelInternal(cwd, 'amil-planner'),
+    checker_model: resolveModelInternal(cwd, 'amil-plan-checker'),
 
     // Workflow flags
     research_enabled: config.research,
@@ -163,7 +163,7 @@ function cmdInitNewProject(cwd, raw) {
 
   // Detect Brave Search API key availability
   const homedir = require('os').homedir();
-  const braveKeyFile = path.join(homedir, '.odoo-gsd', 'brave_api_key');
+  const braveKeyFile = path.join(homedir, '.amil', 'brave_api_key');
   const hasBraveSearch = !!(process.env.BRAVE_API_KEY || fs.existsSync(braveKeyFile));
 
   // Detect existing code
@@ -179,9 +179,9 @@ function cmdInitNewProject(cwd, raw) {
 
   const result = {
     // Models
-    researcher_model: resolveModelInternal(cwd, 'odoo-gsd-project-researcher'),
-    synthesizer_model: resolveModelInternal(cwd, 'odoo-gsd-research-synthesizer'),
-    roadmapper_model: resolveModelInternal(cwd, 'odoo-gsd-roadmapper'),
+    researcher_model: resolveModelInternal(cwd, 'amil-project-researcher'),
+    synthesizer_model: resolveModelInternal(cwd, 'amil-research-synthesizer'),
+    roadmapper_model: resolveModelInternal(cwd, 'amil-roadmapper'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -216,9 +216,9 @@ function cmdInitNewMilestone(cwd, raw) {
 
   const result = {
     // Models
-    researcher_model: resolveModelInternal(cwd, 'odoo-gsd-project-researcher'),
-    synthesizer_model: resolveModelInternal(cwd, 'odoo-gsd-research-synthesizer'),
-    roadmapper_model: resolveModelInternal(cwd, 'odoo-gsd-roadmapper'),
+    researcher_model: resolveModelInternal(cwd, 'amil-project-researcher'),
+    synthesizer_model: resolveModelInternal(cwd, 'amil-research-synthesizer'),
+    roadmapper_model: resolveModelInternal(cwd, 'amil-roadmapper'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -262,10 +262,10 @@ function cmdInitQuick(cwd, description, raw) {
 
   const result = {
     // Models
-    planner_model: resolveModelInternal(cwd, 'odoo-gsd-planner'),
-    executor_model: resolveModelInternal(cwd, 'odoo-gsd-executor'),
-    checker_model: resolveModelInternal(cwd, 'odoo-gsd-plan-checker'),
-    verifier_model: resolveModelInternal(cwd, 'odoo-gsd-verifier'),
+    planner_model: resolveModelInternal(cwd, 'amil-planner'),
+    executor_model: resolveModelInternal(cwd, 'amil-executor'),
+    checker_model: resolveModelInternal(cwd, 'amil-plan-checker'),
+    verifier_model: resolveModelInternal(cwd, 'amil-verifier'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -334,8 +334,8 @@ function cmdInitVerifyWork(cwd, phase, raw) {
 
   const result = {
     // Models
-    planner_model: resolveModelInternal(cwd, 'odoo-gsd-planner'),
-    checker_model: resolveModelInternal(cwd, 'odoo-gsd-plan-checker'),
+    planner_model: resolveModelInternal(cwd, 'amil-planner'),
+    checker_model: resolveModelInternal(cwd, 'amil-plan-checker'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -566,7 +566,7 @@ function cmdInitMapCodebase(cwd, raw) {
 
   const result = {
     // Models
-    mapper_model: resolveModelInternal(cwd, 'odoo-gsd-codebase-mapper'),
+    mapper_model: resolveModelInternal(cwd, 'amil-codebase-mapper'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -650,8 +650,8 @@ function cmdInitProgress(cwd, raw) {
 
   const result = {
     // Models
-    executor_model: resolveModelInternal(cwd, 'odoo-gsd-executor'),
-    planner_model: resolveModelInternal(cwd, 'odoo-gsd-planner'),
+    executor_model: resolveModelInternal(cwd, 'amil-executor'),
+    planner_model: resolveModelInternal(cwd, 'amil-planner'),
 
     // Config
     commit_docs: config.commit_docs,

@@ -16,8 +16,8 @@ import sys
 import time
 from pathlib import Path
 
-from odoo_gen_utils.validation.log_parser import parse_install_log, parse_test_log
-from odoo_gen_utils.validation.types import InstallResult, Result, TestResult
+from amil_utils.validation.log_parser import parse_install_log, parse_test_log
+from amil_utils.validation.types import InstallResult, Result, TestResult
 
 logger = logging.getLogger(__name__)
 
@@ -61,19 +61,19 @@ def get_compose_file() -> Path:
     """Return the path to the docker-compose.yml shipped with the package.
 
     Resolution order:
-    1. ``ODOO_GEN_COMPOSE_FILE`` environment variable (explicit override).
-    2. ``importlib.resources`` lookup inside ``odoo_gen_utils/data/``.
+    1. ``AMIL_COMPOSE_FILE`` environment variable (explicit override).
+    2. ``importlib.resources`` lookup inside ``amil_utils/data/``.
 
     Returns:
         Path to docker-compose.yml.
     """
-    env_path = os.environ.get("ODOO_GEN_COMPOSE_FILE")
+    env_path = os.environ.get("AMIL_COMPOSE_FILE")
     if env_path:
         return Path(env_path)
 
     from importlib.resources import files
 
-    ref = files("odoo_gen_utils").joinpath("data", "docker-compose.yml")
+    ref = files("amil_utils").joinpath("data", "docker-compose.yml")
     return Path(str(ref))
 
 

@@ -69,11 +69,11 @@ Progress: [████████░░] 83%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Fork GSD rather than extend (deep structural changes needed)
+- Fork Amil rather than extend (deep structural changes needed)
 - Sequential module generation (belt needs exclusive Docker access)
 - Tiered registry injection from day one (context window management)
-- Renamed all gsd- prefixes to odoo-gsd- for full identity separation (Phase 1, Plan 1)
-- Config directory changed from .gsd/ to .odoo-gsd/ (Phase 1, Plan 1)
+- Renamed all gsd- prefixes to amil- for full identity separation (Phase 1, Plan 1)
+- Config directory changed from .gsd/ to .amil/ (Phase 1, Plan 1)
 - install.js rewritten as Claude-Code-only, 407 LOC (Phase 1, Plan 1)
 - [Phase 1]: Inline atomicWriteJSON in module-status.cjs for module independence
 - [Phase 1]: Tier grouping by dependency depth: 0=foundation, 1=core, 2=operations, 3+=communication
@@ -81,7 +81,7 @@ Recent decisions affecting current work:
 - [Phase 1]: Odoo config block opt-in, version stored as string 17.0/18.0
 - [Phase 2]: Recursive BFS for transitive deps (all reachable, not just depth 2)
 - [Phase 2]: whatsapp added to global VALID_NOTIFICATION_CHANNELS
-- [Phase 02]: Agent skills follow odoo-gsd-*-workflow naming convention per test suite
+- [Phase 02]: Agent skills follow amil-*-workflow naming convention per test suite
 - [Phase 02]: Decomposition merge as standalone CJS module for testability
 - [Phase 02]: Computation chains attached by step prefix matching
 - [Phase 03]: Questioner agent presents 1-2 questions at a time with context hints
@@ -103,7 +103,7 @@ None yet.
 
 ### Blockers/Concerns
 
-- odoo-gen belt is not installed -- all belt integration (Phase 5) built against mock/assumptions
+- amil belt is not installed -- all belt integration (Phase 5) built against mock/assumptions
 - Belt manifest schema undefined -- adapter pattern needed for Phase 5
 
 ## Session Continuity

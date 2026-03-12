@@ -1,5 +1,5 @@
 ---
-name: odoo-gsd-spec-reviewer
+name: amil-spec-reviewer
 description: Present coherence report results and spec.json summary with Odoo-specific context
 tools: Read, Bash
 color: magenta
@@ -7,7 +7,7 @@ model_tier: quality
 input: Coherence report JSON + spec.json path + module name
 output: Human-readable coherence summary and spec overview (prompt response)
 skills:
-  - odoo-gsd-spec-reviewer-workflow
+  - amil-spec-reviewer-workflow
 ---
 
 # Spec Reviewer

@@ -29,7 +29,7 @@ created: 2026-03-05
 
 - **After every task commit:** Run `node --test tests/{changed-module}.test.cjs`
 - **After every plan wave:** Run `npm test`
-- **Before `/gsd:verify-work`:** Full suite must be green
+- **Before `/amil:verify-work`:** Full suite must be green
 - **Max feedback latency:** 5 seconds
 
 ---
@@ -54,7 +54,7 @@ created: 2026-03-05
 | DEPG-03 | Circular dependency detection | unit | `node --test tests/dependency-graph.test.cjs` | No - Wave 0 |
 | DEPG-04 | Tier grouping | unit | `node --test tests/dependency-graph.test.cjs` | No - Wave 0 |
 | DEPG-05 | Generation blocking on dependency status | integration | `node --test tests/dependency-graph.test.cjs` | No - Wave 0 |
-| FORK-10 | Zero remaining old references | smoke | `grep -r "get-shit-done\|/gsd:" --include="*.cjs" --include="*.md" --include="*.js" \| grep -v node_modules` | No - Wave 0 |
+| FORK-10 | Zero remaining old references | smoke | `grep -r "get-shit-done\|/amil:" --include="*.cjs" --include="*.md" --include="*.js" \| grep -v node_modules` | No - Wave 0 |
 | CONF-01 | Odoo config block schema | unit | `node --test tests/config.test.cjs` | Yes (extend) |
 | CONF-02 | Odoo config validation | unit | `node --test tests/config.test.cjs` | Yes (extend) |
 | TEST-05 | Existing tests pass with renamed prefix | smoke | `npm test` | Yes (update) |
@@ -68,7 +68,7 @@ created: 2026-03-05
 - [ ] `tests/registry.test.cjs` — covers REG-01 through REG-07
 - [ ] `tests/module-status.test.cjs` — covers STAT-01 through STAT-04
 - [ ] `tests/dependency-graph.test.cjs` — covers DEPG-01 through DEPG-05
-- [ ] Update `tests/helpers.cjs` — TOOLS_PATH must point to renamed `odoo-gsd/bin/odoo-gsd-tools.cjs`
+- [ ] Update `tests/helpers.cjs` — TOOLS_PATH must point to renamed `amil/bin/amil-tools.cjs`
 
 ---
 

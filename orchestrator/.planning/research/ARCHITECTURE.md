@@ -5,13 +5,13 @@
 
 ## Recommended Architecture
 
-odoo-gsd is a three-tier orchestration system that decomposes an ERP PRD into 20+ Odoo modules and drives their generation sequentially through a belt (odoo-gen), maintaining cross-module coherence via a shared model registry.
+amil is a three-tier orchestration system that decomposes an ERP PRD into 20+ Odoo modules and drives their generation sequentially through a belt (amil), maintaining cross-module coherence via a shared model registry.
 
 ```
                     Human (PRD + decisions)
                            |
                     +--------------+
-                    |   odoo-gsd   |  Layer 1: Orchestration
+                    |   amil   |  Layer 1: Orchestration
                     |  CLI + State |
                     +------+-------+
                            |
@@ -27,12 +27,12 @@ odoo-gsd is a three-tier orchestration system that decomposes an ERP PRD into 20
             |         | State   |   (fresh 200K context)
             |         | Files   |         |
             |         +---------+   +-----+-----+
-            |                       |  odoo-gen  |  Layer 2: Generation
+            |                       |  amil  |  Layer 2: Generation
             |                       |  (belt)    |
             |                       +-----+------+
             |                             |
             |                       +-----+------+
-            |                       | odoo-gen-  |  Layer 3: Utilities
+            |                       | amil-  |  Layer 3: Utilities
             |                       | utils      |
             |                       +------------+
 ```
@@ -42,14 +42,14 @@ odoo-gsd is a three-tier orchestration system that decomposes an ERP PRD into 20
 | Component | Responsibility | Communicates With | Data Format |
 |-----------|---------------|-------------------|-------------|
 | **CLI Router** (`bin/gsd-tools.cjs`) | Parse commands, dispatch to lib modules, JSON/raw output | All lib modules | JSON stdout, `@file:` for large payloads |
-| **Command Files** (`commands/odoo-gsd/*.md`) | Markdown-defined slash commands with frontmatter config; orchestrate workflow execution | Workflow files (via `@` references), CLI Router | Markdown with YAML frontmatter |
+| **Command Files** (`commands/amil/*.md`) | Markdown-defined slash commands with frontmatter config; orchestrate workflow execution | Workflow files (via `@` references), CLI Router | Markdown with YAML frontmatter |
 | **Workflow Files** (`workflows/*.md`) | Multi-step orchestration scripts that coordinate agents, state reads/writes, human checkpoints | Agents (via Task()), State Manager, CLI Router | Markdown instructions |
 | **State Manager** (`bin/lib/state.cjs` + extensions) | Read/write STATE.md, frontmatter sync, progression engine | CLI Router, Workflow Files | STATE.md (markdown + YAML frontmatter) |
 | **Config Manager** (`bin/lib/config.cjs`) | Read/write `.planning/config.json`, schema validation, defaults | CLI Router, all components needing config | JSON |
 | **Registry Manager** (`bin/lib/registry.cjs` -- NEW) | Model registry CRUD, atomic updates, rollback, cross-model validation, tiered injection | CLI Router, Workflow Files, Coherence Checker | `model_registry.json` |
 | **Module Status Tracker** (NEW, in registry or separate) | Module lifecycle transitions (planned -> spec_approved -> generated -> checked -> shipped) | CLI Router, Workflow Files | `module_status.json` |
 | **Coherence Checker** (agent + lib support) | Validate Many2one targets, computation chains, security scopes, duplicate models | Plan-module workflow, Check-module workflow | `coherence-report.json` |
-| **Belt Invoker** (within generate-module workflow) | Prepare spec + registry injection, spawn odoo-gen as Task(), parse manifest, update registry | odoo-gen (via Task()), Registry Manager | `spec.json` in, `generation-manifest.json` out |
+| **Belt Invoker** (within generate-module workflow) | Prepare spec + registry injection, spawn amil as Task(), parse manifest, update registry | amil (via Task()), Registry Manager | `spec.json` in, `generation-manifest.json` out |
 | **Agent Files** (`agents/*.md`) | Persona definitions with role, constraints, I/O format for Task() subagents | Spawned by workflows via Task() | Markdown prompts |
 | **Hooks** (`hooks/*.js`) | Statusline, context monitoring, update checking | CLI Router (read state), Claude Code hook system | JS executing in hook lifecycle |
 | **Phase Manager** (`bin/lib/phase.cjs`) | Phase directory CRUD, plan indexing, completion tracking | CLI Router, State Manager | Filesystem directories + markdown files |
@@ -57,7 +57,7 @@ odoo-gsd is a three-tier orchestration system that decomposes an ERP PRD into 20
 
 ### Data Flow
 
-#### 1. Project Initialization Flow (`/odoo-gsd:new-erp`)
+#### 1. Project Initialization Flow (`/amil:new-erp`)
 
 ```
 Human provides PRD
@@ -88,7 +88,7 @@ Workflow: new-erp.md
         +-- .planning/modules/{module}/ directories
 ```
 
-#### 2. Module Generation Flow (`/odoo-gsd:generate-module`)
+#### 2. Module Generation Flow (`/amil:generate-module`)
 
 ```
 Workflow reads:
@@ -104,7 +104,7 @@ Prepare belt context:
     * Names-only for rest
   |
   v
-Task() --> odoo-gen pipeline (fresh 200K context)
+Task() --> amil pipeline (fresh 200K context)
   - Belt reads spec.json
   - Belt generates module files in addons/{module}/
   - Belt produces generation-manifest.json
@@ -292,11 +292,11 @@ function buildTieredRegistry(registry, moduleSpec) {
 
 ### Pattern 3: Task() Subagent with Fresh Context
 
-**What:** GSD's existing Task() mechanism spawns a subagent with a fresh 200K context window. odoo-gsd uses this for belt invocation, ensuring the generation pipeline is not polluted by orchestration state.
+**What:** Amil's existing Task() mechanism spawns a subagent with a fresh 200K context window. amil uses this for belt invocation, ensuring the generation pipeline is not polluted by orchestration state.
 
 **When:** Every belt invocation (`generate-module`), every parallel research agent spawn (`new-erp`).
 
-**Why:** The belt (odoo-gen) has its own 8-agent pipeline with 13 knowledge files. Sharing context with the orchestrator would leave insufficient room for the belt's own context needs.
+**Why:** The belt (amil) has its own 8-agent pipeline with 13 knowledge files. Sharing context with the orchestrator would leave insufficient room for the belt's own context needs.
 
 ```markdown
 # In generate-module workflow:
@@ -304,7 +304,7 @@ Task(
   prompt: "Generate Odoo module from spec.json.
            Read spec at .planning/modules/{module}/spec.json.
            The _available_models section contains the current model registry.
-           Follow the /odoo-gen:generate workflow.
+           Follow the /amil:generate workflow.
            Write output to addons/{module_name}/.",
   subagent_type: "executor",
   model_profile: "quality"
@@ -328,7 +328,7 @@ checked ----[complete-phase / human ship]-----------> shipped
 Re-plan: Any status -> planned (explicit command, resets spec)
 ```
 
-### Pattern 5: CLI Router Dispatch Pattern (existing GSD)
+### Pattern 5: CLI Router Dispatch Pattern (existing Amil)
 
 **What:** `gsd-tools.cjs` is a ~2000-line CLI router that dispatches subcommands to lib modules. Each lib module exports pure functions that take `(cwd, ...args)` and call `output()` or `error()`. Output is always JSON (or `--raw` for single values).
 
@@ -355,7 +355,7 @@ Command File (markdown)
 
 **Why bad:** Bypasses atomic write protection, version bumping, and validation. Two concurrent workflows could corrupt the registry. No rollback trail.
 
-**Instead:** Always use `odoo-gsd-tools registry update` and `odoo-gsd-tools registry read` CLI commands.
+**Instead:** Always use `amil-tools registry update` and `amil-tools registry read` CLI commands.
 
 ### Anti-Pattern 2: Full Registry Injection
 
@@ -379,7 +379,7 @@ Command File (markdown)
 
 **Why bad:** The registry would grow to megabytes, far exceeding practical context injection size. The generated code lives in `addons/{module}/` on disk -- the registry tracks metadata (model names, field types, dependencies), not code.
 
-**Instead:** Registry stores structural metadata only. Code-level analysis uses odoo-gen-utils AST tools when needed.
+**Instead:** Registry stores structural metadata only. Code-level analysis uses amil-utils AST tools when needed.
 
 ### Anti-Pattern 5: Skipping Coherence Checks
 
@@ -430,7 +430,7 @@ Phase 4: Polish (depends on Phases 1-3)
 - Registry Manager is the keystone -- nearly every subsequent component reads or writes the registry. Build and test it first.
 - Config extension is needed before any Odoo-specific workflow can read settings.
 - CLAUDE.md should be written after commands are named but before workflows are tested (it guides Claude Code behavior).
-- Belt invocation (step 9) is the highest-risk component -- it crosses the odoo-gsd/odoo-gen boundary. All preceding components should be solid before tackling it.
+- Belt invocation (step 9) is the highest-risk component -- it crosses the amil/amil boundary. All preceding components should be solid before tackling it.
 - Tests are listed last but should be written alongside each component (TDD). The listing reflects the integration test suite.
 
 ## Scalability Considerations
@@ -446,7 +446,7 @@ Phase 4: Polish (depends on Phases 1-3)
 
 ## Sources
 
-- GSD codebase analysis: `bin/lib/core.cjs`, `bin/lib/state.cjs`, `bin/lib/config.cjs`, `bin/gsd-tools.cjs` (HIGH confidence -- direct code reading)
-- ODOO_GSD_PRD.md: Architecture specification, state file schemas, workflow definitions (HIGH confidence -- authoritative project document)
-- GSD command/workflow pattern: `commands/gsd/execute-phase.md` pattern of markdown + frontmatter + `@` references (HIGH confidence -- direct code reading)
+- Amil codebase analysis: `bin/lib/core.cjs`, `bin/lib/state.cjs`, `bin/lib/config.cjs`, `bin/gsd-tools.cjs` (HIGH confidence -- direct code reading)
+- AMIL_PRD.md: Architecture specification, state file schemas, workflow definitions (HIGH confidence -- authoritative project document)
+- Amil command/workflow pattern: `commands/gsd/execute-phase.md` pattern of markdown + frontmatter + `@` references (HIGH confidence -- direct code reading)
 - Odoo module structure knowledge: Training data on Odoo 17.0 module patterns, `__manifest__.py`, model inheritance, security groups (MEDIUM confidence -- training data, needs verification against Odoo 17.0 docs during implementation)

@@ -1,8 +1,8 @@
 ---
-name: odoo-gen:new
+name: amil:new
 description: Scaffold a new Odoo 17.0 module from a natural language description
 argument-hint: "<module description>"
-agent: odoo-scaffold
+agent: amil-scaffold
 allowed-tools:
   - Read
   - Write
@@ -20,7 +20,7 @@ Output follows OCA directory structure with real content (not stubs): models, vi
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gen/workflows/scaffold.md
+@~/.claude/amil/workflows/scaffold.md
 </execution_context>
 
 <process>
@@ -33,7 +33,7 @@ Output follows OCA directory structure with real content (not stubs): models, vi
    - Security groups (User/Manager hierarchy)
    - Menu structure
 3. Show inferred specification for user confirmation
-4. On approval, render all templates via odoo-gen-utils:
+4. On approval, render all templates via amil-utils:
    - `__manifest__.py` with correct metadata and dependencies
    - `__init__.py` files for package structure
    - Model Python files (one per model)

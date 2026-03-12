@@ -7,11 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.iterative.affected import (
+from amil_utils.iterative.affected import (
     AffectedStages,
     determine_affected_stages,
 )
-from odoo_gen_utils.spec_differ import SpecDiff, diff_specs
+from amil_utils.spec_differ import SpecDiff, diff_specs
 
 
 FIXTURES = Path(__file__).parent / "fixtures"

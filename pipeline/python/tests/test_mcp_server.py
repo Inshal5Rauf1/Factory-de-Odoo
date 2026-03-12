@@ -27,7 +27,7 @@ class TestOdooConfig:
         monkeypatch.setenv("ODOO_USER", "myuser")
         monkeypatch.setenv("ODOO_API_KEY", "myapikey")
 
-        from odoo_gen_utils.mcp.odoo_client import OdooConfig
+        from amil_utils.mcp.odoo_client import OdooConfig
 
         config = OdooConfig(
             url=os.environ.get("ODOO_URL", "http://localhost:8069"),
@@ -42,7 +42,7 @@ class TestOdooConfig:
 
     def test_odoo_config_defaults(self):
         """OdooConfig uses sane defaults when env vars are absent."""
-        from odoo_gen_utils.mcp.odoo_client import OdooConfig
+        from amil_utils.mcp.odoo_client import OdooConfig
 
         config = OdooConfig(
             url=os.environ.get("ODOO_URL", "http://localhost:8069"),
@@ -60,7 +60,7 @@ class TestOdooClient:
 
     def _make_client(self, uid=2):
         """Create OdooClient with mocked ServerProxy objects."""
-        from odoo_gen_utils.mcp.odoo_client import OdooClient, OdooConfig
+        from amil_utils.mcp.odoo_client import OdooClient, OdooConfig
 
         config = OdooConfig(
             url="http://localhost:8069",
@@ -97,7 +97,7 @@ class TestOdooClient:
 
     def test_odoo_client_authenticate_failure(self):
         """OdooClient.authenticate() raises ConnectionError if uid is falsy."""
-        from odoo_gen_utils.mcp.odoo_client import OdooClient, OdooConfig
+        from amil_utils.mcp.odoo_client import OdooClient, OdooConfig
 
         config = OdooConfig(
             url="http://localhost:8069",
@@ -170,11 +170,11 @@ def mock_client():
 def patched_get_client(mock_client):
     """Patch _get_client to return our mock and reset the cached _client."""
     with patch(
-        "odoo_gen_utils.mcp.server._get_client",
+        "amil_utils.mcp.server._get_client",
         return_value=mock_client,
     ):
         # Also reset the module-level singleton so tests are isolated
-        import odoo_gen_utils.mcp.server as srv
+        import amil_utils.mcp.server as srv
         original = srv._client
         srv._client = None
         yield mock_client
@@ -184,7 +184,7 @@ def patched_get_client(mock_client):
 @pytest.fixture
 def server(patched_get_client):
     """Import and return the FastMCP server instance (with patched client)."""
-    from odoo_gen_utils.mcp.server import mcp
+    from amil_utils.mcp.server import mcp
     return mcp
 
 

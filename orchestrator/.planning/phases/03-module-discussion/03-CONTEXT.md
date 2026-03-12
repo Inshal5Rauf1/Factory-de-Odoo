@@ -7,7 +7,7 @@
 <domain>
 ## Phase Boundary
 
-Phase 3 creates the `/odoo-gsd:discuss-module` command and workflow that:
+Phase 3 creates the `/amil:discuss-module` command and workflow that:
 1. Detects module type from name (with user confirmation)
 2. Loads type-specific question templates
 3. Runs an interactive Q&A session via a questioner agent
@@ -36,7 +36,7 @@ Phase 3 creates the `/odoo-gsd:discuss-module` command and workflow that:
 - 9 module types: core, student, fee, exam, faculty, hr, timetable, notification, portal
 - 1 generic fallback for unrecognized types (asks about models, workflows, security, integrations)
 - 8-12 questions per type
-- Stored as: Single JSON file `odoo-gsd/references/module-questions.json`
+- Stored as: Single JSON file `amil/references/module-questions.json`
 - Format: `{ "fee": { "questions": [...], "context_hints": [...] } }`
 - Questions are domain-specific with Odoo knowledge baked in:
   - fee: monetary vs float, penalty method, payment channels, account.payment integration
@@ -53,7 +53,7 @@ Phase 3 creates the `/odoo-gsd:discuss-module` command and workflow that:
 
 **Locked: Single questioner agent, adaptive ordering, no researcher during discussion**
 
-- One `odoo-gsd-module-questioner` agent handles the full Q&A session
+- One `amil-module-questioner` agent handles the full Q&A session
 - Agent receives: module type, question template, decomposition.json entry (models/depends/complexity), config.json odoo block
 - Adaptive: agent uses template as guide but can skip irrelevant questions or ask follow-ups
 - Example: if config.json has multi_company=false, skip campus partitioning questions
@@ -62,7 +62,7 @@ Phase 3 creates the `/odoo-gsd:discuss-module` command and workflow that:
 
 ### Researcher Agent Scope (AGNT-01)
 
-**Locked: Enhance existing odoo-gsd-module-researcher.md, used in Phase 4 not Phase 3**
+**Locked: Enhance existing amil-module-researcher.md, used in Phase 4 not Phase 3**
 
 - The Phase 2 OCA checker agent already exists — extend it with per-module research capabilities
 - Add: field type recommendations, security pattern lookup, view inheritance patterns, Odoo pitfalls per domain

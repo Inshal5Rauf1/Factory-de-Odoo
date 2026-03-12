@@ -12,7 +12,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from odoo_gen_utils.validation.semantic import (
+from amil_utils.validation.semantic import (
     ValidationIssue,
     _check_e24,
     _check_e25,

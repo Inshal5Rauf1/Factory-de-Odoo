@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from odoo_gen_utils.iterative.merge import (
+from amil_utils.iterative.merge import (
     extract_filled_stubs,
     inject_stubs_into,
 )

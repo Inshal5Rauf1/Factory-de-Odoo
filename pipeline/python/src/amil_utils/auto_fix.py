@@ -23,8 +23,8 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-from odoo_gen_utils.validation.pylint_runner import run_pylint_odoo
-from odoo_gen_utils.validation.types import Result, Violation
+from amil_utils.validation.pylint_runner import run_pylint_odoo
+from amil_utils.validation.types import Result, Violation
 
 # -------------------------------------------------------------------------
 # Constants

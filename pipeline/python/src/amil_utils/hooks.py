@@ -16,9 +16,9 @@ from typing import Protocol, runtime_checkable
 
 import click
 
-from odoo_gen_utils.manifest import GenerationManifest, StageResult, save_manifest
+from amil_utils.manifest import GenerationManifest, StageResult, save_manifest
 
-logger = logging.getLogger("odoo-gen.hooks")
+logger = logging.getLogger("amil.hooks")
 
 
 # ---------------------------------------------------------------------------

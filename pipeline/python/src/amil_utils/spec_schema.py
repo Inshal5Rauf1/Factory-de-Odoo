@@ -9,7 +9,7 @@ prefixed field names.
 
 Usage::
 
-    from odoo_gen_utils.spec_schema import validate_spec
+    from amil_utils.spec_schema import validate_spec
     spec = validate_spec(raw_dict)  # Returns ModuleSpec or raises
 """
 

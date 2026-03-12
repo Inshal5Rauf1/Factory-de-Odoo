@@ -1,5 +1,5 @@
 ---
-name: gsd:verify-work
+name: amil:verify-work
 description: Validate built features through conversational UAT
 argument-hint: "[phase number, e.g., '4']"
 allowed-tools:
@@ -16,12 +16,12 @@ Validate built features through conversational testing with persistent state.
 
 Purpose: Confirm what Claude built actually works from user's perspective. One test at a time, plain text responses, no interrogation. When issues are found, automatically diagnose, plan fixes, and prepare for execution.
 
-Output: {phase_num}-UAT.md tracking all test results. If issues found: diagnosed gaps, verified fix plans ready for /odoo-gsd:execute-phase
+Output: {phase_num}-UAT.md tracking all test results. If issues found: diagnosed gaps, verified fix plans ready for /amil:execute-phase
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gsd/workflows/verify-work.md
-@~/.claude/odoo-gsd/templates/UAT.md
+@~/.claude/amil/workflows/verify-work.md
+@~/.claude/amil/templates/UAT.md
 </execution_context>
 
 <context>
@@ -33,6 +33,6 @@ Context files are resolved inside the workflow (`init verify-work`) and delegate
 </context>
 
 <process>
-Execute the verify-work workflow from @~/.claude/odoo-gsd/workflows/verify-work.md end-to-end.
+Execute the verify-work workflow from @~/.claude/amil/workflows/verify-work.md end-to-end.
 Preserve all workflow gates (session management, test presentation, diagnosis, fix planning, routing).
 </process>

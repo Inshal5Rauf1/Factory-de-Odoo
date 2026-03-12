@@ -7,9 +7,9 @@ import logging
 import re
 from typing import Any
 
-from odoo_gen_utils.preprocessors._registry import register_preprocessor
-from odoo_gen_utils.utils.copy import deep_copy_model, merge_override_source
-from odoo_gen_utils.utils.validate import validate_identifier, validate_message
+from amil_utils.preprocessors._registry import register_preprocessor
+from amil_utils.utils.copy import deep_copy_model, merge_override_source
+from amil_utils.utils.validate import validate_identifier, validate_message
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,5 @@
 <purpose>
-Interactive configuration of GSD workflow agents (research, plan_check, verifier) and model profile selection via multi-question prompt. Updates .planning/config.json with user preferences. Optionally saves settings as global defaults (~/.gsd/defaults.json) for future projects.
+Interactive configuration of Amil workflow agents (research, plan_check, verifier) and model profile selection via multi-question prompt. Updates .planning/config.json with user preferences. Optionally saves settings as global defaults (~/.gsd/defaults.json) for future projects.
 </purpose>
 
 <required_reading>
@@ -12,8 +12,8 @@ Read all files referenced by the invoking prompt's execution_context before star
 Ensure config exists and load current state:
 
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-ensure-section
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" state load)
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config-ensure-section
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" state load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -179,7 +179,7 @@ Display:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SETTINGS UPDATED
+ Amil ► SETTINGS UPDATED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 | Setting              | Value |
@@ -193,13 +193,13 @@ Display:
 | Git Branching        | {None/Per Phase/Per Milestone} |
 | Saved as Defaults    | {Yes/No} |
 
-These settings apply to future /odoo-gsd:plan-phase and /odoo-gsd:execute-phase runs.
+These settings apply to future /amil:plan-phase and /amil:execute-phase runs.
 
 Quick commands:
-- /odoo-gsd:set-profile <profile> — switch model profile
-- /odoo-gsd:plan-phase --research — force research
-- /odoo-gsd:plan-phase --skip-research — skip research
-- /odoo-gsd:plan-phase --skip-verify — skip plan check
+- /amil:set-profile <profile> — switch model profile
+- /amil:plan-phase --research — force research
+- /amil:plan-phase --skip-research — skip research
+- /amil:plan-phase --skip-verify — skip plan check
 ```
 </step>
 

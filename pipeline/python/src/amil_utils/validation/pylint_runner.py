@@ -12,7 +12,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from odoo_gen_utils.validation.types import Result, Violation
+from amil_utils.validation.types import Result, Violation
 
 logger = logging.getLogger(__name__)
 

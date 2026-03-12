@@ -1,6 +1,6 @@
 ---
-name: gsd:research-phase
-description: Research how to implement a phase (standalone - usually use /odoo-gsd:plan-phase instead)
+name: amil:research-phase
+description: Research how to implement a phase (standalone - usually use /amil:plan-phase instead)
 argument-hint: "[phase]"
 allowed-tools:
   - Read
@@ -9,9 +9,9 @@ allowed-tools:
 ---
 
 <objective>
-Research how to implement a phase. Spawns odoo-gsd-phase-researcher agent with phase context.
+Research how to implement a phase. Spawns amil-phase-researcher agent with phase context.
 
-**Note:** This is a standalone research command. For most workflows, use `/odoo-gsd:plan-phase` which integrates research automatically.
+**Note:** This is a standalone research command. For most workflows, use `/amil:plan-phase` which integrates research automatically.
 
 **Use this command when:**
 - You want to research without planning yet
@@ -34,7 +34,7 @@ Normalize phase input in step 1 before any directory lookups.
 ## 0. Initialize Context
 
 ```bash
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" init phase-op "$ARGUMENTS")
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init phase-op "$ARGUMENTS")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -42,13 +42,13 @@ Extract from init JSON: `phase_dir`, `phase_number`, `phase_name`, `phase_found`
 
 Resolve researcher model:
 ```bash
-RESEARCHER_MODEL=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" resolve-model odoo-gsd-phase-researcher --raw)
+RESEARCHER_MODEL=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" resolve-model amil-phase-researcher --raw)
 ```
 
 ## 1. Validate Phase
 
 ```bash
-PHASE_INFO=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" roadmap get-phase "${phase_number}")
+PHASE_INFO=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap get-phase "${phase_number}")
 ```
 
 **If `found` is false:** Error and exit. **If `found` is true:** Extract `phase_number`, `phase_name`, `goal` from JSON.
@@ -72,7 +72,7 @@ Use paths from INIT (do not inline file contents in orchestrator context):
 
 Present summary with phase description and what files the researcher will load.
 
-## 4. Spawn odoo-gsd-phase-researcher Agent
+## 4. Spawn amil-phase-researcher Agent
 
 Research modes: ecosystem (default), feasibility, implementation, comparison.
 
@@ -110,7 +110,7 @@ Mode: ecosystem
 </additional_context>
 
 <downstream_consumer>
-Your RESEARCH.md will be loaded by `/odoo-gsd:plan-phase` which uses specific sections:
+Your RESEARCH.md will be loaded by `/amil:plan-phase` which uses specific sections:
 - `## Standard Stack` → Plans use these libraries
 - `## Architecture Patterns` → Task structure follows these
 - `## Don't Hand-Roll` → Tasks NEVER build custom solutions for listed problems
@@ -137,7 +137,7 @@ Write to: .planning/phases/${PHASE}-{slug}/${PHASE}-RESEARCH.md
 ```
 Task(
   prompt=filled_prompt,
-  subagent_type="odoo-gsd-phase-researcher",
+  subagent_type="amil-phase-researcher",
   model="{researcher_model}",
   description="Research Phase {phase}"
 )
@@ -173,7 +173,7 @@ Continue research for Phase {phase_number}: {phase_name}
 ```
 Task(
   prompt=continuation_prompt,
-  subagent_type="odoo-gsd-phase-researcher",
+  subagent_type="amil-phase-researcher",
   model="{researcher_model}",
   description="Continue research Phase {phase}"
 )
@@ -184,7 +184,7 @@ Task(
 <success_criteria>
 - [ ] Phase validated against roadmap
 - [ ] Existing research checked
-- [ ] odoo-gsd-phase-researcher spawned with context
+- [ ] amil-phase-researcher spawned with context
 - [ ] Checkpoints handled correctly
 - [ ] User knows next steps
 </success_criteria>

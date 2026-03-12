@@ -1,7 +1,7 @@
 # Generate Workflow
 
 End-to-end code generation from an approved spec.json.
-Called from spec.md after user approval. NOT called by scaffold.md or /odoo-gen:new.
+Called from spec.md after user approval. NOT called by scaffold.md or /amil:new.
 
 ---
 
@@ -9,17 +9,17 @@ Called from spec.md after user approval. NOT called by scaffold.md or /odoo-gen:
 
 This workflow implements a two-pass hybrid approach to module generation with **three human review checkpoints**, an **i18n extraction step**, and a **validation + auto-fix step**:
 
-1. **Pass 1 (Jinja2):** `odoo-gen-utils render-module` runs the Jinja2 template engine to produce all structural files, including `# TODO: implement` method stubs for computed fields, onchange handlers, and constraint methods.
+1. **Pass 1 (Jinja2):** `amil-utils render-module` runs the Jinja2 template engine to produce all structural files, including `# TODO: implement` method stubs for computed fields, onchange handlers, and constraint methods.
 
 2. **Checkpoint 1:** Human reviews generated models, security, and structural files.
 
-3. **Wave 1 (sequential after Pass 1):** The `odoo-model-gen` agent rewrites each model file with complete, OCA-compliant method bodies, replacing all `# TODO: implement` stubs. Wave 1 must complete entirely before Wave 2 begins, because Wave 2 agents read the completed model files.
+3. **Wave 1 (sequential after Pass 1):** The `amil-model-gen` agent rewrites each model file with complete, OCA-compliant method bodies, replacing all `# TODO: implement` stubs. Wave 1 must complete entirely before Wave 2 begins, because Wave 2 agents read the completed model files.
 
 4. **Checkpoint 2:** Human reviews business logic (computed fields, onchange handlers, constraints).
 
 5. **Wave 2 (parallel after Wave 1):** Two agents run in parallel:
-   - `odoo-view-gen` enriches view files with action buttons for workflow state transitions
-   - `odoo-test-gen` adds computed field tests, constraint tests, and onchange tests to the Jinja2-generated test stubs
+   - `amil-view-gen` enriches view files with action buttons for workflow state transitions
+   - `amil-test-gen` adds computed field tests, constraint tests, and onchange tests to the Jinja2-generated test stubs
 
 6. **Checkpoint 3:** Human reviews views and tests.
 
@@ -34,7 +34,7 @@ This workflow implements a two-pass hybrid approach to module generation with **
 This workflow does NOT generate kanban views (deferred to Phase 7 per Decision F).
 This workflow does NOT generate CRUD overrides (deferred to Phase 7 per Decision A).
 
-> **Note on skippable checkpoints (REVW-05):** Checkpoints are always present in this workflow. If the user's GSD config has `workflow.auto_advance = true`, checkpoints auto-approve without pausing. No skip logic is needed in this workflow -- the skip behavior is GSD's existing mechanism.
+> **Note on skippable checkpoints (REVW-05):** Checkpoints are always present in this workflow. If the user's Amil config has `workflow.auto_advance = true`, checkpoints auto-approve without pausing. No skip logic is needed in this workflow -- the skip behavior is Amil's existing mechanism.
 
 ---
 
@@ -52,7 +52,7 @@ This workflow does NOT generate CRUD overrides (deferred to Phase 7 per Decision
 Run the render-module CLI to produce the complete OCA module structure:
 
 ```bash
-odoo-gen-utils render-module \
+amil-utils render-module \
   --spec-file "$SPEC_PATH" \
   --output-dir "$OUTPUT_DIR"
 ```
@@ -113,7 +113,7 @@ Prompt the user:
 1. Increment `$RETRY_COUNT` for CP-1.
 2. If `$RETRY_COUNT` > 3: Print the following and continue to Step 2:
    > Maximum regeneration attempts (3) reached for structural files. Proceeding to Step 2. You can manually edit the files or re-run generation.
-3. Otherwise: Re-invoke the `odoo-scaffold` agent with the original spec + the user's feedback to update `spec.json`. Then re-run Step 1 (`odoo-gen-utils render-module`).
+3. Otherwise: Re-invoke the `amil-scaffold` agent with the original spec + the user's feedback to update `spec.json`. Then re-run Step 1 (`amil-utils render-module`).
 4. After re-render, show a unified diff of ONLY the changed files using Python `difflib.unified_diff` (compare old vs new versions). Do NOT show unchanged files.
 5. Prompt the user:
    > Here is what changed. Type **approved** to continue, or describe further changes.
@@ -127,15 +127,15 @@ Rejection at CP-1 triggers a full restart: re-render structural files (Step 1) +
 
 ## Step 2: Wave 1 -- Model Method Bodies
 
-IMPORTANT: Wave 1 must complete fully before Wave 2 begins. `odoo-view-gen` reads the
+IMPORTANT: Wave 1 must complete fully before Wave 2 begins. `amil-view-gen` reads the
 completed model files to add correct action button names.
 
 For each model in `spec.models` that has at least one field with `compute`, `onchange`, or
 `constrains` key:
 
-Spawn an `odoo-model-gen` Task (one per model file, can run in parallel across models):
+Spawn an `amil-model-gen` Task (one per model file, can run in parallel across models):
 
-**Task prompt for odoo-model-gen:**
+**Task prompt for amil-model-gen:**
 > Read the file `$OUTPUT_DIR/$MODULE_NAME/models/{model_var}.py` and the spec at `$SPEC_PATH`.
 > Model to process: `{model_name}`.
 > Rewrite the ENTIRE model file with complete OCA-compliant method bodies replacing all
@@ -143,7 +143,7 @@ Spawn an `odoo-model-gen` Task (one per model file, can run in parallel across m
 > patterns from your system prompt (for rec in self:, ValidationError for constraints, etc.).
 > When done, confirm how many TODO stubs were replaced.
 
-Wait for ALL odoo-model-gen tasks to complete before proceeding to Checkpoint 2.
+Wait for ALL amil-model-gen tasks to complete before proceeding to Checkpoint 2.
 
 If a model has NO computed/onchange/constrains fields: skip it (no agent spawn needed, Jinja2 output is already complete).
 
@@ -161,7 +161,7 @@ Present the following to the user:
 
 **Business Logic Added:**
 
-For each model processed by `odoo-model-gen`:
+For each model processed by `amil-model-gen`:
 - Computed fields: list method names and what they compute (e.g., `_compute_total` -- computes `total` from `price * quantity`)
 - Onchange handlers: list method names and trigger fields (e.g., `_onchange_partner_id` -- triggered by `partner_id`)
 - Constraint methods: list method names and what they validate (e.g., `_check_positive_quantity` -- ensures `quantity > 0`)
@@ -180,7 +180,7 @@ Prompt the user:
 1. Increment `$RETRY_COUNT` for CP-2.
 2. If `$RETRY_COUNT` > 3: Print the following and continue to Step 3:
    > Maximum regeneration attempts (3) reached for business logic. Proceeding to Step 3. You can manually edit the files or re-run the model-gen agent.
-3. Otherwise: Re-invoke `odoo-model-gen` for the affected model(s) with: original spec + current model file content + user feedback. The agent rewrites the ENTIRE model file.
+3. Otherwise: Re-invoke `amil-model-gen` for the affected model(s) with: original spec + current model file content + user feedback. The agent rewrites the ENTIRE model file.
 4. After rewrite, show a unified diff of the changed model files only using Python `difflib.unified_diff`. Do NOT show unchanged files.
 5. Prompt the user:
    > Here is what changed. Type **approved** to continue, or describe further changes.
@@ -188,7 +188,7 @@ Prompt the user:
 
 ### Regeneration Scope
 
-Rejection at CP-2 re-runs Wave 1 (`odoo-model-gen`) for the affected models, then proceeds to re-run ALL of Wave 2 (Step 3). View-gen reads completed model files, so views must be regenerated after model changes.
+Rejection at CP-2 re-runs Wave 1 (`amil-model-gen`) for the affected models, then proceeds to re-run ALL of Wave 2 (Step 3). View-gen reads completed model files, so views must be regenerated after model changes.
 
 ---
 
@@ -196,7 +196,7 @@ Rejection at CP-2 re-runs Wave 1 (`odoo-model-gen`) for the affected models, the
 
 Spawn these two agents in parallel using the Task tool:
 
-### Task A: odoo-view-gen
+### Task A: amil-view-gen
 
 **Prompt:**
 > Read all view files in `$OUTPUT_DIR/$MODULE_NAME/views/` and the corresponding model files
@@ -206,7 +206,7 @@ Spawn these two agents in parallel using the Task tool:
 > Use `invisible="state != '{current_state}'"` pattern. Do NOT add kanban views.
 > Write enriched view files back to the same paths.
 
-### Task B: odoo-test-gen
+### Task B: amil-test-gen
 
 **Prompt:**
 > Read all model files in `$OUTPUT_DIR/$MODULE_NAME/models/` and the corresponding test files
@@ -259,7 +259,7 @@ Prompt the user:
 1. Increment `$RETRY_COUNT` for CP-3.
 2. If `$RETRY_COUNT` > 3: Print the following and continue to Step 3.5:
    > Maximum regeneration attempts (3) reached for views/tests. Proceeding to i18n extraction. You can manually edit the files or re-run the agents.
-3. Otherwise: Re-invoke `odoo-view-gen` and/or `odoo-test-gen` with: original spec + current file content + user feedback. Agents rewrite ENTIRE files.
+3. Otherwise: Re-invoke `amil-view-gen` and/or `amil-test-gen` with: original spec + current file content + user feedback. Agents rewrite ENTIRE files.
 4. After rewrite, show a unified diff of the changed files only using Python `difflib.unified_diff`. Do NOT show unchanged files.
 5. Prompt the user:
    > Here is what changed. Type **approved** to continue, or describe further changes.
@@ -267,7 +267,7 @@ Prompt the user:
 
 ### Regeneration Scope
 
-Rejection at CP-3 re-runs Wave 2 only (`odoo-view-gen` and `odoo-test-gen`). Wave 1 model files are NOT re-run.
+Rejection at CP-3 re-runs Wave 2 only (`amil-view-gen` and `amil-test-gen`). Wave 1 model files are NOT re-run.
 
 ---
 
@@ -276,7 +276,7 @@ Rejection at CP-3 re-runs Wave 2 only (`odoo-view-gen` and `odoo-test-gen`). Wav
 Run the i18n extractor to generate the `.pot` file:
 
 ```bash
-odoo-gen-utils extract-i18n "$OUTPUT_DIR/$MODULE_NAME"
+amil-utils extract-i18n "$OUTPUT_DIR/$MODULE_NAME"
 ```
 
 This scans all Python files for `_()` calls and XML files for `string=` attributes, then writes the POT file to `$MODULE_NAME/i18n/$MODULE_NAME.pot`.
@@ -292,7 +292,7 @@ Known limitation: field `string=` parameter translations (e.g., `fields.Char(str
 Run validation with auto-fix enabled:
 
 ```bash
-odoo-gen-utils validate "$OUTPUT_DIR/$MODULE_NAME" --auto-fix --pylint-only
+amil-utils validate "$OUTPUT_DIR/$MODULE_NAME" --auto-fix --pylint-only
 ```
 
 **Pylint auto-fix (QUAL-09):**
@@ -308,7 +308,7 @@ Auto-fix exhausted. Remaining violations:
   -> suggestion
 ```
 
-Do NOT auto-spawn any agent for remaining violations. The user decides whether to fix manually or run `/odoo-gen:validate` again.
+Do NOT auto-spawn any agent for remaining violations. The user decides whether to fix manually or run `/amil:validate` again.
 
 **Docker auto-fix (QUAL-10):**
 If Docker validation is enabled (not `--pylint-only`), the system attempts to auto-fix these patterns:
@@ -332,7 +332,7 @@ TEST FAILURES:
   [error details]
   -> suggestion
 
-Run /odoo-gen:validate for full details.
+Run /amil:validate for full details.
 ```
 
 **Important:** Step 3.6 validation is informational -- it does NOT block the commit. The module is committed first (Step 4), then validation results are presented. This ensures the user always has the generated code available.
@@ -369,16 +369,16 @@ Wizards: {count or "none"}
 Tests: {count of test files}
 i18n: {count} translatable strings extracted to i18n/{module_name}.pot
 
-Method stubs filled: {total TODO stubs replaced by odoo-model-gen}
-View enrichments: {count of buttons added by odoo-view-gen}
+Method stubs filled: {total TODO stubs replaced by amil-model-gen}
+View enrichments: {count of buttons added by amil-view-gen}
 
 Checkpoints passed: CP-1 (models/security), CP-2 (business logic), CP-3 (views/tests)
 Regeneration cycles: {total retries across all checkpoints, or "none"}
 
 Next steps:
-- Validate the module: /odoo-gen:validate ./$MODULE_NAME/
+- Validate the module: /amil:validate ./$MODULE_NAME/
 - Review generated code: check models/ and views/ for correctness
-- If validation fails: /odoo-gen:validate will show specific issues to fix
+- If validation fails: /amil:validate will show specific issues to fix
 ```
 
 ---
@@ -386,7 +386,7 @@ Next steps:
 ## Error Handling
 
 - **render-module CLI fails**: Stop generation. Show the error. Fix the spec.json and retry.
-- **odoo-model-gen returns error for a model**: Log the error, continue with remaining models, report at end.
+- **amil-model-gen returns error for a model**: Log the error, continue with remaining models, report at end.
 - **Wave 2 task fails**: Log the error, do not block the commit. Report which enrichment failed.
 - **i18n extraction fails**: Log the error, do not block the commit. Report the failure in the summary.
 - **git commit fails**: Report error, confirm files exist on disk, provide manual commit command.

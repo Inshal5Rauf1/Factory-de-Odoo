@@ -9,8 +9,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from click.testing import CliRunner
 
-from odoo_gen_utils.cli import main
-from odoo_gen_utils.validation.types import (
+from amil_utils.cli import main
+from amil_utils.validation.types import (
     InstallResult,
     Result,
     TestResult,
@@ -51,10 +51,10 @@ class TestValidateHelp:
 class TestValidatePylintOnly:
     """Tests for --pylint-only mode."""
 
-    @patch("odoo_gen_utils.validation.run_pylint_odoo")
-    @patch("odoo_gen_utils.validation.check_docker_available")
-    @patch("odoo_gen_utils.validation.docker_install_module")
-    @patch("odoo_gen_utils.validation.docker_run_tests")
+    @patch("amil_utils.validation.run_pylint_odoo")
+    @patch("amil_utils.validation.check_docker_available")
+    @patch("amil_utils.validation.docker_install_module")
+    @patch("amil_utils.validation.docker_run_tests")
     def test_validate_pylint_only(
         self,
         mock_docker_tests: MagicMock,
@@ -79,8 +79,8 @@ class TestValidatePylintOnly:
 class TestValidateJsonOutput:
     """Tests for --json output."""
 
-    @patch("odoo_gen_utils.validation.run_pylint_odoo")
-    @patch("odoo_gen_utils.validation.check_docker_available")
+    @patch("amil_utils.validation.run_pylint_odoo")
+    @patch("amil_utils.validation.check_docker_available")
     def test_validate_json_output(
         self,
         mock_docker_check: MagicMock,
@@ -123,11 +123,11 @@ class TestValidateMissingManifest:
 class TestValidateFullPipeline:
     """Tests for full validation pipeline."""
 
-    @patch("odoo_gen_utils.validation.diagnose_errors")
-    @patch("odoo_gen_utils.validation.docker_run_tests")
-    @patch("odoo_gen_utils.validation.docker_install_module")
-    @patch("odoo_gen_utils.validation.check_docker_available")
-    @patch("odoo_gen_utils.validation.run_pylint_odoo")
+    @patch("amil_utils.validation.diagnose_errors")
+    @patch("amil_utils.validation.docker_run_tests")
+    @patch("amil_utils.validation.docker_install_module")
+    @patch("amil_utils.validation.check_docker_available")
+    @patch("amil_utils.validation.run_pylint_odoo")
     def test_validate_full_pipeline(
         self,
         mock_pylint: MagicMock,
@@ -161,8 +161,8 @@ class TestValidateFullPipeline:
 class TestValidateDockerUnavailable:
     """Tests for Docker-unavailable graceful degradation."""
 
-    @patch("odoo_gen_utils.validation.check_docker_available")
-    @patch("odoo_gen_utils.validation.run_pylint_odoo")
+    @patch("amil_utils.validation.check_docker_available")
+    @patch("amil_utils.validation.run_pylint_odoo")
     def test_validate_docker_unavailable(
         self,
         mock_pylint: MagicMock,
@@ -184,8 +184,8 @@ class TestValidateDockerUnavailable:
 class TestValidateExitCodes:
     """Tests for exit codes."""
 
-    @patch("odoo_gen_utils.validation.check_docker_available")
-    @patch("odoo_gen_utils.validation.run_pylint_odoo")
+    @patch("amil_utils.validation.check_docker_available")
+    @patch("amil_utils.validation.run_pylint_odoo")
     def test_validate_exit_code_clean(
         self,
         mock_pylint: MagicMock,
@@ -200,8 +200,8 @@ class TestValidateExitCodes:
         result = runner.invoke(main, ["validate", str(module_dir)])
         assert result.exit_code == 0
 
-    @patch("odoo_gen_utils.validation.check_docker_available")
-    @patch("odoo_gen_utils.validation.run_pylint_odoo")
+    @patch("amil_utils.validation.check_docker_available")
+    @patch("amil_utils.validation.run_pylint_odoo")
     def test_validate_exit_code_violations(
         self,
         mock_pylint: MagicMock,

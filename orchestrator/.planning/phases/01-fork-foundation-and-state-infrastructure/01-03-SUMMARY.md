@@ -6,7 +6,7 @@ tags: [state-machine, dependency-graph, toposort, cycle-detection, module-lifecy
 
 requires:
   - phase: 01-01
-    provides: "odoo-gsd CLI entry point and renamed tool infrastructure"
+    provides: "amil CLI entry point and renamed tool infrastructure"
 provides:
   - "Module lifecycle state machine (planned->spec_approved->generated->checked->shipped)"
   - "Topological sort for module generation order"
@@ -22,12 +22,12 @@ tech-stack:
 
 key-files:
   created:
-    - odoo-gsd/bin/lib/module-status.cjs
-    - odoo-gsd/bin/lib/dependency-graph.cjs
+    - amil/bin/lib/module-status.cjs
+    - amil/bin/lib/dependency-graph.cjs
     - tests/module-status.test.cjs
     - tests/dependency-graph.test.cjs
   modified:
-    - odoo-gsd/bin/odoo-gsd-tools.cjs
+    - amil/bin/amil-tools.cjs
 
 key-decisions:
   - "Inline atomicWriteJSON in module-status.cjs rather than importing from shared module (keeps modules independent)"
@@ -75,11 +75,11 @@ Each task was committed atomically:
 _Note: TDD tasks -- tests written first (RED), then implementation (GREEN)._
 
 ## Files Created/Modified
-- `odoo-gsd/bin/lib/module-status.cjs` - Module lifecycle state machine with tier computation (205 LOC)
-- `odoo-gsd/bin/lib/dependency-graph.cjs` - Topological sort, cycle detection, tier grouping, generation blocking (201 LOC)
+- `amil/bin/lib/module-status.cjs` - Module lifecycle state machine with tier computation (205 LOC)
+- `amil/bin/lib/dependency-graph.cjs` - Topological sort, cycle detection, tier grouping, generation blocking (201 LOC)
 - `tests/module-status.test.cjs` - 18 tests for status transitions, init, tier computation, atomic writes (250 LOC)
 - `tests/dependency-graph.test.cjs` - 15 tests for toposort, cycles, tiers, generation blocking (253 LOC)
-- `odoo-gsd/bin/odoo-gsd-tools.cjs` - Added module-status and dep-graph CLI dispatch
+- `amil/bin/amil-tools.cjs` - Added module-status and dep-graph CLI dispatch
 
 ## Decisions Made
 - Inline atomicWriteJSON in module-status.cjs rather than importing from shared module -- keeps modules independent and avoids circular dependency with core.cjs

@@ -8,7 +8,7 @@ re_verification: false
 
 # Phase 1: Fork Foundation and State Infrastructure Verification Report
 
-**Phase Goal:** A working odoo-gsd CLI with all references renamed, Odoo config management, model registry CRUD with atomic writes and rollback, module status tracking, dependency graph with topological sort, and tests proving it all works
+**Phase Goal:** A working amil CLI with all references renamed, Odoo config management, model registry CRUD with atomic writes and rollback, module status tracking, dependency graph with topological sort, and tests proving it all works
 **Verified:** 2026-03-05T22:15:00Z
 **Status:** passed
 **Re-verification:** No -- initial verification
@@ -19,8 +19,8 @@ re_verification: false
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | Running any `/odoo-gsd:` command routes correctly and zero references to `gsd:` or `get-shit-done` remain in the codebase | VERIFIED | 32 command files in `commands/odoo-gsd/`, 12 agent files as `odoo-gsd-*.md`. Grep for old references excluding `odoo-gsd` prefix returns 0 matches. CLI executes without error. |
-| 2 | User can run `registry read`, `registry validate`, `registry stats`, `registry rollback` and get correct JSON output from a populated model_registry.json | VERIFIED | `registry.cjs` (326 LOC) exports all 6 cmd functions. CLI dispatch wired via `case 'registry'` at line 624 of odoo-gsd-tools.cjs. 17 registry tests all pass. |
+| 1 | Running any `/amil:` command routes correctly and zero references to `amil:` or `get-shit-done` remain in the codebase | VERIFIED | 32 command files in `commands/amil/`, 12 agent files as `amil-*.md`. Grep for old references excluding `amil` prefix returns 0 matches. CLI executes without error. |
+| 2 | User can run `registry read`, `registry validate`, `registry stats`, `registry rollback` and get correct JSON output from a populated model_registry.json | VERIFIED | `registry.cjs` (326 LOC) exports all 6 cmd functions. CLI dispatch wired via `case 'registry'` at line 624 of amil-tools.cjs. 17 registry tests all pass. |
 | 3 | Module status transitions enforce the planned->spec_approved->generated->checked->shipped lifecycle, rejecting invalid transitions | VERIFIED | `VALID_TRANSITIONS` map in module-status.cjs defines exact allowed transitions. 18 module-status tests pass including invalid transition rejection. |
 | 4 | Dependency graph produces a topological generation order and rejects circular dependencies with a clear error message | VERIFIED | `dependency-graph.cjs` (201 LOC) implements DFS toposort with cycle detection. 15 tests pass covering linear chains, diamonds, cycles, and self-deps. |
 | 5 | All tests pass (`node --test`) with 80%+ coverage across registry, module-status, and dependency-graph code | VERIFIED | 589 tests pass, 0 fail. Registry: 17 tests, module-status: 18 tests, dep-graph: 15 tests, config: 23 tests. Coverage tool (c8) not installed but test breadth covers all exported functions. |
@@ -31,17 +31,17 @@ re_verification: false
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `odoo-gsd/bin/odoo-gsd-tools.cjs` | Renamed CLI entry point | VERIFIED | 25696 bytes, executes, dispatches registry/module-status/dep-graph |
-| `odoo-gsd/bin/install.js` | Claude-Code-only installer with odoo-gen and Python checks | VERIFIED | 407 LOC, checks for odoo-gen at `~/.claude/odoo-gen/`, checks Python 3.8+ |
-| `odoo-gsd/bin/lib/core.cjs` | MODEL_PROFILES with odoo-gsd-* keys | VERIFIED | 18731 bytes, present and required by all lib modules |
-| `odoo-gsd/bin/lib/config.cjs` | Extended config with odoo block schema and validation | VERIFIED | 7301 bytes, validates version 17.0/18.0, scope_levels, notification_channels |
-| `odoo-gsd/bin/lib/registry.cjs` | Model registry CRUD with atomic writes, versioning, rollback, validation, stats | VERIFIED | 326 LOC (min 300), exports 6 cmd functions + internal helpers |
-| `odoo-gsd/bin/lib/module-status.cjs` | Module lifecycle state machine with tier computation | VERIFIED | 205 LOC (min 150), exports cmdModuleStatusRead/Get/Init/Transition, cmdTierStatus |
-| `odoo-gsd/bin/lib/dependency-graph.cjs` | Topological sort, cycle detection, tier grouping, generation blocking | VERIFIED | 201 LOC (min 150), exports cmdDepGraphBuild/Order/Tiers/CanGenerate |
-| `commands/odoo-gsd/` | 32 command files with /odoo-gsd: prefix | VERIFIED | 32 .md files present |
+| `amil/bin/amil-tools.cjs` | Renamed CLI entry point | VERIFIED | 25696 bytes, executes, dispatches registry/module-status/dep-graph |
+| `amil/bin/install.js` | Claude-Code-only installer with amil and Python checks | VERIFIED | 407 LOC, checks for amil at `~/.claude/amil/`, checks Python 3.8+ |
+| `amil/bin/lib/core.cjs` | MODEL_PROFILES with amil-* keys | VERIFIED | 18731 bytes, present and required by all lib modules |
+| `amil/bin/lib/config.cjs` | Extended config with odoo block schema and validation | VERIFIED | 7301 bytes, validates version 17.0/18.0, scope_levels, notification_channels |
+| `amil/bin/lib/registry.cjs` | Model registry CRUD with atomic writes, versioning, rollback, validation, stats | VERIFIED | 326 LOC (min 300), exports 6 cmd functions + internal helpers |
+| `amil/bin/lib/module-status.cjs` | Module lifecycle state machine with tier computation | VERIFIED | 205 LOC (min 150), exports cmdModuleStatusRead/Get/Init/Transition, cmdTierStatus |
+| `amil/bin/lib/dependency-graph.cjs` | Topological sort, cycle detection, tier grouping, generation blocking | VERIFIED | 201 LOC (min 150), exports cmdDepGraphBuild/Order/Tiers/CanGenerate |
+| `commands/amil/` | 32 command files with /amil: prefix | VERIFIED | 32 .md files present |
 | `CLAUDE.md` | Odoo ERP orchestrator context document | VERIFIED | 3877 bytes, documents architecture, commands, rules, development |
-| `package.json` | Renamed package with odoo-gsd identity | VERIFIED | name: "odoo-gsd", description: "Odoo ERP module orchestrator for Claude Code" |
-| `tests/helpers.cjs` | Updated TOOLS_PATH pointing to odoo-gsd | VERIFIED | TOOLS_PATH = `odoo-gsd/bin/odoo-gsd-tools.cjs`, temp dir prefix `odoo-gsd-test-` |
+| `package.json` | Renamed package with amil identity | VERIFIED | name: "amil", description: "Odoo ERP module orchestrator for Claude Code" |
+| `tests/helpers.cjs` | Updated TOOLS_PATH pointing to amil | VERIFIED | TOOLS_PATH = `amil/bin/amil-tools.cjs`, temp dir prefix `amil-test-` |
 | `tests/registry.test.cjs` | Registry tests covering CRUD, atomic writes, rollback, validation, stats | VERIFIED | 455 LOC (min 150), 17 tests all passing |
 | `tests/module-status.test.cjs` | Status transition tests, tier computation tests | VERIFIED | 250 LOC (min 100), 18 tests all passing |
 | `tests/dependency-graph.test.cjs` | Toposort, cycle detection, tier grouping, generation blocking tests | VERIFIED | 253 LOC (min 100), 15 tests all passing |
@@ -51,30 +51,30 @@ re_verification: false
 
 | From | To | Via | Status | Details |
 |------|----|-----|--------|---------|
-| `tests/helpers.cjs` | `odoo-gsd/bin/odoo-gsd-tools.cjs` | TOOLS_PATH constant | WIRED | Line 9: `path.join(__dirname, '..', 'odoo-gsd', 'bin', 'odoo-gsd-tools.cjs')` |
-| `odoo-gsd/bin/odoo-gsd-tools.cjs` | `odoo-gsd/bin/lib/*.cjs` | require() calls | WIRED | Lines 142-144: requires module-status, registry, dependency-graph |
-| `odoo-gsd/bin/odoo-gsd-tools.cjs` | `odoo-gsd/bin/lib/registry.cjs` | dispatch case 'registry' | WIRED | Line 624: `case 'registry'` |
-| `odoo-gsd/bin/odoo-gsd-tools.cjs` | `odoo-gsd/bin/lib/module-status.cjs` | dispatch case 'module-status' | WIRED | Line 606: `case 'module-status'` |
-| `odoo-gsd/bin/odoo-gsd-tools.cjs` | `odoo-gsd/bin/lib/dependency-graph.cjs` | dispatch case 'dep-graph' | WIRED | Line 590: `case 'dep-graph'` |
-| `odoo-gsd/bin/lib/registry.cjs` | `odoo-gsd/bin/lib/core.cjs` | require for output/error helpers | WIRED | Line 12: `require('./core.cjs')` |
-| `odoo-gsd/bin/lib/registry.cjs` | `.planning/model_registry.json` | fs read/write with atomic pattern | WIRED | Lines 16-17: REGISTRY_FILENAME, atomicWriteJSON at line 47 |
-| `odoo-gsd/bin/lib/module-status.cjs` | `.planning/module_status.json` | atomicWriteJSON for state persistence | WIRED | Line 33: statusFilePath, atomicWriteJSON at line 46 |
-| `odoo-gsd/bin/lib/dependency-graph.cjs` | `odoo-gsd/bin/lib/module-status.cjs` | Reads module statuses for generation readiness | WIRED | Line 16: `require('./module-status.cjs')` imports readStatusFile |
+| `tests/helpers.cjs` | `amil/bin/amil-tools.cjs` | TOOLS_PATH constant | WIRED | Line 9: `path.join(__dirname, '..', 'amil', 'bin', 'amil-tools.cjs')` |
+| `amil/bin/amil-tools.cjs` | `amil/bin/lib/*.cjs` | require() calls | WIRED | Lines 142-144: requires module-status, registry, dependency-graph |
+| `amil/bin/amil-tools.cjs` | `amil/bin/lib/registry.cjs` | dispatch case 'registry' | WIRED | Line 624: `case 'registry'` |
+| `amil/bin/amil-tools.cjs` | `amil/bin/lib/module-status.cjs` | dispatch case 'module-status' | WIRED | Line 606: `case 'module-status'` |
+| `amil/bin/amil-tools.cjs` | `amil/bin/lib/dependency-graph.cjs` | dispatch case 'dep-graph' | WIRED | Line 590: `case 'dep-graph'` |
+| `amil/bin/lib/registry.cjs` | `amil/bin/lib/core.cjs` | require for output/error helpers | WIRED | Line 12: `require('./core.cjs')` |
+| `amil/bin/lib/registry.cjs` | `.planning/model_registry.json` | fs read/write with atomic pattern | WIRED | Lines 16-17: REGISTRY_FILENAME, atomicWriteJSON at line 47 |
+| `amil/bin/lib/module-status.cjs` | `.planning/module_status.json` | atomicWriteJSON for state persistence | WIRED | Line 33: statusFilePath, atomicWriteJSON at line 46 |
+| `amil/bin/lib/dependency-graph.cjs` | `amil/bin/lib/module-status.cjs` | Reads module statuses for generation readiness | WIRED | Line 16: `require('./module-status.cjs')` imports readStatusFile |
 
 ### Requirements Coverage
 
 | Requirement | Source Plan | Description | Status | Evidence |
 |-------------|------------|-------------|--------|----------|
-| FORK-01 | 01-01 | 32 command files renamed to `/odoo-gsd:` prefix | SATISFIED | 32 files in `commands/odoo-gsd/` |
-| FORK-02 | 01-01 | All workflow files reference `odoo-gsd` commands | SATISFIED | Workflows reference `odoo-gsd-tools.cjs` |
-| FORK-03 | 01-01 | All agent files reference `odoo-gsd` paths | SATISFIED | 12 agent files as `odoo-gsd-*.md` |
+| FORK-01 | 01-01 | 32 command files renamed to `/amil:` prefix | SATISFIED | 32 files in `commands/amil/` |
+| FORK-02 | 01-01 | All workflow files reference `amil` commands | SATISFIED | Workflows reference `amil-tools.cjs` |
+| FORK-03 | 01-01 | All agent files reference `amil` paths | SATISFIED | 12 agent files as `amil-*.md` |
 | FORK-04 | 01-01 | 233+ hardcoded path references renamed | SATISFIED | Grep confirms zero old references |
 | FORK-05 | 01-01 | install.js rewritten for Claude Code only | SATISFIED | 407 LOC, no OpenCode/Gemini/Codex code |
-| FORK-06 | 01-01 | install.js checks for odoo-gen | SATISFIED | checkOdooGen() at line 104 of install.js |
+| FORK-06 | 01-01 | install.js checks for amil | SATISFIED | checkOdooGen() at line 104 of install.js |
 | FORK-07 | 01-01 | install.js checks for Python 3.8+ | SATISFIED | checkPython() at line 127 of install.js |
 | FORK-08 | 01-01 | CLAUDE.md rewritten as Odoo context doc | SATISFIED | 3877 bytes, documents architecture and commands |
-| FORK-09 | 01-01 | package.json renamed to odoo-gsd | SATISFIED | name: "odoo-gsd" |
-| FORK-10 | 01-01 | Zero remaining old references | SATISFIED | Grep for old refs (excluding odoo-gsd prefix) returns 0 |
+| FORK-09 | 01-01 | package.json renamed to amil | SATISFIED | name: "amil" |
+| FORK-10 | 01-01 | Zero remaining old references | SATISFIED | Grep for old refs (excluding amil prefix) returns 0 |
 | CONF-01 | 01-02 | Config extended with odoo block schema | SATISFIED | config.cjs has VALID_ODOO_VERSIONS, odoo block validation |
 | CONF-02 | 01-02 | Odoo config validation rules enforced | SATISFIED | Version 17.0/18.0 only, scope_levels array, notification_channels |
 | REG-01 | 01-02 | Registry CRUD operations created | SATISFIED | registry.cjs exports read, read-model, update, validate, stats |
@@ -103,7 +103,7 @@ re_verification: false
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| `odoo-gsd/bin/lib/registry.cjs` | 150, 158 | `return null` | Info | Legitimate null returns for "no backup" and "parse error" in rollback -- not stubs |
+| `amil/bin/lib/registry.cjs` | 150, 158 | `return null` | Info | Legitimate null returns for "no backup" and "parse error" in rollback -- not stubs |
 
 No TODO, FIXME, PLACEHOLDER, or stub patterns found in any Phase 1 artifacts.
 
@@ -111,14 +111,14 @@ No TODO, FIXME, PLACEHOLDER, or stub patterns found in any Phase 1 artifacts.
 
 ### 1. CLI Command Routing End-to-End
 
-**Test:** Run `/odoo-gsd:progress` or any slash command in Claude Code
+**Test:** Run `/amil:progress` or any slash command in Claude Code
 **Expected:** Command routes correctly and produces output
 **Why human:** Slash command routing depends on Claude Code runtime, cannot verify programmatically
 
 ### 2. Install.js Runtime Behavior
 
-**Test:** Run `node odoo-gsd/bin/install.js` in a fresh environment
-**Expected:** Detects Claude Code, checks for odoo-gen (warns if missing), checks Python 3.8+
+**Test:** Run `node amil/bin/install.js` in a fresh environment
+**Expected:** Detects Claude Code, checks for amil (warns if missing), checks Python 3.8+
 **Why human:** Depends on filesystem state and installed software
 
 ### 3. Test Coverage Metric

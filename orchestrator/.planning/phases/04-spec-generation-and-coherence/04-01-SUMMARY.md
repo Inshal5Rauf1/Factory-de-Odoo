@@ -19,10 +19,10 @@ tech-stack:
 
 key-files:
   created:
-    - odoo-gsd/bin/lib/coherence.cjs
+    - amil/bin/lib/coherence.cjs
     - tests/coherence.test.cjs
   modified:
-    - odoo-gsd/bin/odoo-gsd-tools.cjs
+    - amil/bin/amil-tools.cjs
 
 key-decisions:
   - "BASE_ODOO_MODELS includes 20 common models; base.group_* prefix auto-allowed for security"
@@ -64,9 +64,9 @@ Each task was committed atomically:
 2. **Task 2: Register coherence CLI subcommand** - `ccec647` (feat)
 
 ## Files Created/Modified
-- `odoo-gsd/bin/lib/coherence.cjs` - 4 structural checks + runAllChecks + cmdCoherenceCheck + BASE_ODOO_MODELS
+- `amil/bin/lib/coherence.cjs` - 4 structural checks + runAllChecks + cmdCoherenceCheck + BASE_ODOO_MODELS
 - `tests/coherence.test.cjs` - 33 unit and CLI integration tests
-- `odoo-gsd/bin/odoo-gsd-tools.cjs` - Added coherence case block with --spec/--registry flag parsing
+- `amil/bin/amil-tools.cjs` - Added coherence case block with --spec/--registry flag parsing
 
 ## Decisions Made
 - BASE_ODOO_MODELS includes 20 common Odoo models (res.partner, res.users, etc.) that pass many2one validation without registry entry

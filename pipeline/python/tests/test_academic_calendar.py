@@ -39,7 +39,7 @@ def _make_spec(
 
 def _process(spec: dict[str, Any]) -> dict[str, Any]:
     """Run the academic_calendar preprocessor on a spec."""
-    from odoo_gen_utils.preprocessors.academic_calendar import (
+    from amil_utils.preprocessors.academic_calendar import (
         _process_academic_calendar,
     )
 
@@ -94,12 +94,12 @@ class TestPreprocessorRegistration:
 
     def test_registered_at_order_27(self):
         """academic_calendar is registered at order=27 in the preprocessor registry."""
-        from odoo_gen_utils.preprocessors._registry import (
+        from amil_utils.preprocessors._registry import (
             clear_registry,
             get_registered_preprocessors,
         )
         import importlib
-        import odoo_gen_utils.preprocessors.academic_calendar as mod
+        import amil_utils.preprocessors.academic_calendar as mod
 
         clear_registry()
         importlib.reload(mod)
@@ -111,12 +111,12 @@ class TestPreprocessorRegistration:
 
     def test_function_name_is_academic_calendar(self):
         """Registered function name is 'academic_calendar'."""
-        from odoo_gen_utils.preprocessors._registry import (
+        from amil_utils.preprocessors._registry import (
             clear_registry,
             get_registered_preprocessors,
         )
         import importlib
-        import odoo_gen_utils.preprocessors.academic_calendar as mod
+        import amil_utils.preprocessors.academic_calendar as mod
 
         clear_registry()
         importlib.reload(mod)
@@ -857,7 +857,7 @@ class TestAcademicCalendarE2E:
         import tempfile
         from pathlib import Path
 
-        from odoo_gen_utils.renderer import get_template_dir, render_module
+        from amil_utils.renderer import get_template_dir, render_module
 
         output_dir = Path(tmp_path)
         files, _warnings = render_module(

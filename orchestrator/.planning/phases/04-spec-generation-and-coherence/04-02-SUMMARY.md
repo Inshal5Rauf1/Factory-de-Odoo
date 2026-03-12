@@ -19,8 +19,8 @@ tech-stack:
 
 key-files:
   created:
-    - agents/odoo-gsd-spec-generator.md
-    - agents/odoo-gsd-spec-reviewer.md
+    - agents/amil-spec-generator.md
+    - agents/amil-spec-reviewer.md
   modified:
     - tests/agent-frontmatter.test.cjs
 
@@ -64,8 +64,8 @@ Each task was committed atomically:
 2. **Task 2: Extend agent frontmatter tests for new agents** - `dd4ae32` (test)
 
 ## Files Created/Modified
-- `agents/odoo-gsd-spec-generator.md` - Spec generation agent producing complete spec.json from module context
-- `agents/odoo-gsd-spec-reviewer.md` - Read-only coherence report presenter with Odoo context
+- `agents/amil-spec-generator.md` - Spec generation agent producing complete spec.json from module context
+- `agents/amil-spec-reviewer.md` - Read-only coherence report presenter with Odoo context
 - `tests/agent-frontmatter.test.cjs` - Extended with SPEC-GEN and SPEC-REV test suites
 
 ## Decisions Made

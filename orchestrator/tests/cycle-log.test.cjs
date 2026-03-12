@@ -11,7 +11,7 @@ const {
   appendCoherenceEvent,
   updateCompactSummary,
   finalizeLog,
-} = require('../odoo-gsd/bin/lib/cycle-log.cjs');
+} = require('../amil/bin/lib/cycle-log.cjs');
 
 function makeTmpDir() {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cycle-log-test-'));

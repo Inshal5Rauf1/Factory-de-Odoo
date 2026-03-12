@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - generate-module belt integration
+ * Amil Tools Tests - generate-module belt integration
  *
  * Tests for: command file structure, workflow file structure,
  * belt executor agent frontmatter, belt verifier agent frontmatter.
@@ -12,10 +12,10 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 
-const CMD_PATH = path.join(__dirname, '..', 'commands', 'odoo-gsd', 'generate-module.md');
-const WORKFLOW_PATH = path.join(__dirname, '..', 'odoo-gsd', 'workflows', 'generate-module.md');
-const BELT_EXECUTOR_PATH = path.join(__dirname, '..', 'agents', 'odoo-gsd-belt-executor.md');
-const BELT_VERIFIER_PATH = path.join(__dirname, '..', 'agents', 'odoo-gsd-belt-verifier.md');
+const CMD_PATH = path.join(__dirname, '..', 'commands', 'amil', 'generate-module.md');
+const WORKFLOW_PATH = path.join(__dirname, '..', 'amil', 'workflows', 'generate-module.md');
+const BELT_EXECUTOR_PATH = path.join(__dirname, '..', 'agents', 'amil-belt-executor.md');
+const BELT_VERIFIER_PATH = path.join(__dirname, '..', 'agents', 'amil-belt-verifier.md');
 
 // ─── Command File Tests (BELT-01) ──────────────────────────────────────────
 
@@ -27,7 +27,7 @@ describe('BELT-CMD: generate-module command file structure', () => {
   });
 
   test('frontmatter contains name field', () => {
-    assert.ok(content.includes('name: odoo-gsd:generate-module'), 'should have correct name');
+    assert.ok(content.includes('name: amil:generate-module'), 'should have correct name');
   });
 
   test('frontmatter contains description', () => {
@@ -84,7 +84,7 @@ describe('BELT-WF: generate-module workflow structure', () => {
   });
 
   test('Step 5 spawns belt executor via Task()', () => {
-    assert.ok(content.includes('odoo-gsd-belt-executor'), 'should spawn belt executor agent');
+    assert.ok(content.includes('amil-belt-executor'), 'should spawn belt executor agent');
     assert.ok(content.includes('Task('), 'should use Task() for agent spawning');
   });
 
@@ -93,7 +93,7 @@ describe('BELT-WF: generate-module workflow structure', () => {
   });
 
   test('Step 9 spawns belt verifier via Task()', () => {
-    assert.ok(content.includes('odoo-gsd-belt-verifier'), 'should spawn belt verifier agent');
+    assert.ok(content.includes('amil-belt-verifier'), 'should spawn belt verifier agent');
   });
 
   test('Step 10 transitions to generated status', () => {
@@ -123,7 +123,7 @@ describe('BELT-EXEC: belt executor agent frontmatter', () => {
   });
 
   test('has correct name', () => {
-    assert.ok(content.includes('name: odoo-gsd-belt-executor'), 'should have correct name');
+    assert.ok(content.includes('name: amil-belt-executor'), 'should have correct name');
   });
 
   test('has tools including Bash for CLI execution', () => {
@@ -156,7 +156,7 @@ describe('BELT-VERIFY: belt verifier agent frontmatter', () => {
   });
 
   test('has correct name', () => {
-    assert.ok(content.includes('name: odoo-gsd-belt-verifier'), 'should have correct name');
+    assert.ok(content.includes('name: amil-belt-verifier'), 'should have correct name');
   });
 
   test('checks __manifest__.py', () => {

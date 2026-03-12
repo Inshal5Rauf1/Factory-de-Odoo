@@ -14,10 +14,10 @@ from typing import Any
 import pytest
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
-from odoo_gen_utils.renderer_utils import _to_class, _to_python_var
+from amil_utils.renderer_utils import _to_class, _to_python_var
 
 FIXTURES = Path(__file__).parent / "fixtures"
-TEMPLATES_DIR = Path(__file__).parent.parent / "src" / "odoo_gen_utils" / "templates" / "shared"
+TEMPLATES_DIR = Path(__file__).parent.parent / "src" / "amil_utils" / "templates" / "shared"
 
 
 @pytest.fixture()
@@ -418,7 +418,7 @@ class TestRenderBulkStage:
 
     def test_render_bulk_returns_empty_when_no_bulk(self, tmp_path):
         """render_bulk() returns Result.ok([]) when spec has no has_bulk_operations."""
-        from odoo_gen_utils.renderer import render_bulk
+        from amil_utils.renderer import render_bulk
 
         env = Environment(
             loader=FileSystemLoader(str(TEMPLATES_DIR)),
@@ -434,8 +434,8 @@ class TestRenderBulkStage:
 
     def test_render_bulk_creates_wizard_py(self, tmp_path, bulk_spec_raw):
         """render_bulk() creates wizard .py file in wizards/ directory."""
-        from odoo_gen_utils.renderer import render_bulk
-        from odoo_gen_utils.preprocessors.bulk_operations import _process_bulk_operations
+        from amil_utils.renderer import render_bulk
+        from amil_utils.preprocessors.bulk_operations import _process_bulk_operations
 
         env = Environment(
             loader=FileSystemLoader(str(TEMPLATES_DIR)),
@@ -459,8 +459,8 @@ class TestRenderBulkStage:
 
     def test_render_bulk_creates_wizard_line_py(self, tmp_path, bulk_spec_raw):
         """render_bulk() creates wizard line .py file in wizards/ directory."""
-        from odoo_gen_utils.renderer import render_bulk
-        from odoo_gen_utils.preprocessors.bulk_operations import _process_bulk_operations
+        from amil_utils.renderer import render_bulk
+        from amil_utils.preprocessors.bulk_operations import _process_bulk_operations
 
         env = Environment(
             loader=FileSystemLoader(str(TEMPLATES_DIR)),
@@ -483,8 +483,8 @@ class TestRenderBulkStage:
 
     def test_render_bulk_creates_wizard_view_xml(self, tmp_path, bulk_spec_raw):
         """render_bulk() creates wizard form view .xml in views/ directory."""
-        from odoo_gen_utils.renderer import render_bulk
-        from odoo_gen_utils.preprocessors.bulk_operations import _process_bulk_operations
+        from amil_utils.renderer import render_bulk
+        from amil_utils.preprocessors.bulk_operations import _process_bulk_operations
 
         env = Environment(
             loader=FileSystemLoader(str(TEMPLATES_DIR)),
@@ -507,8 +507,8 @@ class TestRenderBulkStage:
 
     def test_render_bulk_creates_js_file(self, tmp_path, bulk_spec_raw):
         """render_bulk() creates bulk_progress.js in static/src/js/."""
-        from odoo_gen_utils.renderer import render_bulk
-        from odoo_gen_utils.preprocessors.bulk_operations import _process_bulk_operations
+        from amil_utils.renderer import render_bulk
+        from amil_utils.preprocessors.bulk_operations import _process_bulk_operations
 
         env = Environment(
             loader=FileSystemLoader(str(TEMPLATES_DIR)),
@@ -530,8 +530,8 @@ class TestRenderBulkStage:
 
     def test_render_bulk_updates_wizards_init(self, tmp_path, bulk_spec_raw):
         """render_bulk() updates wizards/__init__.py with both wizard and line imports."""
-        from odoo_gen_utils.renderer import render_bulk
-        from odoo_gen_utils.preprocessors.bulk_operations import _process_bulk_operations
+        from amil_utils.renderer import render_bulk
+        from amil_utils.preprocessors.bulk_operations import _process_bulk_operations
 
         env = Environment(
             loader=FileSystemLoader(str(TEMPLATES_DIR)),
@@ -558,8 +558,8 @@ class TestRenderBulkStage:
 
     def test_render_bulk_multiple_operations(self, tmp_path, bulk_spec_raw):
         """render_bulk() handles multiple bulk operations (creates files for each)."""
-        from odoo_gen_utils.renderer import render_bulk
-        from odoo_gen_utils.preprocessors.bulk_operations import _process_bulk_operations
+        from amil_utils.renderer import render_bulk
+        from amil_utils.preprocessors.bulk_operations import _process_bulk_operations
 
         env = Environment(
             loader=FileSystemLoader(str(TEMPLATES_DIR)),
@@ -592,14 +592,14 @@ class TestStageNamesUpdate:
 
     def test_stage_names_has_14_entries(self):
         """STAGE_NAMES has 14 entries with bulk as 14th."""
-        from odoo_gen_utils.renderer import STAGE_NAMES
+        from amil_utils.renderer import STAGE_NAMES
 
         assert len(STAGE_NAMES) == 14
         assert STAGE_NAMES[13] == "bulk"
 
     def test_stage_names_bulk_after_portal(self):
         """bulk comes after portal in STAGE_NAMES."""
-        from odoo_gen_utils.renderer import STAGE_NAMES
+        from amil_utils.renderer import STAGE_NAMES
 
         portal_idx = STAGE_NAMES.index("portal")
         bulk_idx = STAGE_NAMES.index("bulk")

@@ -61,30 +61,30 @@ You: "I need a module to track employee training courses and sessions"
 
 ```bash
 # Clone the repository
-git clone git@github.com:Inshal5Rauf1/Odoo-Development-Automation.git ~/.claude/odoo-gen
+git clone git@github.com:Inshal5Rauf1/Odoo-Development-Automation.git ~/.claude/amil
 
 # Run the installer
-cd ~/.claude/odoo-gen
+cd ~/.claude/amil
 bash install.sh
 ```
 
 The installer:
 1. Verifies Python 3.12 is available
 2. Creates a Python virtual environment with `uv`
-3. Installs the `odoo-gen-utils` package (editable)
-4. Registers 13 commands as `/odoo-gen:*` in your AI assistant
+3. Installs the `amil-utils` package (editable)
+4. Registers 13 commands as `/amil:*` in your AI assistant
 5. Symlinks 8 agent definitions
 6. Installs the knowledge base
-7. Writes an installation manifest at `~/.claude/odoo-gen-manifest.json`
+7. Writes an installation manifest at `~/.claude/amil-manifest.json`
 
 ## Quick Start
 
-All commands are invoked through your AI coding assistant using the `/odoo-gen:` prefix.
+All commands are invoked through your AI coding assistant using the `/amil:` prefix.
 
 ### Create a New Module
 
 ```
-/odoo-gen:new
+/amil:new
 > "I need a module to manage employee training courses with sessions,
 >  attendance tracking, and completion certificates"
 ```
@@ -100,7 +100,7 @@ The system will:
 ### Validate an Existing Module
 
 ```
-/odoo-gen:validate my_module --auto-fix
+/amil:validate my_module --auto-fix
 ```
 
 Runs the full validation pipeline:
@@ -112,7 +112,7 @@ Runs the full validation pipeline:
 ### Search for Existing Modules
 
 ```
-/odoo-gen:search "inventory barcode scanning"
+/amil:search "inventory barcode scanning"
 ```
 
 Semantic search across 200+ OCA repositories using ChromaDB vector embeddings.
@@ -120,7 +120,7 @@ Semantic search across 200+ OCA repositories using ChromaDB vector embeddings.
 ### Fork and Extend a Module
 
 ```
-/odoo-gen:extend OCA/stock-logistics-workflow
+/amil:extend OCA/stock-logistics-workflow
 ```
 
 Clones an OCA module and sets up a companion `_ext` module for customization.
@@ -129,26 +129,26 @@ Clones an OCA module and sets up a companion `_ext` module for customization.
 
 | Command | Description |
 |---------|-------------|
-| `/odoo-gen:new` | Scaffold a new module from natural language |
-| `/odoo-gen:validate` | Run pylint-odoo + Docker validation |
-| `/odoo-gen:search` | Semantic search OCA for similar modules |
-| `/odoo-gen:extend` | Fork and extend an existing module |
-| `/odoo-gen:plan` | Plan module architecture before generation |
-| `/odoo-gen:research` | Research Odoo patterns and solutions |
-| `/odoo-gen:index` | Build/update ChromaDB index of OCA modules |
-| `/odoo-gen:phases` | Show generation phases and progress |
-| `/odoo-gen:status` | Show current module generation status |
-| `/odoo-gen:resume` | Resume interrupted module generation |
-| `/odoo-gen:config` | View/edit Odoo-specific settings |
-| `/odoo-gen:history` | Show generation history |
-| `/odoo-gen:help` | Show available commands and usage |
+| `/amil:new` | Scaffold a new module from natural language |
+| `/amil:validate` | Run pylint-odoo + Docker validation |
+| `/amil:search` | Semantic search OCA for similar modules |
+| `/amil:extend` | Fork and extend an existing module |
+| `/amil:plan` | Plan module architecture before generation |
+| `/amil:research` | Research Odoo patterns and solutions |
+| `/amil:index` | Build/update ChromaDB index of OCA modules |
+| `/amil:phases` | Show generation phases and progress |
+| `/amil:status` | Show current module generation status |
+| `/amil:resume` | Resume interrupted module generation |
+| `/amil:config` | View/edit Odoo-specific settings |
+| `/amil:history` | Show generation history |
+| `/amil:help` | Show available commands and usage |
 
 ### Observability Commands
 
 | Command | Description |
 |---------|-------------|
-| `odoo-gen-utils show-state ./module` | Show artifact generation state with status icons |
-| `odoo-gen-utils context7-status` | Check Context7 API configuration and Odoo library resolution |
+| `amil-utils show-state ./module` | Show artifact generation state with status icons |
+| `amil-utils context7-status` | Check Context7 API configuration and Odoo library resolution |
 
 ## Architecture
 
@@ -161,7 +161,7 @@ Layer 2: Pipeline (THIS COMPONENT)
   8 specialized agents, 13 commands, Jinja2 templates,
   knowledge base, workflows
 
-Layer 3: Python Utilities (odoo-gen-utils)
+Layer 3: Python Utilities (amil-utils)
   Jinja2 rendering engine, pylint-odoo integration,
   Docker validation, ChromaDB search, auto-fix pipeline
 
@@ -172,18 +172,18 @@ Layer 4: AI Coding Assistant (USER'S ENVIRONMENT)
 ## Project Structure
 
 ```
-odoo-gen/
+amil/
 ├── install.sh              # 10-step installer
 ├── defaults.json           # Default config (Odoo 17.0, Community, LGPL-3)
 ├── agents/                 # 8 AI agent definitions
-│   ├── odoo-scaffold.md
-│   ├── odoo-model-gen.md
-│   ├── odoo-view-gen.md
-│   ├── odoo-test-gen.md
-│   ├── odoo-security-gen.md
-│   ├── odoo-validator.md
-│   ├── odoo-search.md
-│   └── odoo-extend.md
+│   ├── amil-scaffold.md
+│   ├── amil-model-gen.md
+│   ├── amil-view-gen.md
+│   ├── amil-test-gen.md
+│   ├── amil-security-gen.md
+│   ├── amil-validator.md
+│   ├── amil-search.md
+│   └── amil-extend.md
 ├── commands/               # 13 command definitions
 ├── knowledge/              # Odoo domain knowledge base
 │   ├── MASTER.md           # Integration guide
@@ -209,7 +209,7 @@ odoo-gen/
 │   └── docker-compose.yml
 └── python/                 # Python package
     ├── pyproject.toml
-    ├── src/odoo_gen_utils/
+    ├── src/amil_utils/
     │   ├── cli.py          # Click CLI entry point
     │   ├── renderer.py     # Jinja2 rendering engine
     │   ├── auto_fix.py     # pylint + Docker fix loops
@@ -221,28 +221,28 @@ odoo-gen/
     └── tests/              # 444 tests (pytest)
 ```
 
-## Python Utilities (odoo-gen-utils)
+## Python Utilities (amil-utils)
 
-The `odoo-gen-utils` CLI provides the underlying Python tooling:
+The `amil-utils` CLI provides the underlying Python tooling:
 
 ```bash
 # Render a single template
-odoo-gen-utils render --template model.py.j2 --var name=hr_training
+amil-utils render --template model.py.j2 --var name=hr_training
 
 # List available templates
-odoo-gen-utils list-templates --version 17.0
+amil-utils list-templates --version 17.0
 
 # Validate a module
-odoo-gen-utils validate /path/to/module --auto-fix
+amil-utils validate /path/to/module --auto-fix
 
 # Build search index
-odoo-gen-utils build-index
+amil-utils build-index
 
 # Search modules
-odoo-gen-utils search-modules "inventory management"
+amil-utils search-modules "inventory management"
 
 # Extract translations
-odoo-gen-utils extract-i18n /path/to/module
+amil-utils extract-i18n /path/to/module
 ```
 
 ## Testing
@@ -260,7 +260,7 @@ uv run pytest tests/ -m "not docker" -v
 uv run pytest tests/ -m "not e2e" -v
 
 # Run with coverage
-uv run pytest tests/ --cov=odoo_gen_utils --cov-report=html
+uv run pytest tests/ --cov=amil_utils --cov-report=html
 
 # Run golden path E2E (render + Docker install + test)
 uv run pytest tests/test_golden_path.py -v
@@ -345,7 +345,7 @@ Default settings in `defaults.json`:
 }
 ```
 
-Override via `/odoo-gen:config` or environment variables:
+Override via `/amil:config` or environment variables:
 - `GITHUB_TOKEN` — GitHub API access for OCA search
 - `ODOO_VERSION` — Target Odoo version (17.0, 18.0, or 19.0)
 - `CONTEXT7_API_KEY` — Context7 API key for live Odoo documentation queries (optional)

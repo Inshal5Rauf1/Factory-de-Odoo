@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from odoo_gen_utils.logic_writer.stub_detector import StubInfo
-from odoo_gen_utils.logic_writer.classifier import classify_complexity
+from amil_utils.logic_writer.stub_detector import StubInfo
+from amil_utils.logic_writer.classifier import classify_complexity
 
 
 # ---------------------------------------------------------------------------

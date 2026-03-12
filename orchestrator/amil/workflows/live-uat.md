@@ -77,7 +77,7 @@ For MINOR results:
 After collecting per-module feedback, run automated cross-module tests:
 
 ```bash
-odoo-gen-utils factory-docker --cross-test mod1 mod2 mod3 ... mod10
+amil-utils factory-docker --cross-test mod1 mod2 mod3 ... mod10
 ```
 
 Report results to user. If integration tests fail, identify which

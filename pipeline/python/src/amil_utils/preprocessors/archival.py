@@ -16,8 +16,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from odoo_gen_utils.preprocessors._registry import register_preprocessor
-from odoo_gen_utils.utils.copy import deep_copy_model
+from amil_utils.preprocessors._registry import register_preprocessor
+from amil_utils.utils.copy import deep_copy_model
 
 logger = logging.getLogger(__name__)
 

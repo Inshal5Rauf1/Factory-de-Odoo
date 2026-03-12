@@ -1,9 +1,9 @@
 ---
-name: odoo-gen:status
+name: amil:status
 description: Show current Odoo module generation status
 ---
 <objective>
-Show the current status of Odoo module generation, combining GSD project state with Odoo-specific context.
+Show the current status of Odoo module generation, combining Amil project state with Odoo-specific context.
 
 Provides a unified view of where the user is in the module generation process.
 </objective>
@@ -26,5 +26,5 @@ Provides a unified view of where the user is in the module generation process.
 
 6. Show Odoo configuration summary (version, edition, output directory)
 
-7. Suggest next action (e.g., "Run `/odoo-gen:new` to scaffold a module" or "Run `/odoo-gen:resume` to continue")
+7. Suggest next action (e.g., "Run `/amil:new` to scaffold a module" or "Run `/amil:resume` to continue")
 </process>

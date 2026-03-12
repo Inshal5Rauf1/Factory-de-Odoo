@@ -10,7 +10,7 @@ from typing import Any
 
 import pytest
 
-from odoo_gen_utils.validation.semantic import (
+from amil_utils.validation.semantic import (
     ValidationIssue,
     _check_e23,
     semantic_validate,

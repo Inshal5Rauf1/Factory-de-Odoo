@@ -1,12 +1,12 @@
 """Conflict resolution operations for iterative refinement.
 
 Provides:
-- ``resolve_status`` — list pending conflict files from ``.odoo-gen-pending/``.
+- ``resolve_status`` — list pending conflict files from ``.amil-pending/``.
 - ``resolve_accept_new`` — accept the newly generated version of a file.
 - ``resolve_keep_mine`` — keep the current version, discard the pending file.
 - ``resolve_accept_all`` — accept all pending files at once.
 
-All functions operate on the module directory and its ``.odoo-gen-pending/``
+All functions operate on the module directory and its ``.amil-pending/``
 subdirectory.  After each resolution operation, empty pending directories
 are cleaned up automatically.
 """
@@ -17,19 +17,19 @@ import logging
 import shutil
 from pathlib import Path
 
-from odoo_gen_utils.manifest import (
+from amil_utils.manifest import (
     compute_file_sha256,
     load_manifest,
     save_manifest,
 )
 
-logger = logging.getLogger("odoo-gen.iterative.resolve")
+logger = logging.getLogger("amil.iterative.resolve")
 
-PENDING_DIR_NAME = ".odoo-gen-pending"
+PENDING_DIR_NAME = ".amil-pending"
 
 
 def _cleanup_pending(module_dir: Path) -> None:
-    """Remove ``.odoo-gen-pending/`` if it is empty after resolution.
+    """Remove ``.amil-pending/`` if it is empty after resolution.
 
     Walks the directory tree bottom-up, removing empty subdirectories
     first, then the root pending directory if nothing remains.
@@ -55,7 +55,7 @@ def _cleanup_pending(module_dir: Path) -> None:
 
 
 def resolve_status(module_dir: Path) -> list[str]:
-    """List all pending conflict files from ``.odoo-gen-pending/``.
+    """List all pending conflict files from ``.amil-pending/``.
 
     Returns a list of relative paths (relative to the pending directory).
     Returns an empty list when the pending directory does not exist or is
@@ -183,7 +183,7 @@ def _update_manifest_hash(module_dir: Path, relative_path: str) -> None:
     new_files = []
     for entry in manifest.artifacts.files:
         if entry.path == relative_path:
-            from odoo_gen_utils.manifest import ArtifactEntry
+            from amil_utils.manifest import ArtifactEntry
             new_files.append(ArtifactEntry(path=entry.path, sha256=new_sha))
             updated = True
         else:

@@ -1,8 +1,8 @@
 ---
-name: odoo-gen:plan
+name: amil:plan
 description: Plan and specify an Odoo 17.0 module from a natural language description
 argument-hint: "<module description>"
-agent: odoo-scaffold
+agent: amil-scaffold
 allowed-tools:
   - Read
   - Write
@@ -14,11 +14,11 @@ allowed-tools:
 <objective>
 Create a detailed module specification from a natural language description. The system asks targeted Odoo-specific follow-up questions, produces a structured JSON specification, and presents it for user approval before any code generation begins.
 
-Unlike `/odoo-gen:new` (which scaffolds immediately), `/odoo-gen:plan` produces a thorough, reviewed specification that becomes the generation contract. The approved spec.json is committed to git and serves as the single source of truth for subsequent code generation.
+Unlike `/amil:new` (which scaffolds immediately), `/amil:plan` produces a thorough, reviewed specification that becomes the generation contract. The approved spec.json is committed to git and serves as the single source of truth for subsequent code generation.
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gen/workflows/spec.md
+@~/.claude/amil/workflows/spec.md
 </execution_context>
 
 <process>

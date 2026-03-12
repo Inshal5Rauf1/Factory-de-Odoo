@@ -7,7 +7,7 @@
 <domain>
 ## Phase Boundary
 
-Phase 2 creates the `/odoo-gsd:new-erp` command and workflow that:
+Phase 2 creates the `/amil:new-erp` command and workflow that:
 1. Collects Odoo-specific config via interactive questions (Stage A)
 2. Analyzes a PRD document with 4 parallel research agents (Stage B)
 3. Merges agent outputs into a module decomposition
@@ -48,14 +48,14 @@ Phase 2 creates the `/odoo-gsd:new-erp` command and workflow that:
 
 **Locked: 2 dedicated agent files + 2 inline Task() prompts**
 
-**Agent 1: Module Boundary Analyzer** (`agents/odoo-gsd-erp-decomposer.md`)
+**Agent 1: Module Boundary Analyzer** (`agents/amil-erp-decomposer.md`)
 - Input: PRD text + existing_modules from config
 - Job: Identify functional domains, propose module names (uni_{domain}), list models, note base Odoo depends
 - Output: `.planning/research/module-boundaries.json`
 - Format: `{ "modules": [{ "name", "description", "models", "base_depends", "estimated_complexity" }] }`
 - Dedicated agent file (reusable — can re-invoke for re-decomposition)
 
-**Agent 2: OCA Registry Checker** (`agents/odoo-gsd-module-researcher.md`)
+**Agent 2: OCA Registry Checker** (`agents/amil-module-researcher.md`)
 - Input: PRD text + existing_modules from config
 - Job: For each domain, check if OCA/standard Odoo has existing module. Recommend build/extend/skip.
 - Output: `.planning/research/oca-analysis.json`
@@ -131,7 +131,7 @@ Phase number = topological sort order. Tier info in detail bullets only.
 - Uses existing `roadmap.js` parser — reads `### Phase N:` headers and bullet detail sections
 - Modules within same tier ordered by topological sort
 - `module_status.json` and `dependency-graph.cjs` handle actual tier logic and generation ordering
-- This roadmap is for the TARGET ERP project, not the odoo-gsd tool repo
+- This roadmap is for the TARGET ERP project, not the amil tool repo
 
 ### Tiered Registry Injection (REG-08)
 
@@ -146,13 +146,13 @@ Phase number = topological sort order. Tier info in detail bullets only.
 **Locked: Stored in config AND passed to agents**
 - Stored in `config.json` under `odoo.existing_modules` for later use during spec generation
 - Passed as context to all 4 research agents during new-erp
-- Does NOT pre-populate registry — that happens later via `/odoo-gsd:map-erp` (v2)
+- Does NOT pre-populate registry — that happens later via `/amil:map-erp` (v2)
 - During new-erp, we only know module names, not their full model definitions
 
 ### Two Separate Roadmap Contexts
 
-**Locked: odoo-gsd tool roadmap vs ERP project roadmap are independent**
-- odoo-gsd repo has its own roadmap (Phase 1-5, building the tool)
+**Locked: amil tool roadmap vs ERP project roadmap are independent**
+- amil repo has its own roadmap (Phase 1-5, building the tool)
 - `new-erp` generates a roadmap for the target ERP project (uni_core, uni_student, etc.)
 - These live in different directories, never interact
 
@@ -192,7 +192,7 @@ Models use dot notation: uni.institution, uni.student, uni.fee.structure
 <deferred>
 ## Deferred Ideas
 
-- `/odoo-gsd:map-erp` for scanning existing Odoo modules into registry (v2)
+- `/amil:map-erp` for scanning existing Odoo modules into registry (v2)
 - On-demand third-party model scanning (v2 ADVS-03)
 - Web-based OCA registry checking via brave_search or WebFetch
 - Real-time Odoo instance scanning via XML-RPC

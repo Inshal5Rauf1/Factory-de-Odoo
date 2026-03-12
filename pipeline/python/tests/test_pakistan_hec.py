@@ -85,7 +85,7 @@ def _get_complex_constraint(
 
 def _process(spec: dict[str, Any]) -> dict[str, Any]:
     """Run the pakistan_hec preprocessor on a spec."""
-    from odoo_gen_utils.preprocessors.pakistan_hec import _process_pakistan_hec
+    from amil_utils.preprocessors.pakistan_hec import _process_pakistan_hec
 
     return _process_pakistan_hec(spec)
 
@@ -100,12 +100,12 @@ class TestPreprocessorRegistration:
 
     def test_registered_at_order_25(self):
         """pakistan_hec is registered at order=25 in the preprocessor registry."""
-        from odoo_gen_utils.preprocessors._registry import (
+        from amil_utils.preprocessors._registry import (
             clear_registry,
             get_registered_preprocessors,
         )
         import importlib
-        import odoo_gen_utils.preprocessors.pakistan_hec as mod
+        import amil_utils.preprocessors.pakistan_hec as mod
 
         clear_registry()
         importlib.reload(mod)
@@ -714,7 +714,7 @@ class TestPakistanE2E:
 
     def _render(self, spec: dict[str, Any]) -> tuple[Path, list[Path]]:
         """Render a spec to a temp directory and return (module_dir, files)."""
-        from odoo_gen_utils.renderer import render_module, get_template_dir
+        from amil_utils.renderer import render_module, get_template_dir
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)

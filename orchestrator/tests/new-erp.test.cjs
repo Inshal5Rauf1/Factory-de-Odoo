@@ -61,7 +61,7 @@ describe('decomposition.cjs', () => {
 
   // Load module under test
   before(() => {
-    const mod = require('../odoo-gsd/bin/lib/decomposition.cjs');
+    const mod = require('../amil/bin/lib/decomposition.cjs');
     mergeDecomposition = mod.mergeDecomposition;
     formatDecompositionTable = mod.formatDecompositionTable;
     generateRoadmapMarkdown = mod.generateRoadmapMarkdown;

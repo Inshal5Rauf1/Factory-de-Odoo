@@ -10,8 +10,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from odoo_gen_utils.preprocessors._registry import register_preprocessor
-from odoo_gen_utils.renderer_utils import _to_class, _to_python_var
+from amil_utils.preprocessors._registry import register_preprocessor
+from amil_utils.renderer_utils import _to_class, _to_python_var
 
 
 def _singular(word: str) -> str:

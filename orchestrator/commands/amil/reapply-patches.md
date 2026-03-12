@@ -1,10 +1,10 @@
 ---
-description: Reapply local modifications after a GSD update
+description: Reapply local modifications after a Amil update
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion
 ---
 
 <purpose>
-After a GSD update wipes and reinstalls files, this command merges user's previously saved local modifications back into the new version. Uses intelligent comparison to handle cases where the upstream file also changed.
+After a Amil update wipes and reinstalls files, this command merges user's previously saved local modifications back into the new version. Uses intelligent comparison to handle cases where the upstream file also changed.
 </purpose>
 
 <process>
@@ -15,20 +15,20 @@ Check for local patches directory:
 
 ```bash
 # Global install — detect runtime config directory
-if [ -d "$HOME/.config/opencode/odoo-gsd-local-patches" ]; then
-  PATCHES_DIR="$HOME/.config/opencode/odoo-gsd-local-patches"
-elif [ -d "$HOME/.opencode/odoo-gsd-local-patches" ]; then
-  PATCHES_DIR="$HOME/.opencode/odoo-gsd-local-patches"
-elif [ -d "$HOME/.gemini/odoo-gsd-local-patches" ]; then
-  PATCHES_DIR="$HOME/.gemini/odoo-gsd-local-patches"
+if [ -d "$HOME/.config/opencode/amil-local-patches" ]; then
+  PATCHES_DIR="$HOME/.config/opencode/amil-local-patches"
+elif [ -d "$HOME/.opencode/amil-local-patches" ]; then
+  PATCHES_DIR="$HOME/.opencode/amil-local-patches"
+elif [ -d "$HOME/.gemini/amil-local-patches" ]; then
+  PATCHES_DIR="$HOME/.gemini/amil-local-patches"
 else
-  PATCHES_DIR="$HOME/.claude/odoo-gsd-local-patches"
+  PATCHES_DIR="$HOME/.claude/amil-local-patches"
 fi
 # Local install fallback — check all runtime directories
 if [ ! -d "$PATCHES_DIR" ]; then
   for dir in .config/opencode .opencode .gemini .claude; do
-    if [ -d "./$dir/odoo-gsd-local-patches" ]; then
-      PATCHES_DIR="./$dir/odoo-gsd-local-patches"
+    if [ -d "./$dir/amil-local-patches" ]; then
+      PATCHES_DIR="./$dir/amil-local-patches"
       break
     fi
   done
@@ -41,8 +41,8 @@ Read `backup-meta.json` from the patches directory.
 ```
 No local patches found. Nothing to reapply.
 
-Local patches are automatically saved when you run /odoo-gsd:update
-after modifying any GSD workflow, command, or agent files.
+Local patches are automatically saved when you run /amil:update
+after modifying any Amil workflow, command, or agent files.
 ```
 Exit.
 
@@ -65,7 +65,7 @@ Exit.
 
 For each file in `backup-meta.json`:
 
-1. **Read the backed-up version** (user's modified copy from `odoo-gsd-local-patches/`)
+1. **Read the backed-up version** (user's modified copy from `amil-local-patches/`)
 2. **Read the newly installed version** (current file after update)
 3. **Compare and merge:**
 
@@ -89,15 +89,15 @@ For each file in `backup-meta.json`:
 After reapplying, regenerate the file manifest so future updates correctly detect these as user modifications:
 
 ```bash
-# The manifest will be regenerated on next /odoo-gsd:update
+# The manifest will be regenerated on next /amil:update
 # For now, just note which files were modified
 ```
 
 ## Step 5: Cleanup option
 
 Ask user:
-- "Keep patch backups for reference?" → preserve `odoo-gsd-local-patches/`
-- "Clean up patch backups?" → remove `odoo-gsd-local-patches/` directory
+- "Keep patch backups for reference?" → preserve `amil-local-patches/`
+- "Clean up patch backups?" → remove `amil-local-patches/` directory
 
 ## Step 6: Report
 

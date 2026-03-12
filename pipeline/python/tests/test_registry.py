@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.registry import ModelRegistry, ValidationResult
+from amil_utils.registry import ModelRegistry, ValidationResult
 
 
 # ---------------------------------------------------------------------------
@@ -321,9 +321,9 @@ class TestListShow:
 class TestRendererIsolation:
     def test_renderer_has_no_registry_import(self) -> None:
         """renderer.py does NOT import from registry."""
-        renderer_path = Path(__file__).parent.parent / "src" / "odoo_gen_utils" / "renderer.py"
+        renderer_path = Path(__file__).parent.parent / "src" / "amil_utils" / "renderer.py"
         if not renderer_path.exists():
             pytest.skip("renderer.py not found")
         content = renderer_path.read_text()
-        assert "from odoo_gen_utils.registry" not in content
+        assert "from amil_utils.registry" not in content
         assert "import registry" not in content

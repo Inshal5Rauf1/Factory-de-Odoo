@@ -7,9 +7,9 @@ tags: [odoo, agent, questioner, researcher, AskUserQuestion, field-types, securi
 # Dependency graph
 requires:
   - phase: 02-prd-decomposition
-    provides: Existing odoo-gsd-module-researcher agent and agent-frontmatter.test.cjs validation
+    provides: Existing amil-module-researcher agent and agent-frontmatter.test.cjs validation
 provides:
-  - odoo-gsd-module-questioner agent for interactive module Q&A
+  - amil-module-questioner agent for interactive module Q&A
   - Enhanced researcher agent with per-domain Odoo expertise
 affects: [03-module-discussion, 04-plan-module]
 
@@ -19,8 +19,8 @@ tech-stack:
   patterns: [adaptive Q&A flow, per-domain knowledge sections, dual-purpose agent]
 
 key-files:
-  created: [agents/odoo-gsd-module-questioner.md]
-  modified: [agents/odoo-gsd-module-researcher.md]
+  created: [agents/amil-module-questioner.md]
+  modified: [agents/amil-module-researcher.md]
 
 key-decisions:
   - "Questioner agent presents 1-2 questions at a time with context hints"
@@ -50,20 +50,20 @@ completed: 2026-03-05
 - **Files modified:** 2
 
 ## Accomplishments
-- Created odoo-gsd-module-questioner agent with AskUserQuestion tool for interactive module discussion
-- Enhanced odoo-gsd-module-researcher with 4 new Odoo knowledge sections (field types, security, views, pitfalls)
+- Created amil-module-questioner agent with AskUserQuestion tool for interactive module discussion
+- Enhanced amil-module-researcher with 4 new Odoo knowledge sections (field types, security, views, pitfalls)
 - Both agents pass all 62 agent-frontmatter tests
 
 ## Task Commits
 
 Each task was committed atomically:
 
-1. **Task 1: Create odoo-gsd-module-questioner agent** - `d450651` (feat)
+1. **Task 1: Create amil-module-questioner agent** - `d450651` (feat)
 2. **Task 2: Enhance researcher agent with per-domain Odoo knowledge** - `98cc133` (feat)
 
 ## Files Created/Modified
-- `agents/odoo-gsd-module-questioner.md` - Interactive Q&A agent with adaptive questioning, CONTEXT.md output template
-- `agents/odoo-gsd-module-researcher.md` - Enhanced with field type recommendations, security patterns, view inheritance, domain pitfalls
+- `agents/amil-module-questioner.md` - Interactive Q&A agent with adaptive questioning, CONTEXT.md output template
+- `agents/amil-module-researcher.md` - Enhanced with field type recommendations, security patterns, view inheritance, domain pitfalls
 
 ## Decisions Made
 - Questioner agent uses 1-2 questions at a time pattern with config-aware skipping
@@ -86,8 +86,8 @@ None - no external service configuration required.
 
 ## Self-Check: PASSED
 
-- [x] agents/odoo-gsd-module-questioner.md exists (98 lines, min 60)
-- [x] agents/odoo-gsd-module-researcher.md exists (149 lines, min 80)
+- [x] agents/amil-module-questioner.md exists (98 lines, min 60)
+- [x] agents/amil-module-researcher.md exists (149 lines, min 80)
 - [x] Commit d450651 found
 - [x] Commit 98cc133 found
 - [x] AskUserQuestion present in questioner agent (4 occurrences)

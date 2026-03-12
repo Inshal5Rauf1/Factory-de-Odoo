@@ -1,11 +1,11 @@
 ---
-name: odoo-gsd-belt-verifier
+name: amil-belt-verifier
 description: Validates a generated Odoo module's structure and content after belt execution
 tools: Read, Bash, Grep
 color: green
 model_tier: balanced
 skills:
-  - odoo-gsd-belt-verifier-workflow
+  - amil-belt-verifier-workflow
 input: Generated module path + spec.json path
 output: .planning/modules/{module}/verification-report.json
 ---

@@ -7,11 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.iterative.conflict import (
+from amil_utils.iterative.conflict import (
     ConflictResult,
     detect_conflicts,
 )
-from odoo_gen_utils.manifest import (
+from amil_utils.manifest import (
     ArtifactEntry,
     ArtifactInfo,
     GenerationManifest,

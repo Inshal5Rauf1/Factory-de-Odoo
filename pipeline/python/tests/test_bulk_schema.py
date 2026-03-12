@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from odoo_gen_utils.spec_schema import (
+from amil_utils.spec_schema import (
     BulkOperationSpec,
     BulkWizardFieldSpec,
     ModuleSpec,

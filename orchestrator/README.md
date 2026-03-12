@@ -1,18 +1,18 @@
-# odoo-gsd
+# amil
 
-**Odoo ERP Module Orchestrator** — A Claude Code extension that decomposes a university ERP PRD into 20+ modules and drives the [odoo-gen](https://github.com/Inshal5Rauf1/Odoo-Development-Automation) belt to generate them sequentially with cross-module coherence.
+**Odoo ERP Module Orchestrator** — A Claude Code extension that decomposes a university ERP PRD into 20+ modules and drives the [amil](https://github.com/Inshal5Rauf1/Odoo-Development-Automation) belt to generate them sequentially with cross-module coherence.
 
 ## Architecture
 
 ```
-odoo-gsd (this repo)
+amil (this repo)
   │  Orchestrates module decomposition, dependency ordering,
   │  cross-module state (model registry), human checkpoints
   │
-  └── odoo-gen (separate repo — single-module generation pipeline)
+  └── amil (separate repo — single-module generation pipeline)
         │  8 agents, 13 knowledge files, Jinja2 templates, Docker validation
         │
-        └── odoo-gen-utils (Python CLI)
+        └── amil-utils (Python CLI)
               AST analysis, ChromaDB search, MCP server, Docker ops
 ```
 
@@ -26,18 +26,18 @@ odoo-gsd (this repo)
 planned → spec_approved → generated → checked → shipped
 ```
 
-Modules progress through these states sequentially. Only one module generates at a time (the odoo-gen belt needs exclusive Docker access).
+Modules progress through these states sequentially. Only one module generates at a time (the amil belt needs exclusive Docker access).
 
 ## Commands
 
 | Command | Purpose |
 |---------|---------|
-| `/odoo-gsd:new-erp` | Initialize ERP project, decompose PRD into modules |
-| `/odoo-gsd:discuss-module` | Module-specific implementation Q&A |
-| `/odoo-gsd:plan-module` | Generate spec.json, run coherence check |
-| `/odoo-gsd:generate-module` | Invoke belt, update registry |
-| `/odoo-gsd:progress` | Module status + registry stats |
-| `/odoo-gsd:help` | Show all available commands |
+| `/amil:new-erp` | Initialize ERP project, decompose PRD into modules |
+| `/amil:discuss-module` | Module-specific implementation Q&A |
+| `/amil:plan-module` | Generate spec.json, run coherence check |
+| `/amil:generate-module` | Invoke belt, update registry |
+| `/amil:progress` | Module status + registry stats |
+| `/amil:help` | Show all available commands |
 
 ## Key Components
 

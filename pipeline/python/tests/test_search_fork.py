@@ -16,8 +16,8 @@ from unittest.mock import patch
 
 import pytest
 
-from odoo_gen_utils.search.analyzer import ModuleAnalysis, analyze_module, format_analysis_text
-from odoo_gen_utils.search.fork import clone_oca_module, setup_companion_dir
+from amil_utils.search.analyzer import ModuleAnalysis, analyze_module, format_analysis_text
+from amil_utils.search.fork import clone_oca_module, setup_companion_dir
 
 
 # ---------------------------------------------------------------------------
@@ -28,7 +28,7 @@ from odoo_gen_utils.search.fork import clone_oca_module, setup_companion_dir
 class TestCloneOcaModule:
     """Tests for clone_oca_module() git sparse checkout."""
 
-    @patch("odoo_gen_utils.search.fork.subprocess.run")
+    @patch("amil_utils.search.fork.subprocess.run")
     def test_clone_calls_git_with_sparse_checkout_args(
         self, mock_run: object, tmp_path: Path
     ) -> None:
@@ -59,7 +59,7 @@ class TestCloneOcaModule:
         assert "checkout" in checkout_args
         assert "19.0" in checkout_args
 
-    @patch("odoo_gen_utils.search.fork.subprocess.run")
+    @patch("amil_utils.search.fork.subprocess.run")
     def test_clone_returns_module_path(
         self, mock_run: object, tmp_path: Path
     ) -> None:
@@ -69,7 +69,7 @@ class TestCloneOcaModule:
         expected = tmp_path / "oca_sale-workflow" / "sale_order_type"
         assert result == expected
 
-    @patch("odoo_gen_utils.search.fork.subprocess.run")
+    @patch("amil_utils.search.fork.subprocess.run")
     def test_clone_with_custom_branch(
         self, mock_run: object, tmp_path: Path
     ) -> None:
@@ -86,7 +86,7 @@ class TestCloneOcaModule:
         checkout_args = calls[2][0][0]
         assert "16.0" in checkout_args
 
-    @patch("odoo_gen_utils.search.fork.subprocess.run")
+    @patch("amil_utils.search.fork.subprocess.run")
     def test_clone_raises_called_process_error_on_git_failure(
         self, mock_run: object, tmp_path: Path
     ) -> None:
@@ -98,7 +98,7 @@ class TestCloneOcaModule:
         with pytest.raises(subprocess.CalledProcessError):
             clone_oca_module("sale-workflow", "sale_order_type", tmp_path)
 
-    @patch("odoo_gen_utils.search.fork.subprocess.run")
+    @patch("amil_utils.search.fork.subprocess.run")
     def test_clone_uses_check_true(
         self, mock_run: object, tmp_path: Path
     ) -> None:

@@ -87,13 +87,13 @@ Validate your custom rule files before use:
 
 ```bash
 # Validate custom/ directory (default)
-odoo-gen-utils validate-kb
+amil-utils validate-kb
 
 # Validate only custom/ directory (explicit)
-odoo-gen-utils validate-kb --custom
+amil-utils validate-kb --custom
 
 # Validate all knowledge base files (shipped + custom)
-odoo-gen-utils validate-kb --all
+amil-utils validate-kb --all
 ```
 
 The validator checks **format only** (headings, code blocks, line count). It does not validate the semantic correctness of your rules.
@@ -149,5 +149,5 @@ class SaleReport(models.Model):
 
 - Keep custom files focused and concise (under 500 lines)
 - Use the same `### Rule:` prefix for consistency with shipped rules
-- Test your rules by running `odoo-gen-utils validate-kb --custom` after editing
+- Test your rules by running `amil-utils validate-kb --custom` after editing
 - Custom rules are version-controlled with your project -- commit them alongside your code

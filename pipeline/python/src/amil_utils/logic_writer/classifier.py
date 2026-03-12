@@ -10,7 +10,7 @@ This module is a **leaf** -- it imports only from sibling
 
 from __future__ import annotations
 
-from odoo_gen_utils.logic_writer.stub_detector import StubInfo
+from amil_utils.logic_writer.stub_detector import StubInfo
 
 # Keywords in business rules that indicate conditional logic -> quality
 _CONDITIONAL_KEYWORDS: frozenset[str] = frozenset(

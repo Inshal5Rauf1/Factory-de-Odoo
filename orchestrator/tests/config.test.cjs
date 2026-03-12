@@ -1,8 +1,8 @@
 /**
- * GSD Tools Tests - config.cjs
+ * Amil Tools Tests - config.cjs
  *
  * CLI integration tests for config-ensure-section, config-set, and config-get
- * commands exercised through odoo-gsd-tools.cjs via execSync.
+ * commands exercised through amil-tools.cjs via execSync.
  *
  * Requirements: TEST-13
  */
@@ -47,7 +47,7 @@ describe('config-ensure-section command', () => {
     assert.strictEqual(output.created, true);
 
     const config = readConfig(tmpDir);
-    // Verify structure and types — exact values may vary if ~/.odoo-gsd/defaults.json exists
+    // Verify structure and types — exact values may vary if ~/.amil/defaults.json exists
     assert.strictEqual(typeof config.model_profile, 'string');
     assert.strictEqual(typeof config.commit_docs, 'boolean');
     assert.strictEqual(typeof config.parallelization, 'boolean');
@@ -76,11 +76,11 @@ describe('config-ensure-section command', () => {
     assert.strictEqual(secondOutput.reason, 'already_exists');
   });
 
-  // NOTE: This test touches ~/.odoo-gsd/ on the real filesystem. It uses save/restore
+  // NOTE: This test touches ~/.amil/ on the real filesystem. It uses save/restore
   // try/finally and skips if the file already exists to avoid corrupting user config.
   test('detects Brave Search from file-based key', () => {
     const homedir = os.homedir();
-    const gsdDir = path.join(homedir, '.odoo-gsd');
+    const gsdDir = path.join(homedir, '.amil');
     const braveKeyFile = path.join(gsdDir, 'brave_api_key');
 
     // Skip if file already exists (don't mess with user's real config)
@@ -88,7 +88,7 @@ describe('config-ensure-section command', () => {
       return;
     }
 
-    // Create .odoo-gsd dir and brave_api_key file
+    // Create .amil dir and brave_api_key file
     const gsdDirExisted = fs.existsSync(gsdDir);
     try {
       if (!gsdDirExisted) {
@@ -110,11 +110,11 @@ describe('config-ensure-section command', () => {
     }
   });
 
-  // NOTE: This test touches ~/.odoo-gsd/ on the real filesystem. It uses save/restore
+  // NOTE: This test touches ~/.amil/ on the real filesystem. It uses save/restore
   // try/finally and skips if the file already exists to avoid corrupting user config.
   test('merges user defaults from defaults.json', () => {
     const homedir = os.homedir();
-    const gsdDir = path.join(homedir, '.odoo-gsd');
+    const gsdDir = path.join(homedir, '.amil');
     const defaultsFile = path.join(gsdDir, 'defaults.json');
 
     // Save existing defaults if present
@@ -153,11 +153,11 @@ describe('config-ensure-section command', () => {
     }
   });
 
-  // NOTE: This test touches ~/.odoo-gsd/ on the real filesystem. It uses save/restore
+  // NOTE: This test touches ~/.amil/ on the real filesystem. It uses save/restore
   // try/finally and skips if the file already exists to avoid corrupting user config.
   test('merges nested workflow keys from defaults.json preserving unset keys', () => {
     const homedir = os.homedir();
-    const gsdDir = path.join(homedir, '.odoo-gsd');
+    const gsdDir = path.join(homedir, '.amil');
     const defaultsFile = path.join(gsdDir, 'defaults.json');
 
     let existingDefaults = null;

@@ -1,5 +1,5 @@
 ---
-name: gsd:validate-phase
+name: amil:validate-phase
 description: Retroactively audit and fill Nyquist validation gaps for a completed phase
 argument-hint: "[phase number]"
 allowed-tools:
@@ -22,7 +22,7 @@ Output: updated VALIDATION.md + generated test files.
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gsd/workflows/validate-phase.md
+@~/.claude/amil/workflows/validate-phase.md
 </execution_context>
 
 <context>
@@ -30,6 +30,6 @@ Phase: $ARGUMENTS — optional, defaults to last completed phase.
 </context>
 
 <process>
-Execute @~/.claude/odoo-gsd/workflows/validate-phase.md.
+Execute @~/.claude/amil/workflows/validate-phase.md.
 Preserve all workflow gates.
 </process>

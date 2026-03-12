@@ -31,7 +31,7 @@ def e2e_index_db(tmp_path_factory: pytest.TempPathFactory) -> str:
     if not token:
         pytest.skip("GITHUB_TOKEN not set -- cannot build e2e index")
 
-    from odoo_gen_utils.search.index import build_oca_index
+    from amil_utils.search.index import build_oca_index
 
     db_path = str(tmp_path_factory.mktemp("e2e_index_chromadb"))
     build_oca_index(token=token, db_path=db_path)
@@ -104,7 +104,7 @@ def test_build_index_creates_persistent_db(e2e_index_db: str) -> None:
 @skip_no_token
 def test_index_status_after_build(e2e_index_db: str) -> None:
     """Verify get_index_status reports correct metadata after a real build."""
-    from odoo_gen_utils.search.index import get_index_status
+    from amil_utils.search.index import get_index_status
 
     status = get_index_status(db_path=e2e_index_db)
     assert status.exists is True, "Expected index to exist after build"
@@ -120,7 +120,7 @@ def test_index_status_after_build(e2e_index_db: str) -> None:
 @skip_no_token
 def test_search_relevance_ordering(e2e_index_db: str) -> None:
     """Verify search for 'sale order' returns sale-related modules ranked high."""
-    from odoo_gen_utils.search.query import search_modules
+    from amil_utils.search.query import search_modules
 
     results = search_modules("sale order", db_path=e2e_index_db)
     assert len(results) > 0, "Expected at least one search result for 'sale order'"

@@ -6,7 +6,7 @@ Execute a phase prompt (PLAN.md) and create the outcome summary (SUMMARY.md).
 Read STATE.md before any operation to load project context.
 Read config.json for planning behavior settings.
 
-@~/.claude/odoo-gsd/references/git-integration.md
+@~/.claude/amil/references/git-integration.md
 </required_reading>
 
 <process>
@@ -15,7 +15,7 @@ Read config.json for planning behavior settings.
 Load execution context (paths only to minimize orchestrator context):
 
 ```bash
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" init execute-phase "${PHASE}")
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init execute-phase "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -35,7 +35,7 @@ Find first PLAN without matching SUMMARY. Decimal phases supported (`01.1-hotfix
 
 ```bash
 PHASE=$(echo "$PLAN_PATH" | grep -oE '[0-9]+(\.[0-9]+)?-[0-9]+')
-# config settings can be fetched via odoo-gsd-tools config-get if needed
+# config settings can be fetched via amil-tools config-get if needed
 ```
 
 <if mode="yolo">
@@ -67,7 +67,7 @@ grep -n "type=\"checkpoint" .planning/phases/XX-name/{phase}-{plan}-PLAN.md
 | Verify-only | B (segmented) | Segments between checkpoints. After none/human-verify → SUBAGENT. After decision/human-action → MAIN |
 | Decision | C (main) | Execute entirely in main context |
 
-**Pattern A:** init_agent_tracking → spawn Task(subagent_type="odoo-gsd-executor", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report.
+**Pattern A:** init_agent_tracking → spawn Task(subagent_type="amil-executor", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report.
 
 **Pattern B:** Execute segment-by-segment. Autonomous segments: spawn subagent for assigned tasks only (no SUMMARY/commit). Checkpoints: main context. After all segments: aggregate, create SUMMARY, commit. See segment_execution.
 
@@ -100,7 +100,7 @@ Pattern B only (verify-only checkpoints). Skip for A/C.
 
 1. Parse segment map: checkpoint locations and types
 2. Per segment:
-   - Subagent route: spawn odoo-gsd-executor for assigned tasks only. Prompt: task range, plan path, read full plan for context, execute assigned tasks, track deviations, NO SUMMARY/commit. Track via agent protocol.
+   - Subagent route: spawn amil-executor for assigned tasks only. Prompt: task range, plan path, read full plan for context, execute assigned tasks, track deviations, NO SUMMARY/commit. Track via agent protocol.
    - Main route: execute tasks using standard flow (step name="execute")
 3. After ALL segments: aggregate files/deviations/decisions → create SUMMARY.md → commit → self-check:
    - Verify key-files.created exist on disk with `[ -f ]`
@@ -125,7 +125,7 @@ This IS the execution instructions. Follow exactly. If plan references CONTEXT.m
 
 <step name="previous_phase_check">
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" phases list --type summaries --raw
+node "$HOME/.claude/amil/bin/amil-tools.cjs" phases list --type summaries --raw
 # Extract the second-to-last summary from the JSON result
 ```
 If previous SUMMARY has unresolved "Issues Encountered" or "Next Phase Readiness" blockers: AskUserQuestion(header="Previous Issues", options: "Proceed anyway" | "Address first" | "Review previous").
@@ -223,7 +223,7 @@ For `type: tdd` plans — RED-GREEN-REFACTOR:
 
 Errors: RED doesn't fail → investigate test/existing feature. GREEN doesn't pass → debug, iterate. REFACTOR breaks → undo.
 
-See `~/.claude/odoo-gsd/references/tdd.md` for structure.
+See `~/.claude/amil/references/tdd.md` for structure.
 </tdd_plan_execution>
 
 <task_commit>
@@ -275,7 +275,7 @@ Display: `CHECKPOINT: [Type]` box → Progress {X}/{Y} → Task name → type-sp
 
 After response: verify if specified. Pass → continue. Fail → inform, wait. WAIT for user — do NOT hallucinate completion.
 
-See ~/.claude/odoo-gsd/references/checkpoints.md for details.
+See ~/.claude/amil/references/checkpoints.md for details.
 </step>
 
 <step name="checkpoint_return_for_orchestrator">
@@ -313,11 +313,11 @@ fi
 grep -A 50 "^user_setup:" .planning/phases/XX-name/{phase}-{plan}-PLAN.md | head -50
 ```
 
-If user_setup exists: create `{phase}-USER-SETUP.md` using template `~/.claude/odoo-gsd/templates/user-setup.md`. Per service: env vars table, account setup checklist, dashboard config, local dev notes, verification commands. Status "Incomplete". Set `USER_SETUP_CREATED=true`. If empty/missing: skip.
+If user_setup exists: create `{phase}-USER-SETUP.md` using template `~/.claude/amil/templates/user-setup.md`. Per service: env vars table, account setup checklist, dashboard config, local dev notes, verification commands. Status "Incomplete". Set `USER_SETUP_CREATED=true`. If empty/missing: skip.
 </step>
 
 <step name="create_summary">
-Create `{phase}-{plan}-SUMMARY.md` at `.planning/phases/XX-name/`. Use `~/.claude/odoo-gsd/templates/summary.md`.
+Create `{phase}-{plan}-SUMMARY.md` at `.planning/phases/XX-name/`. Use `~/.claude/amil/templates/summary.md`.
 
 **Frontmatter:** phase, plan, subsystem, tags | requires/provides/affects | tech-stack.added/patterns | key-files.created/modified | key-decisions | requirements-completed (**MUST** copy `requirements` array from PLAN.md frontmatter verbatim) | duration ($DURATION), completed ($PLAN_END_TIME date).
 
@@ -331,17 +331,17 @@ Next: more plans → "Ready for {next-plan}" | last → "Phase complete, ready f
 </step>
 
 <step name="update_current_position">
-Update STATE.md using odoo-gsd-tools:
+Update STATE.md using amil-tools:
 
 ```bash
 # Advance plan counter (handles last-plan edge case)
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" state advance-plan
+node "$HOME/.claude/amil/bin/amil-tools.cjs" state advance-plan
 
 # Recalculate progress bar from disk state
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" state update-progress
+node "$HOME/.claude/amil/bin/amil-tools.cjs" state update-progress
 
 # Record execution metrics
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" state record-metric \
+node "$HOME/.claude/amil/bin/amil-tools.cjs" state record-metric \
   --phase "${PHASE}" --plan "${PLAN}" --duration "${DURATION}" \
   --tasks "${TASK_COUNT}" --files "${FILE_COUNT}"
 ```
@@ -353,19 +353,19 @@ From SUMMARY: Extract decisions and add to STATE.md:
 ```bash
 # Add each decision from SUMMARY key-decisions
 # Prefer file inputs for shell-safe text (preserves `$`, `*`, etc. exactly)
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" state add-decision \
+node "$HOME/.claude/amil/bin/amil-tools.cjs" state add-decision \
   --phase "${PHASE}" --summary-file "${DECISION_TEXT_FILE}" --rationale-file "${RATIONALE_FILE}"
 
 # Add blockers if any found
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" state add-blocker --text-file "${BLOCKER_TEXT_FILE}"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" state add-blocker --text-file "${BLOCKER_TEXT_FILE}"
 ```
 </step>
 
 <step name="update_session_continuity">
-Update session info using odoo-gsd-tools:
+Update session info using amil-tools:
 
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" state record-session \
+node "$HOME/.claude/amil/bin/amil-tools.cjs" state record-session \
   --stopped-at "Completed ${PHASE}-${PLAN}-PLAN.md" \
   --resume-file "None"
 ```
@@ -379,7 +379,7 @@ If SUMMARY "Issues Encountered" ≠ "None": yolo → log and continue. Interacti
 
 <step name="update_roadmap">
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" roadmap update-plan-progress "${PHASE}"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap update-plan-progress "${PHASE}"
 ```
 Counts PLAN vs SUMMARY files on disk. Updates progress table row with correct count and status (`In Progress` or `Complete` with date).
 </step>
@@ -388,7 +388,7 @@ Counts PLAN vs SUMMARY files on disk. Updates progress table row with correct co
 Mark completed requirements from the PLAN.md frontmatter `requirements:` field:
 
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" requirements mark-complete ${REQ_IDS}
+node "$HOME/.claude/amil/bin/amil-tools.cjs" requirements mark-complete ${REQ_IDS}
 ```
 
 Extract requirement IDs from the plan's frontmatter (e.g., `requirements: [AUTH-01, AUTH-02]`). If no requirements field, skip.
@@ -398,7 +398,7 @@ Extract requirement IDs from the plan's frontmatter (e.g., `requirements: [AUTH-
 Task code already committed per-task. Commit plan metadata:
 
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md .planning/REQUIREMENTS.md
+node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md .planning/REQUIREMENTS.md
 ```
 </step>
 
@@ -413,7 +413,7 @@ git diff --name-only ${FIRST_TASK}^..HEAD 2>/dev/null
 Update only structural changes: new src/ dir → STRUCTURE.md | deps → STACK.md | file pattern → CONVENTIONS.md | API client → INTEGRATIONS.md | config → STACK.md | renamed → update paths. Skip code-only/bugfix/content changes.
 
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" commit "" --files .planning/codebase/*.md --amend
+node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "" --files .planning/codebase/*.md --amend
 ```
 </step>
 
@@ -427,9 +427,9 @@ ls -1 .planning/phases/[current-phase-dir]/*-SUMMARY.md 2>/dev/null | wc -l
 
 | Condition | Route | Action |
 |-----------|-------|--------|
-| summaries < plans | **A: More plans** | Find next PLAN without SUMMARY. Yolo: auto-continue. Interactive: show next plan, suggest `/odoo-gsd:execute-phase {phase}` + `/odoo-gsd:verify-work`. STOP here. |
-| summaries = plans, current < highest phase | **B: Phase done** | Show completion, suggest `/odoo-gsd:plan-phase {Z+1}` + `/odoo-gsd:verify-work {Z}` + `/odoo-gsd:discuss-phase {Z+1}` |
-| summaries = plans, current = highest phase | **C: Milestone done** | Show banner, suggest `/odoo-gsd:complete-milestone` + `/odoo-gsd:verify-work` + `/odoo-gsd:add-phase` |
+| summaries < plans | **A: More plans** | Find next PLAN without SUMMARY. Yolo: auto-continue. Interactive: show next plan, suggest `/amil:execute-phase {phase}` + `/amil:verify-work`. STOP here. |
+| summaries = plans, current < highest phase | **B: Phase done** | Show completion, suggest `/amil:plan-phase {Z+1}` + `/amil:verify-work {Z}` + `/amil:discuss-phase {Z+1}` |
+| summaries = plans, current = highest phase | **C: Milestone done** | Show banner, suggest `/amil:complete-milestone` + `/amil:verify-work` + `/amil:add-phase` |
 
 All routes: `/clear` first for fresh context.
 </step>

@@ -12,7 +12,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 
-from odoo_gen_utils.search.index import _parse_manifest_safe
+from amil_utils.search.index import _parse_manifest_safe
 
 
 @dataclass(frozen=True)

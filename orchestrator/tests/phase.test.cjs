@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - Phase
+ * Amil Tools Tests - Phase
  */
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
@@ -536,7 +536,7 @@ Output: Chat component, API endpoints.
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gsd/workflows/execute-plan.md
+@~/.claude/amil/workflows/execute-plan.md
 </execution_context>
 
 <context>
@@ -1329,7 +1329,7 @@ describe('phase complete command', () => {
 // comparePhaseNum and normalizePhaseName (imported directly)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { comparePhaseNum, normalizePhaseName } = require('../odoo-gsd/bin/lib/core.cjs');
+const { comparePhaseNum, normalizePhaseName } = require('../amil/bin/lib/core.cjs');
 
 describe('comparePhaseNum', () => {
   test('sorts integer phases numerically', () => {

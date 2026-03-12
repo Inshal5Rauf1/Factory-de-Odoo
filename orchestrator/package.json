@@ -1,14 +1,14 @@
 {
-  "name": "odoo-gsd",
+  "name": "amil",
   "version": "1.0.0",
   "description": "Odoo ERP module orchestrator for Claude Code",
   "bin": {
-    "odoo-gsd": "odoo-gsd/bin/install.js"
+    "amil": "amil/bin/install.js"
   },
   "files": [
     "bin",
     "commands",
-    "odoo-gsd",
+    "amil",
     "agents",
     "hooks/dist",
     "scripts"
@@ -26,11 +26,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/glittercowboy/odoo-gsd.git"
+    "url": "git+https://github.com/glittercowboy/amil.git"
   },
-  "homepage": "https://github.com/glittercowboy/odoo-gsd",
+  "homepage": "https://github.com/glittercowboy/amil",
   "bugs": {
-    "url": "https://github.com/glittercowboy/odoo-gsd/issues"
+    "url": "https://github.com/glittercowboy/amil/issues"
   },
   "engines": {
     "node": ">=16.7.0"
@@ -43,6 +43,6 @@
     "build:hooks": "node scripts/build-hooks.js",
     "prepublishOnly": "npm run build:hooks",
     "test": "node scripts/run-tests.cjs",
-    "test:coverage": "c8 --check-coverage --lines 80 --reporter text --include 'odoo-gsd/bin/lib/*.cjs' --exclude 'tests/**' --all node scripts/run-tests.cjs"
+    "test:coverage": "c8 --check-coverage --lines 80 --reporter text --include 'amil/bin/lib/*.cjs' --exclude 'tests/**' --all node scripts/run-tests.cjs"
   }
 }

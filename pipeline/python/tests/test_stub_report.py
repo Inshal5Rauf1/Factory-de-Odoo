@@ -8,7 +8,7 @@ from typing import Any
 
 import pytest
 
-from odoo_gen_utils.logic_writer.report import StubReport, generate_stub_report
+from amil_utils.logic_writer.report import StubReport, generate_stub_report
 
 
 # ---------------------------------------------------------------------------
@@ -120,7 +120,7 @@ class EmptyModel(models.Model):
 
 
 class TestReportFileCreation:
-    """generate_stub_report() produces .odoo-gen-stubs.json in module dir."""
+    """generate_stub_report() produces .amil-stubs.json in module dir."""
 
     def test_report_file_created(self, tmp_path: Path) -> None:
         mod = tmp_path / "test_module"
@@ -132,7 +132,7 @@ class TestReportFileCreation:
         spec = _minimal_spec()
         result = generate_stub_report(mod, spec)
 
-        report_file = mod / ".odoo-gen-stubs.json"
+        report_file = mod / ".amil-stubs.json"
         assert report_file.exists(), "Report file should be created"
 
     def test_report_is_valid_json(self, tmp_path: Path) -> None:
@@ -145,7 +145,7 @@ class TestReportFileCreation:
         spec = _minimal_spec()
         generate_stub_report(mod, spec)
 
-        report_file = mod / ".odoo-gen-stubs.json"
+        report_file = mod / ".amil-stubs.json"
         data = json.loads(report_file.read_text(encoding="utf-8"))
         assert isinstance(data, dict)
 
@@ -169,10 +169,10 @@ class TestSchemaCompliance:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         meta = data["_meta"]
-        assert meta["generator"] == "odoo-gen-utils"
+        assert meta["generator"] == "amil-utils"
         assert "generated_at" in meta
         assert meta["module"] == "test_module"
         assert isinstance(meta["total_stubs"], int)
@@ -190,7 +190,7 @@ class TestSchemaCompliance:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         assert "stubs" in data
         assert isinstance(data["stubs"], list)
@@ -207,7 +207,7 @@ class TestSchemaCompliance:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stub = data["stubs"][0]
         required_keys = {
@@ -229,7 +229,7 @@ class TestSchemaCompliance:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         ctx = data["stubs"][0]["context"]
         assert "model_fields" in ctx
@@ -257,7 +257,7 @@ class TestStubIdFormat:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stub = data["stubs"][0]
         assert stub["id"] == "test.order___compute_total"
@@ -286,7 +286,7 @@ class TestStubReportReturn:
         assert result.total_stubs == 1
         assert result.budget_count == 1
         assert result.quality_count == 0
-        assert result.report_path == mod / ".odoo-gen-stubs.json"
+        assert result.report_path == mod / ".amil-stubs.json"
 
     def test_quality_stubs_counted(self, tmp_path: Path) -> None:
         mod = tmp_path / "test_module"
@@ -326,7 +326,7 @@ class TestEmptyModule:
         assert result.quality_count == 0
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         assert data["stubs"] == []
         assert data["_meta"]["total_stubs"] == 0
@@ -408,7 +408,7 @@ class SaleOrder(models.Model):
         assert result.quality_count == 2
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stubs_by_method = {s["method"]: s for s in data["stubs"]}
 
@@ -432,7 +432,7 @@ class SaleOrder(models.Model):
         spec = _minimal_spec()
         generate_stub_report(mod, spec)
 
-        raw = (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+        raw = (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         assert raw.endswith("\n"), "JSON should end with trailing newline"
 
 
@@ -577,7 +577,7 @@ class TestMethodType:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stub = data["stubs"][0]
         assert stub["method_type"] == "compute"
@@ -593,7 +593,7 @@ class TestMethodType:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stubs_by_method = {s["method"]: s for s in data["stubs"]}
         assert stubs_by_method["action_confirm"]["method_type"] == "action"
@@ -609,7 +609,7 @@ class TestMethodType:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stubs_by_method = {s["method"]: s for s in data["stubs"]}
         assert stubs_by_method["_check_amount"]["method_type"] == "constraint"
@@ -634,7 +634,7 @@ class TestTargetFieldTypes:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stubs_by_method = {s["method"]: s for s in data["stubs"]}
         compute_stub = stubs_by_method["_compute_total"]
@@ -662,7 +662,7 @@ class TestComputationHint:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stubs_by_method = {s["method"]: s for s in data["stubs"]}
         compute_stub = stubs_by_method["_compute_total"]
@@ -689,7 +689,7 @@ class TestConstraintTypeReport:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stubs_by_method = {s["method"]: s for s in data["stubs"]}
         assert "constraint_type" in stubs_by_method["_check_amount"]
@@ -715,7 +715,7 @@ class TestErrorMessages:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stubs_by_method = {s["method"]: s for s in data["stubs"]}
         check_amount = stubs_by_method["_check_amount"]
@@ -745,7 +745,7 @@ class TestEnrichmentOmission:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stubs_by_method = {s["method"]: s for s in data["stubs"]}
         action_stub = stubs_by_method["action_confirm"]
@@ -765,7 +765,7 @@ class TestEnrichmentOmission:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stub = data["stubs"][0]
         assert "constraint_type" not in stub
@@ -783,7 +783,7 @@ class TestEnrichmentOmission:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stubs_by_method = {s["method"]: s for s in data["stubs"]}
         action_stub = stubs_by_method["action_confirm"]
@@ -917,7 +917,7 @@ class TestActionContextInReport:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stubs_by_method = {s["method"]: s for s in data["stubs"]}
         submit_stub = stubs_by_method["action_submit"]
@@ -937,7 +937,7 @@ class TestActionContextInReport:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stubs_by_method = {s["method"]: s for s in data["stubs"]}
         action_stub = stubs_by_method["action_confirm"]
@@ -958,7 +958,7 @@ class TestCronContextInReport:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stub = data["stubs"][0]
         assert "cron_context" in stub
@@ -978,7 +978,7 @@ class TestCronContextInReport:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stub = data["stubs"][0]
         assert "cron_context" not in stub
@@ -998,7 +998,7 @@ class TestStubZoneInReport:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stubs_by_method = {s["method"]: s for s in data["stubs"]}
         if "write" in stubs_by_method:
@@ -1018,7 +1018,7 @@ class TestStubZoneInReport:
         generate_stub_report(mod, spec)
 
         data = json.loads(
-            (mod / ".odoo-gen-stubs.json").read_text(encoding="utf-8")
+            (mod / ".amil-stubs.json").read_text(encoding="utf-8")
         )
         stub = data["stubs"][0]
         assert "stub_zone" not in stub
@@ -1029,9 +1029,9 @@ class TestStubZoneInReport:
 # Chain context in stub report (Phase 61 Plan 02)
 # ---------------------------------------------------------------------------
 
-from odoo_gen_utils.logic_writer.context_builder import StubContext
-from odoo_gen_utils.logic_writer.report import _stub_to_dict
-from odoo_gen_utils.logic_writer.stub_detector import StubInfo
+from amil_utils.logic_writer.context_builder import StubContext
+from amil_utils.logic_writer.report import _stub_to_dict
+from amil_utils.logic_writer.stub_detector import StubInfo
 
 
 class TestChainContextInReport:

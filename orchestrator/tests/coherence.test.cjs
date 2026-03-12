@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - coherence.cjs
+ * Amil Tools Tests - coherence.cjs
  *
  * Unit tests for the coherence checker: 4 structural validation checks,
  * runAllChecks aggregation, cmdCoherenceCheck CLI integration, and edge cases.
@@ -13,7 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const { createTempProject, cleanup, runGsdTools } = require('./helpers.cjs');
 
-const coherencePath = path.join(__dirname, '..', 'odoo-gsd', 'bin', 'lib', 'coherence.cjs');
+const coherencePath = path.join(__dirname, '..', 'amil', 'bin', 'lib', 'coherence.cjs');
 const {
   checkMany2oneTargets,
   checkDuplicateModels,

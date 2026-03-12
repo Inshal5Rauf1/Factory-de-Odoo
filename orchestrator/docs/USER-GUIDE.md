@@ -1,4 +1,4 @@
-# GSD User Guide
+# Amil User Guide
 
 A detailed reference for workflows, troubleshooting, and configuration. For quick-start setup, see the [README](../README.md).
 
@@ -22,7 +22,7 @@ A detailed reference for workflows, troubleshooting, and configuration. For quic
 ```
   ┌──────────────────────────────────────────────────┐
   │                   NEW PROJECT                    │
-  │  /odoo-gsd:new-project                                │
+  │  /amil:new-project                                │
   │  Questions -> Research -> Requirements -> Roadmap│
   └─────────────────────────┬────────────────────────┘
                             │
@@ -30,19 +30,19 @@ A detailed reference for workflows, troubleshooting, and configuration. For quic
              │      FOR EACH PHASE:       │
              │                            │
              │  ┌────────────────────┐    │
-             │  │ /odoo-gsd:discuss-phase │    │  <- Lock in preferences
+             │  │ /amil:discuss-phase │    │  <- Lock in preferences
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /odoo-gsd:plan-phase    │    │  <- Research + Plan + Verify
+             │  │ /amil:plan-phase    │    │  <- Research + Plan + Verify
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /odoo-gsd:execute-phase │    │  <- Parallel execution
+             │  │ /amil:execute-phase │    │  <- Parallel execution
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /odoo-gsd:verify-work   │    │  <- Manual UAT
+             │  │ /amil:verify-work   │    │  <- Manual UAT
              │  └──────────┬─────────┘    │
              │             │              │
              │     Next Phase?────────────┘
@@ -50,8 +50,8 @@ A detailed reference for workflows, troubleshooting, and configuration. For quic
              └─────────────┼──────────────┘
                             │
             ┌───────────────▼──────────────┐
-            │  /odoo-gsd:audit-milestone        │
-            │  /odoo-gsd:complete-milestone     │
+            │  /amil:audit-milestone        │
+            │  /amil:complete-milestone     │
             └───────────────┬──────────────┘
                             │
                    Another milestone?
@@ -59,14 +59,14 @@ A detailed reference for workflows, troubleshooting, and configuration. For quic
                       Yes         No -> Done!
                        │
                ┌───────▼──────────────┐
-               │  /odoo-gsd:new-milestone  │
+               │  /amil:new-milestone  │
                └──────────────────────┘
 ```
 
 ### Planning Agent Coordination
 
 ```
-  /odoo-gsd:plan-phase N
+  /amil:plan-phase N
          │
          ├── Phase Researcher (x4 parallel)
          │     ├── Stack researcher
@@ -99,7 +99,7 @@ A detailed reference for workflows, troubleshooting, and configuration. For quic
 
 ### Validation Architecture (Nyquist Layer)
 
-During plan-phase research, GSD now maps automated test coverage to each phase
+During plan-phase research, Amil now maps automated test coverage to each phase
 requirement before any code is written. This ensures that when Claude's executor
 commits a task, a feedback mechanism already exists to verify it within seconds.
 
@@ -112,16 +112,16 @@ lack automated verify commands will not be approved.
 
 **Output:** `{phase}-VALIDATION.md` -- the feedback contract for the phase.
 
-**Disable:** Set `workflow.nyquist_validation: false` in `/odoo-gsd:settings` for
+**Disable:** Set `workflow.nyquist_validation: false` in `/amil:settings` for
 rapid prototyping phases where test infrastructure isn't the focus.
 
-### Retroactive Validation (`/odoo-gsd:validate-phase`)
+### Retroactive Validation (`/amil:validate-phase`)
 
 For phases executed before Nyquist validation existed, or for existing codebases
 with only traditional test suites, retroactively audit and fill coverage gaps:
 
 ```
-  /odoo-gsd:validate-phase N
+  /amil:validate-phase N
          |
          +-- Detect state (VALIDATION.md exists? SUMMARY.md exists?)
          |
@@ -144,12 +144,12 @@ VALIDATION.md. If a test reveals an implementation bug, it's flagged as an
 escalation for you to address.
 
 **When to use:** After executing phases that were planned before Nyquist was
-enabled, or after `/odoo-gsd:audit-milestone` surfaces Nyquist compliance gaps.
+enabled, or after `/amil:audit-milestone` surfaces Nyquist compliance gaps.
 
 ### Execution Wave Coordination
 
 ```
-  /odoo-gsd:execute-phase N
+  /amil:execute-phase N
          │
          ├── Analyze plan dependencies
          │
@@ -164,13 +164,13 @@ enabled, or after `/odoo-gsd:audit-milestone` surfaces Nyquist compliance gaps.
                └── Check codebase against phase goals
                      │
                      ├── PASS -> VERIFICATION.md (success)
-                     └── FAIL -> Issues logged for /odoo-gsd:verify-work
+                     └── FAIL -> Issues logged for /amil:verify-work
 ```
 
 ### Brownfield Workflow (Existing Codebase)
 
 ```
-  /odoo-gsd:map-codebase
+  /amil:map-codebase
          │
          ├── Stack Mapper     -> codebase/STACK.md
          ├── Arch Mapper      -> codebase/ARCHITECTURE.md
@@ -178,7 +178,7 @@ enabled, or after `/odoo-gsd:audit-milestone` surfaces Nyquist compliance gaps.
          └── Concern Mapper   -> codebase/CONCERNS.md
                 │
         ┌───────▼──────────┐
-        │ /odoo-gsd:new-project │  <- Questions focus on what you're ADDING
+        │ /amil:new-project │  <- Questions focus on what you're ADDING
         └──────────────────┘
 ```
 
@@ -190,56 +190,56 @@ enabled, or after `/odoo-gsd:audit-milestone` surfaces Nyquist compliance gaps.
 
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
-| `/odoo-gsd:new-project` | Full project init: questions, research, requirements, roadmap | Start of a new project |
-| `/odoo-gsd:new-project --auto @idea.md` | Automated init from document | Have a PRD or idea doc ready |
-| `/odoo-gsd:discuss-phase [N]` | Capture implementation decisions | Before planning, to shape how it gets built |
-| `/odoo-gsd:plan-phase [N]` | Research + plan + verify | Before executing a phase |
-| `/odoo-gsd:execute-phase <N>` | Execute all plans in parallel waves | After planning is complete |
-| `/odoo-gsd:verify-work [N]` | Manual UAT with auto-diagnosis | After execution completes |
-| `/odoo-gsd:audit-milestone` | Verify milestone met its definition of done | Before completing milestone |
-| `/odoo-gsd:complete-milestone` | Archive milestone, tag release | All phases verified |
-| `/odoo-gsd:new-milestone [name]` | Start next version cycle | After completing a milestone |
+| `/amil:new-project` | Full project init: questions, research, requirements, roadmap | Start of a new project |
+| `/amil:new-project --auto @idea.md` | Automated init from document | Have a PRD or idea doc ready |
+| `/amil:discuss-phase [N]` | Capture implementation decisions | Before planning, to shape how it gets built |
+| `/amil:plan-phase [N]` | Research + plan + verify | Before executing a phase |
+| `/amil:execute-phase <N>` | Execute all plans in parallel waves | After planning is complete |
+| `/amil:verify-work [N]` | Manual UAT with auto-diagnosis | After execution completes |
+| `/amil:audit-milestone` | Verify milestone met its definition of done | Before completing milestone |
+| `/amil:complete-milestone` | Archive milestone, tag release | All phases verified |
+| `/amil:new-milestone [name]` | Start next version cycle | After completing a milestone |
 
 ### Navigation
 
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
-| `/odoo-gsd:progress` | Show status and next steps | Anytime -- "where am I?" |
-| `/odoo-gsd:resume-work` | Restore full context from last session | Starting a new session |
-| `/odoo-gsd:pause-work` | Save context handoff | Stopping mid-phase |
-| `/odoo-gsd:help` | Show all commands | Quick reference |
-| `/odoo-gsd:update` | Update GSD with changelog preview | Check for new versions |
-| `/odoo-gsd:join-discord` | Open Discord community invite | Questions or community |
+| `/amil:progress` | Show status and next steps | Anytime -- "where am I?" |
+| `/amil:resume-work` | Restore full context from last session | Starting a new session |
+| `/amil:pause-work` | Save context handoff | Stopping mid-phase |
+| `/amil:help` | Show all commands | Quick reference |
+| `/amil:update` | Update Amil with changelog preview | Check for new versions |
+| `/amil:join-discord` | Open Discord community invite | Questions or community |
 
 ### Phase Management
 
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
-| `/odoo-gsd:add-phase` | Append new phase to roadmap | Scope grows after initial planning |
-| `/odoo-gsd:insert-phase [N]` | Insert urgent work (decimal numbering) | Urgent fix mid-milestone |
-| `/odoo-gsd:remove-phase [N]` | Remove future phase and renumber | Descoping a feature |
-| `/odoo-gsd:list-phase-assumptions [N]` | Preview Claude's intended approach | Before planning, to validate direction |
-| `/odoo-gsd:plan-milestone-gaps` | Create phases for audit gaps | After audit finds missing items |
-| `/odoo-gsd:research-phase [N]` | Deep ecosystem research only | Complex or unfamiliar domain |
+| `/amil:add-phase` | Append new phase to roadmap | Scope grows after initial planning |
+| `/amil:insert-phase [N]` | Insert urgent work (decimal numbering) | Urgent fix mid-milestone |
+| `/amil:remove-phase [N]` | Remove future phase and renumber | Descoping a feature |
+| `/amil:list-phase-assumptions [N]` | Preview Claude's intended approach | Before planning, to validate direction |
+| `/amil:plan-milestone-gaps` | Create phases for audit gaps | After audit finds missing items |
+| `/amil:research-phase [N]` | Deep ecosystem research only | Complex or unfamiliar domain |
 
 ### Brownfield & Utilities
 
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
-| `/odoo-gsd:map-codebase` | Analyze existing codebase | Before `/odoo-gsd:new-project` on existing code |
-| `/odoo-gsd:quick` | Ad-hoc task with GSD guarantees | Bug fixes, small features, config changes |
-| `/odoo-gsd:debug [desc]` | Systematic debugging with persistent state | When something breaks |
-| `/odoo-gsd:add-todo [desc]` | Capture an idea for later | Think of something during a session |
-| `/odoo-gsd:check-todos` | List pending todos | Review captured ideas |
-| `/odoo-gsd:settings` | Configure workflow toggles and model profile | Change model, toggle agents |
-| `/odoo-gsd:set-profile <profile>` | Quick profile switch | Change cost/quality tradeoff |
-| `/odoo-gsd:reapply-patches` | Restore local modifications after update | After `/odoo-gsd:update` if you had local edits |
+| `/amil:map-codebase` | Analyze existing codebase | Before `/amil:new-project` on existing code |
+| `/amil:quick` | Ad-hoc task with Amil guarantees | Bug fixes, small features, config changes |
+| `/amil:debug [desc]` | Systematic debugging with persistent state | When something breaks |
+| `/amil:add-todo [desc]` | Capture an idea for later | Think of something during a session |
+| `/amil:check-todos` | List pending todos | Review captured ideas |
+| `/amil:settings` | Configure workflow toggles and model profile | Change model, toggle agents |
+| `/amil:set-profile <profile>` | Quick profile switch | Change cost/quality tradeoff |
+| `/amil:reapply-patches` | Restore local modifications after update | After `/amil:update` if you had local edits |
 
 ---
 
 ## Configuration Reference
 
-GSD stores project settings in `.planning/config.json`. Configure during `/odoo-gsd:new-project` or update later with `/odoo-gsd:settings`.
+Amil stores project settings in `.planning/config.json`. Configure during `/amil:new-project` or update later with `/amil:settings`.
 
 ### Full config.json Schema
 
@@ -316,17 +316,17 @@ Disable these to speed up phases in familiar domains or when conserving tokens.
 
 | Agent | `quality` | `balanced` | `budget` |
 |-------|-----------|------------|----------|
-| odoo-gsd-planner | Opus | Opus | Sonnet |
-| odoo-gsd-roadmapper | Opus | Sonnet | Sonnet |
-| odoo-gsd-executor | Opus | Sonnet | Sonnet |
-| odoo-gsd-phase-researcher | Opus | Sonnet | Haiku |
-| odoo-gsd-project-researcher | Opus | Sonnet | Haiku |
-| odoo-gsd-research-synthesizer | Sonnet | Sonnet | Haiku |
-| odoo-gsd-debugger | Opus | Sonnet | Sonnet |
-| odoo-gsd-codebase-mapper | Sonnet | Haiku | Haiku |
-| odoo-gsd-verifier | Sonnet | Sonnet | Haiku |
-| odoo-gsd-plan-checker | Sonnet | Sonnet | Haiku |
-| odoo-gsd-integration-checker | Sonnet | Sonnet | Haiku |
+| amil-planner | Opus | Opus | Sonnet |
+| amil-roadmapper | Opus | Sonnet | Sonnet |
+| amil-executor | Opus | Sonnet | Sonnet |
+| amil-phase-researcher | Opus | Sonnet | Haiku |
+| amil-project-researcher | Opus | Sonnet | Haiku |
+| amil-research-synthesizer | Sonnet | Sonnet | Haiku |
+| amil-debugger | Opus | Sonnet | Sonnet |
+| amil-codebase-mapper | Sonnet | Haiku | Haiku |
+| amil-verifier | Sonnet | Sonnet | Haiku |
+| amil-plan-checker | Sonnet | Sonnet | Haiku |
+| amil-integration-checker | Sonnet | Sonnet | Haiku |
 
 **Profile philosophy:**
 - **quality** -- Opus for all decision-making agents, Sonnet for read-only verification. Use when quota is available and the work is critical.
@@ -341,56 +341,56 @@ Disable these to speed up phases in familiar domains or when conserving tokens.
 
 ```bash
 claude --dangerously-skip-permissions
-/odoo-gsd:new-project            # Answer questions, configure, approve roadmap
+/amil:new-project            # Answer questions, configure, approve roadmap
 /clear
-/odoo-gsd:discuss-phase 1        # Lock in your preferences
-/odoo-gsd:plan-phase 1           # Research + plan + verify
-/odoo-gsd:execute-phase 1        # Parallel execution
-/odoo-gsd:verify-work 1          # Manual UAT
+/amil:discuss-phase 1        # Lock in your preferences
+/amil:plan-phase 1           # Research + plan + verify
+/amil:execute-phase 1        # Parallel execution
+/amil:verify-work 1          # Manual UAT
 /clear
-/odoo-gsd:discuss-phase 2        # Repeat for each phase
+/amil:discuss-phase 2        # Repeat for each phase
 ...
-/odoo-gsd:audit-milestone        # Check everything shipped
-/odoo-gsd:complete-milestone     # Archive, tag, done
+/amil:audit-milestone        # Check everything shipped
+/amil:complete-milestone     # Archive, tag, done
 ```
 
 ### New Project from Existing Document
 
 ```bash
-/odoo-gsd:new-project --auto @prd.md   # Auto-runs research/requirements/roadmap from your doc
+/amil:new-project --auto @prd.md   # Auto-runs research/requirements/roadmap from your doc
 /clear
-/odoo-gsd:discuss-phase 1               # Normal flow from here
+/amil:discuss-phase 1               # Normal flow from here
 ```
 
 ### Existing Codebase
 
 ```bash
-/odoo-gsd:map-codebase           # Analyze what exists (parallel agents)
-/odoo-gsd:new-project            # Questions focus on what you're ADDING
+/amil:map-codebase           # Analyze what exists (parallel agents)
+/amil:new-project            # Questions focus on what you're ADDING
 # (normal phase workflow from here)
 ```
 
 ### Quick Bug Fix
 
 ```bash
-/odoo-gsd:quick
+/amil:quick
 > "Fix the login button not responding on mobile Safari"
 ```
 
 ### Resuming After a Break
 
 ```bash
-/odoo-gsd:progress               # See where you left off and what's next
+/amil:progress               # See where you left off and what's next
 # or
-/odoo-gsd:resume-work            # Full context restoration from last session
+/amil:resume-work            # Full context restoration from last session
 ```
 
 ### Preparing for Release
 
 ```bash
-/odoo-gsd:audit-milestone        # Check requirements coverage, detect stubs
-/odoo-gsd:plan-milestone-gaps    # If audit found gaps, create phases to close them
-/odoo-gsd:complete-milestone     # Archive, tag, done
+/amil:audit-milestone        # Check requirements coverage, detect stubs
+/amil:plan-milestone-gaps    # If audit found gaps, create phases to close them
+/amil:complete-milestone     # Archive, tag, done
 ```
 
 ### Speed vs Quality Presets
@@ -404,11 +404,11 @@ claude --dangerously-skip-permissions
 ### Mid-Milestone Scope Changes
 
 ```bash
-/odoo-gsd:add-phase              # Append a new phase to the roadmap
+/amil:add-phase              # Append a new phase to the roadmap
 # or
-/odoo-gsd:insert-phase 3         # Insert urgent work between phases 3 and 4
+/amil:insert-phase 3         # Insert urgent work between phases 3 and 4
 # or
-/odoo-gsd:remove-phase 7         # Descope phase 7 and renumber
+/amil:remove-phase 7         # Descope phase 7 and renumber
 ```
 
 ---
@@ -417,15 +417,15 @@ claude --dangerously-skip-permissions
 
 ### "Project already initialized"
 
-You ran `/odoo-gsd:new-project` but `.planning/PROJECT.md` already exists. This is a safety check. If you want to start over, delete the `.planning/` directory first.
+You ran `/amil:new-project` but `.planning/PROJECT.md` already exists. This is a safety check. If you want to start over, delete the `.planning/` directory first.
 
 ### Context Degradation During Long Sessions
 
-Clear your context window between major commands: `/clear` in Claude Code. GSD is designed around fresh contexts -- every subagent gets a clean 200K window. If quality is dropping in the main session, clear and use `/odoo-gsd:resume-work` or `/odoo-gsd:progress` to restore state.
+Clear your context window between major commands: `/clear` in Claude Code. Amil is designed around fresh contexts -- every subagent gets a clean 200K window. If quality is dropping in the main session, clear and use `/amil:resume-work` or `/amil:progress` to restore state.
 
 ### Plans Seem Wrong or Misaligned
 
-Run `/odoo-gsd:discuss-phase [N]` before planning. Most plan quality issues come from Claude making assumptions that `CONTEXT.md` would have prevented. You can also run `/odoo-gsd:list-phase-assumptions [N]` to see what Claude intends to do before committing to a plan.
+Run `/amil:discuss-phase [N]` before planning. Most plan quality issues come from Claude making assumptions that `CONTEXT.md` would have prevented. You can also run `/amil:list-phase-assumptions [N]` to see what Claude intends to do before committing to a plan.
 
 ### Execution Fails or Produces Stubs
 
@@ -433,27 +433,27 @@ Check that the plan was not too ambitious. Plans should have 2-3 tasks maximum. 
 
 ### Lost Track of Where You Are
 
-Run `/odoo-gsd:progress`. It reads all state files and tells you exactly where you are and what to do next.
+Run `/amil:progress`. It reads all state files and tells you exactly where you are and what to do next.
 
 ### Need to Change Something After Execution
 
-Do not re-run `/odoo-gsd:execute-phase`. Use `/odoo-gsd:quick` for targeted fixes, or `/odoo-gsd:verify-work` to systematically identify and fix issues through UAT.
+Do not re-run `/amil:execute-phase`. Use `/amil:quick` for targeted fixes, or `/amil:verify-work` to systematically identify and fix issues through UAT.
 
 ### Model Costs Too High
 
-Switch to budget profile: `/odoo-gsd:set-profile budget`. Disable research and plan-check agents via `/odoo-gsd:settings` if the domain is familiar to you (or to Claude).
+Switch to budget profile: `/amil:set-profile budget`. Disable research and plan-check agents via `/amil:settings` if the domain is familiar to you (or to Claude).
 
 ### Working on a Sensitive/Private Project
 
-Set `commit_docs: false` during `/odoo-gsd:new-project` or via `/odoo-gsd:settings`. Add `.planning/` to your `.gitignore`. Planning artifacts stay local and never touch git.
+Set `commit_docs: false` during `/amil:new-project` or via `/amil:settings`. Add `.planning/` to your `.gitignore`. Planning artifacts stay local and never touch git.
 
-### GSD Update Overwrote My Local Changes
+### Amil Update Overwrote My Local Changes
 
-Since v1.17, the installer backs up locally modified files to `odoo-gsd-local-patches/`. Run `/odoo-gsd:reapply-patches` to merge your changes back.
+Since v1.17, the installer backs up locally modified files to `amil-local-patches/`. Run `/amil:reapply-patches` to merge your changes back.
 
 ### Subagent Appears to Fail but Work Was Done
 
-A known workaround exists for a Claude Code classification bug. GSD's orchestrators (execute-phase, quick) spot-check actual output before reporting failure. If you see a failure message but commits were made, check `git log` -- the work may have succeeded.
+A known workaround exists for a Claude Code classification bug. Amil's orchestrators (execute-phase, quick) spot-check actual output before reporting failure. If you see a failure message but commits were made, check `git log` -- the work may have succeeded.
 
 ---
 
@@ -461,21 +461,21 @@ A known workaround exists for a Claude Code classification bug. GSD's orchestrat
 
 | Problem | Solution |
 |---------|----------|
-| Lost context / new session | `/odoo-gsd:resume-work` or `/odoo-gsd:progress` |
+| Lost context / new session | `/amil:resume-work` or `/amil:progress` |
 | Phase went wrong | `git revert` the phase commits, then re-plan |
-| Need to change scope | `/odoo-gsd:add-phase`, `/odoo-gsd:insert-phase`, or `/odoo-gsd:remove-phase` |
-| Milestone audit found gaps | `/odoo-gsd:plan-milestone-gaps` |
-| Something broke | `/odoo-gsd:debug "description"` |
-| Quick targeted fix | `/odoo-gsd:quick` |
-| Plan doesn't match your vision | `/odoo-gsd:discuss-phase [N]` then re-plan |
-| Costs running high | `/odoo-gsd:set-profile budget` and `/odoo-gsd:settings` to toggle agents off |
-| Update broke local changes | `/odoo-gsd:reapply-patches` |
+| Need to change scope | `/amil:add-phase`, `/amil:insert-phase`, or `/amil:remove-phase` |
+| Milestone audit found gaps | `/amil:plan-milestone-gaps` |
+| Something broke | `/amil:debug "description"` |
+| Quick targeted fix | `/amil:quick` |
+| Plan doesn't match your vision | `/amil:discuss-phase [N]` then re-plan |
+| Costs running high | `/amil:set-profile budget` and `/amil:settings` to toggle agents off |
+| Update broke local changes | `/amil:reapply-patches` |
 
 ---
 
 ## Project File Structure
 
-For reference, here is what GSD creates in your project:
+For reference, here is what Amil creates in your project:
 
 ```
 .planning/
@@ -485,13 +485,13 @@ For reference, here is what GSD creates in your project:
   STATE.md                # Decisions, blockers, session memory
   config.json             # Workflow configuration
   MILESTONES.md           # Completed milestone archive
-  research/               # Domain research from /odoo-gsd:new-project
+  research/               # Domain research from /amil:new-project
   todos/
     pending/              # Captured ideas awaiting work
     done/                 # Completed todos
   debug/                  # Active debug sessions
     resolved/             # Archived debug sessions
-  codebase/               # Brownfield codebase mapping (from /odoo-gsd:map-codebase)
+  codebase/               # Brownfield codebase mapping (from /amil:map-codebase)
   phases/
     XX-phase-name/
       XX-YY-PLAN.md       # Atomic execution plans

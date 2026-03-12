@@ -13,7 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const { tieredRegistryInjection, readRegistryFile } = require('../odoo-gsd/bin/lib/registry.cjs');
+const { tieredRegistryInjection, readRegistryFile } = require('../amil/bin/lib/registry.cjs');
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 

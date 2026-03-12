@@ -21,7 +21,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from odoo_gen_utils.verifier import EnvironmentVerifier, VerificationWarning, build_verifier_from_env
+from amil_utils.verifier import EnvironmentVerifier, VerificationWarning, build_verifier_from_env
 
 
 # ---------------------------------------------------------------------------
@@ -361,7 +361,7 @@ class TestIntegrationWithRenderModule:
     """Integration tests: render_module() tuple return and verifier wiring."""
 
     def test_render_module_with_verifier_returns_warnings(self, tmp_path, mock_client):
-        from odoo_gen_utils.renderer import get_template_dir, render_module
+        from amil_utils.renderer import get_template_dir, render_module
 
         mock_client.search_read.return_value = []  # all checks fail -> warnings
 
@@ -380,7 +380,7 @@ class TestIntegrationWithRenderModule:
 
     def test_render_module_without_verifier_backward_compat(self, tmp_path):
         """render_module() without verifier still returns (files, []) tuple."""
-        from odoo_gen_utils.renderer import get_template_dir, render_module
+        from amil_utils.renderer import get_template_dir, render_module
 
         spec = {
             "module_name": "test_noverify",
@@ -392,7 +392,7 @@ class TestIntegrationWithRenderModule:
 
     def test_render_module_returns_tuple_type(self, tmp_path):
         """render_module() must return a 2-tuple in all code paths."""
-        from odoo_gen_utils.renderer import get_template_dir, render_module
+        from amil_utils.renderer import get_template_dir, render_module
 
         spec = {"module_name": "test_tuple", "models": []}
         result = render_module(spec, get_template_dir(), tmp_path)
@@ -432,7 +432,7 @@ class TestBuildVerifierFromEnv:
         # Patch it at the odoo_client module level.
         with patch.dict(os.environ, env):
             with patch(
-                "odoo_gen_utils.mcp.odoo_client.OdooClient",
+                "amil_utils.mcp.odoo_client.OdooClient",
                 side_effect=Exception("Connection refused"),
             ):
                 v = build_verifier_from_env()

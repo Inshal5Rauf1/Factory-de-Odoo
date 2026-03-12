@@ -29,7 +29,7 @@ created: 2026-03-05
 
 - **After every task commit:** `node --test tests/tiered-registry.test.cjs tests/config.test.cjs`
 - **After every plan wave:** `npm test`
-- **Before `/gsd:verify-work`:** Full suite must be green
+- **Before `/amil:verify-work`:** Full suite must be green
 - **Max feedback latency:** 8 seconds
 
 ---
@@ -64,7 +64,7 @@ created: 2026-03-05
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Config questions interactive flow | NWRP-02 | Depends on AskUserQuestion tool in Claude Code runtime | Run `/odoo-gsd:new-erp` and verify 7 questions asked in order |
+| Config questions interactive flow | NWRP-02 | Depends on AskUserQuestion tool in Claude Code runtime | Run `/amil:new-erp` and verify 7 questions asked in order |
 | 4 parallel agent spawn | NWRP-03 | Depends on Task() subagent execution in Claude Code runtime | Run new-erp with a test PRD and verify 4 JSON output files created |
 | Human approval checkpoint | NWRP-05 | Depends on interactive presentation in Claude Code | Verify decomposition table shown and approval prompt works |
 

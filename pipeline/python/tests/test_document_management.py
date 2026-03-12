@@ -42,7 +42,7 @@ def _make_spec(
 
 def _process(spec: dict[str, Any]) -> dict[str, Any]:
     """Run the document_management preprocessor on a spec."""
-    from odoo_gen_utils.preprocessors.document_management import (
+    from amil_utils.preprocessors.document_management import (
         _process_document_management,
     )
 
@@ -97,12 +97,12 @@ class TestPreprocessorRegistration:
 
     def test_registered_at_order_28(self):
         """document_management is registered at order=28 in the preprocessor registry."""
-        from odoo_gen_utils.preprocessors._registry import (
+        from amil_utils.preprocessors._registry import (
             clear_registry,
             get_registered_preprocessors,
         )
         import importlib
-        import odoo_gen_utils.preprocessors.document_management as mod
+        import amil_utils.preprocessors.document_management as mod
 
         clear_registry()
         importlib.reload(mod)
@@ -114,12 +114,12 @@ class TestPreprocessorRegistration:
 
     def test_function_name_is_document_management(self):
         """Registered function name is 'document_management'."""
-        from odoo_gen_utils.preprocessors._registry import (
+        from amil_utils.preprocessors._registry import (
             clear_registry,
             get_registered_preprocessors,
         )
         import importlib
-        import odoo_gen_utils.preprocessors.document_management as mod
+        import amil_utils.preprocessors.document_management as mod
 
         clear_registry()
         importlib.reload(mod)
@@ -911,8 +911,8 @@ def _render_model_template(
     version: str = "17.0",
 ) -> str:
     """Render a model through the model.py.j2 template and return the output text."""
-    from odoo_gen_utils.renderer import create_versioned_renderer
-    from odoo_gen_utils.renderer_context import _build_model_context
+    from amil_utils.renderer import create_versioned_renderer
+    from amil_utils.renderer_context import _build_model_context
 
     spec: dict[str, Any] = {
         "module_name": "test_module",
@@ -933,8 +933,8 @@ def _render_view_template(
     version: str = "17.0",
 ) -> str:
     """Render a model through the view_form.xml.j2 template and return the output text."""
-    from odoo_gen_utils.renderer import create_versioned_renderer
-    from odoo_gen_utils.renderer_context import _build_model_context
+    from amil_utils.renderer import create_versioned_renderer
+    from amil_utils.renderer_context import _build_model_context
 
     spec: dict[str, Any] = {
         "module_name": "test_module",
@@ -1136,7 +1136,7 @@ class TestContextKeyDefaults:
 
     def test_has_document_verification_defaults_false(self):
         """has_document_verification defaults to False (no StrictUndefined crash)."""
-        from odoo_gen_utils.renderer_context import _build_model_context
+        from amil_utils.renderer_context import _build_model_context
 
         spec = {"module_name": "test_module", "depends": ["base"], "models": []}
         model = {"name": "test.model", "description": "Test", "fields": []}
@@ -1145,7 +1145,7 @@ class TestContextKeyDefaults:
 
     def test_has_document_versioning_defaults_false(self):
         """has_document_versioning defaults to False (no StrictUndefined crash)."""
-        from odoo_gen_utils.renderer_context import _build_model_context
+        from amil_utils.renderer_context import _build_model_context
 
         spec = {"module_name": "test_module", "depends": ["base"], "models": []}
         model = {"name": "test.model", "description": "Test", "fields": []}
@@ -1158,7 +1158,7 @@ class TestVersionGatesContext:
 
     def test_version_gates_in_module_context(self):
         """VERSION_GATES dict is present in module context."""
-        from odoo_gen_utils.renderer_context import _build_module_context
+        from amil_utils.renderer_context import _build_module_context
 
         spec = {"module_name": "test_module", "depends": ["base"], "models": [], "odoo_version": "17.0"}
         ctx = _build_module_context(spec, "test_module")
@@ -1167,7 +1167,7 @@ class TestVersionGatesContext:
 
     def test_version_gates_has_18_0_entry(self):
         """VERSION_GATES contains 18.0 entry with discuss.channel mapping."""
-        from odoo_gen_utils.renderer_context import _build_module_context
+        from amil_utils.renderer_context import _build_module_context
 
         spec = {"module_name": "test_module", "depends": ["base"], "models": [], "odoo_version": "18.0"}
         ctx = _build_module_context(spec, "test_module")
@@ -1277,7 +1277,7 @@ class TestDocumentManagementE2E:
         """Render a spec and return dict of relative_path -> file content."""
         from pathlib import Path
 
-        from odoo_gen_utils.renderer import get_template_dir, render_module
+        from amil_utils.renderer import get_template_dir, render_module
 
         output_dir = Path(tmp_path)
         files, _warnings = render_module(
@@ -1411,7 +1411,7 @@ class TestVersionGatesE2E:
         """Render a spec and return dict of relative_path -> file content."""
         from pathlib import Path
 
-        from odoo_gen_utils.renderer import get_template_dir, render_module
+        from amil_utils.renderer import get_template_dir, render_module
 
         output_dir = Path(tmp_path)
         files, _warnings = render_module(
@@ -1428,7 +1428,7 @@ class TestVersionGatesE2E:
 
     def test_version_gates_context_available_17(self, tmp_path):
         """VERSION_GATES context is available when rendering with 17.0."""
-        from odoo_gen_utils.renderer_context import _build_module_context
+        from amil_utils.renderer_context import _build_module_context
 
         spec = _make_e2e_spec(odoo_version="17.0")
         ctx = _build_module_context(spec, spec["module_name"])
@@ -1437,7 +1437,7 @@ class TestVersionGatesE2E:
 
     def test_version_gates_context_available_18(self, tmp_path):
         """VERSION_GATES context is available when rendering with 18.0."""
-        from odoo_gen_utils.renderer_context import _build_module_context
+        from amil_utils.renderer_context import _build_module_context
 
         spec = _make_e2e_spec(odoo_version="18.0")
         ctx = _build_module_context(spec, spec["module_name"])
@@ -1464,7 +1464,7 @@ class TestDocumentTypeSeedData:
         """Render a spec and return dict of relative_path -> file content."""
         from pathlib import Path
 
-        from odoo_gen_utils.renderer import get_template_dir, render_module
+        from amil_utils.renderer import get_template_dir, render_module
 
         output_dir = Path(tmp_path)
         files, _warnings = render_module(

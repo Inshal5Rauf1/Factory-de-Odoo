@@ -6,7 +6,7 @@
 
 ## Summary
 
-Phase 2 builds the `/odoo-gsd:new-erp` command -- the primary entry point for initializing an Odoo ERP project from a PRD document. This phase involves: (1) creating a new slash command and workflow that asks 7 Odoo-specific config questions, (2) spawning 4 parallel `Task()` research agents against a PRD, (3) merging their JSON outputs into a decomposition, (4) presenting the decomposition for human approval, (5) generating a flat ROADMAP.md for the target ERP project, and (6) implementing tiered registry injection (REG-08) in `registry.cjs`.
+Phase 2 builds the `/amil:new-erp` command -- the primary entry point for initializing an Odoo ERP project from a PRD document. This phase involves: (1) creating a new slash command and workflow that asks 7 Odoo-specific config questions, (2) spawning 4 parallel `Task()` research agents against a PRD, (3) merging their JSON outputs into a decomposition, (4) presenting the decomposition for human approval, (5) generating a flat ROADMAP.md for the target ERP project, and (6) implementing tiered registry injection (REG-08) in `registry.cjs`.
 
 The codebase patterns are well-established from Phase 1. All required infrastructure exists: `config.cjs` with `cmdConfigSet` for dot-notation writes, `registry.cjs` with `readRegistryFile`, `module-status.cjs` with `cmdModuleStatusInit`, and `dependency-graph.cjs` with `topoSort`/`computeTiers`. The `new-project.md` workflow demonstrates the exact `Task()` spawning pattern for parallel agents. Two new agent files must be created (`odoo-erp-decomposer.md`, `odoo-module-researcher.md`) while two agents are inline `Task()` prompts in the workflow.
 
@@ -50,7 +50,7 @@ The codebase patterns are well-established from Phase 1. All required infrastruc
 - Flat format, no roadmap.js changes needed
 - Phase number = topological sort order, tier info in detail bullets
 - Uses existing `roadmap.js` parser (reads `### Phase N:` headers)
-- This roadmap is for the TARGET ERP project, not the odoo-gsd tool repo
+- This roadmap is for the TARGET ERP project, not the amil tool repo
 
 **Tiered Registry Injection (REG-08):**
 - Three tiers: full models (direct depends), field-list-only (transitive depends), names-only (rest)
@@ -62,7 +62,7 @@ The codebase patterns are well-established from Phase 1. All required infrastruc
 - Does NOT pre-populate registry (that is v2 map-erp)
 
 **Two Separate Roadmap Contexts:**
-- odoo-gsd tool roadmap vs ERP project roadmap are independent, live in different directories
+- amil tool roadmap vs ERP project roadmap are independent, live in different directories
 
 ### Claude's Discretion
 
@@ -74,7 +74,7 @@ The codebase patterns are well-established from Phase 1. All required infrastruc
 
 ### Deferred Ideas (OUT OF SCOPE)
 
-- `/odoo-gsd:map-erp` for scanning existing Odoo modules into registry (v2)
+- `/amil:map-erp` for scanning existing Odoo modules into registry (v2)
 - On-demand third-party model scanning (v2 ADVS-03)
 - Web-based OCA registry checking via brave_search or WebFetch
 - Real-time Odoo instance scanning via XML-RPC
@@ -87,13 +87,13 @@ The codebase patterns are well-established from Phase 1. All required infrastruc
 |----|-------------|-----------------|
 | CONF-03 | `new-erp` command collects Odoo-specific config via interactive questions and writes `odoo` block to config.json | Existing `cmdConfigSet` with dot-notation supports writing `odoo.*` keys. New validation rules needed for Q2 (boolean), Q3 (localization enum), Q5 (LMS enum), Q7 (deployment enum). Q1/Q6 already validated by CONF-02. |
 | REG-08 | Tiered registry injection (full models for direct depends, field-list-only for transitive, names-only for rest) | New function in `registry.cjs` that traverses `module_status.json` dependency graph using `dependency-graph.cjs` topoSort/computeTiers. Returns filtered copy of registry. |
-| NWRP-01 | `/odoo-gsd:new-erp` command and workflow created | New `commands/odoo-gsd/new-erp.md` + `odoo-gsd/workflows/new-erp.md`. Follow exact pattern from `new-project.md`. |
+| NWRP-01 | `/amil:new-erp` command and workflow created | New `commands/amil/new-erp.md` + `amil/workflows/new-erp.md`. Follow exact pattern from `new-project.md`. |
 | NWRP-02 | Odoo-specific config questions asked at project init | 7 questions using `AskUserQuestion`, each writing to config.json via `cmdConfigSet` or equivalent. |
 | NWRP-03 | 4 parallel research agents spawned on PRD | 4 `Task()` calls (2 referencing agent files, 2 inline). All receive PRD text + existing_modules from config. |
 | NWRP-04 | Research outputs merged into module dependency graph with phased generation order | 5-step merge reads 4 JSON files, cross-references, runs topoSort, writes decomposition.json. |
 | NWRP-05 | Human reviews and approves module decomposition before roadmap generation | Structured text presentation with tiered table. AskUserQuestion with approve/modify/regenerate options. |
 | NWRP-06 | ROADMAP.md generated with dependency tiers as phases | Write flat markdown with `### Phase N: module_name` headers that existing `roadmap.cjs` parser can read. |
-| NWRP-07 | New agents created: `odoo-erp-decomposer`, `odoo-module-researcher` | Two `.md` files in `agents/` following existing naming pattern `odoo-gsd-*.md`. |
+| NWRP-07 | New agents created: `odoo-erp-decomposer`, `odoo-module-researcher` | Two `.md` files in `agents/` following existing naming pattern `amil-*.md`. |
 </phase_requirements>
 
 ## Standard Stack
@@ -102,7 +102,7 @@ The codebase patterns are well-established from Phase 1. All required infrastruc
 | Library | Version | Purpose | Why Standard |
 |---------|---------|---------|--------------|
 | Node.js built-ins (fs, path, child_process) | Node 18+ | File I/O, path resolution | Zero npm dependency rule from CLAUDE.md |
-| odoo-gsd-tools.cjs | Existing | CLI dispatch, config read/write, registry CRUD | Central entry point, all commands route through it |
+| amil-tools.cjs | Existing | CLI dispatch, config read/write, registry CRUD | Central entry point, all commands route through it |
 | registry.cjs | Existing | Model registry with atomic writes | REG-08 extends this with tiered injection function |
 | dependency-graph.cjs | Existing | topoSort, computeTiers, cycle detection | Merge step uses this for tier assignment |
 | module-status.cjs | Existing | Module lifecycle init/transition | decomposition.json modules initialized here |
@@ -126,14 +126,14 @@ The codebase patterns are well-established from Phase 1. All required infrastruc
 
 New files for Phase 2:
 ```
-commands/odoo-gsd/
+commands/amil/
   new-erp.md                   # Slash command definition
-odoo-gsd/workflows/
+amil/workflows/
   new-erp.md                   # Full workflow logic
 agents/
-  odoo-gsd-erp-decomposer.md  # Agent 1: Module boundary analysis
-  odoo-gsd-module-researcher.md # Agent 2: OCA registry check
-odoo-gsd/bin/lib/
+  amil-erp-decomposer.md  # Agent 1: Module boundary analysis
+  amil-module-researcher.md # Agent 2: OCA registry check
+amil/bin/lib/
   registry.cjs                 # MODIFIED: add tieredRegistryInjection()
   config.cjs                   # MODIFIED: add new odoo key validations
 tests/
@@ -153,13 +153,13 @@ Research output files (created at runtime by agents):
 
 ### Pattern 1: Command/Workflow Separation
 
-**What:** Slash command files (`commands/odoo-gsd/new-erp.md`) are thin entry points that reference workflow files. The workflow file contains all logic.
+**What:** Slash command files (`commands/amil/new-erp.md`) are thin entry points that reference workflow files. The workflow file contains all logic.
 **When to use:** Every new slash command.
 **Example:**
 ```markdown
-# commands/odoo-gsd/new-erp.md
+# commands/amil/new-erp.md
 ---
-name: odoo-gsd:new-erp
+name: amil:new-erp
 description: Initialize an Odoo ERP project from a PRD
 allowed-tools:
   - Read
@@ -169,7 +169,7 @@ allowed-tools:
   - AskUserQuestion
 ---
 <execution_context>
-@~/.claude/odoo-gsd/workflows/new-erp.md
+@~/.claude/amil/workflows/new-erp.md
 </execution_context>
 <process>
 Execute the new-erp workflow end-to-end.
@@ -182,7 +182,7 @@ Execute the new-erp workflow end-to-end.
 **When to use:** When 4 research agents must analyze the PRD simultaneously.
 **Example from new-project.md (verified in codebase):**
 ```
-Task(prompt="...", subagent_type="odoo-gsd-project-researcher", model="{model}", description="Stack research")
+Task(prompt="...", subagent_type="amil-project-researcher", model="{model}", description="Stack research")
 ```
 All 4 tasks launched together, outputs collected after all complete.
 
@@ -192,17 +192,17 @@ All 4 tasks launched together, outputs collected after all complete.
 **When to use:** After each interactive question answer.
 **Example:**
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.version "17.0"
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.multi_company false
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.localization "pk"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.version "17.0"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.multi_company false
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.localization "pk"
 ```
 
 ### Pattern 4: Agent File Naming
 
-**What:** Agent files follow the pattern `odoo-gsd-{purpose}.md` in the `agents/` directory.
+**What:** Agent files follow the pattern `amil-{purpose}.md` in the `agents/` directory.
 **When to use:** The 2 dedicated agent files (NWRP-07).
-**Existing examples:** `odoo-gsd-executor.md`, `odoo-gsd-planner.md`, `odoo-gsd-verifier.md`
-**New files:** `odoo-gsd-erp-decomposer.md`, `odoo-gsd-module-researcher.md`
+**Existing examples:** `amil-executor.md`, `amil-planner.md`, `amil-verifier.md`
+**New files:** `amil-erp-decomposer.md`, `amil-module-researcher.md`
 
 ### Anti-Patterns to Avoid
 
@@ -238,9 +238,9 @@ node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.localizatio
 **Warning signs:** topoSort crashes because `base` module not found in modules map.
 
 ### Pitfall 3: Two Roadmap Contexts Collision
-**What goes wrong:** new-erp accidentally modifies the odoo-gsd tool's own ROADMAP.md instead of writing the target ERP's roadmap.
+**What goes wrong:** new-erp accidentally modifies the amil tool's own ROADMAP.md instead of writing the target ERP's roadmap.
 **Why it happens:** Both use `.planning/ROADMAP.md` but in different project directories.
-**How to avoid:** The new-erp workflow operates on the TARGET project cwd, not on the odoo-gsd tool repo. The ERP project's `.planning/` directory is separate. Workflow must use the correct cwd context. Clear comments in workflow.
+**How to avoid:** The new-erp workflow operates on the TARGET project cwd, not on the amil tool repo. The ERP project's `.planning/` directory is separate. Workflow must use the correct cwd context. Clear comments in workflow.
 **Warning signs:** Phase numbers conflict with tool roadmap phases.
 
 ### Pitfall 4: Notification Channels Validation Mismatch
@@ -338,8 +338,8 @@ if (keyPath === 'odoo.deployment_target') {
 ### Module Init After Decomposition Approval
 ```bash
 # For each module in the approved decomposition:
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" module-status init uni_core foundation '["base","mail"]' --cwd "$TARGET_CWD"
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" module-status init uni_student core '["uni_core"]' --cwd "$TARGET_CWD"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status init uni_core foundation '["base","mail"]' --cwd "$TARGET_CWD"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status init uni_student core '["uni_core"]' --cwd "$TARGET_CWD"
 ```
 
 ### Decomposition Presentation Format
@@ -370,7 +370,7 @@ Approve this decomposition? (yes / modify / regenerate)
 |--------------|------------------|--------------|--------|
 | Single monolithic agent | 4 parallel specialized agents | Phase 2 design | Better decomposition quality, faster execution |
 | Manual module dependency tracking | Automated topoSort + tier grouping | Phase 1 | Merge step can auto-assign tier numbers |
-| Interactive config as freeform text | AskUserQuestion with constrained options | Existing GSD pattern | Consistent UX, validated input |
+| Interactive config as freeform text | AskUserQuestion with constrained options | Existing Amil pattern | Consistent UX, validated input |
 
 ## Open Questions
 
@@ -412,7 +412,7 @@ Approve this decomposition? (yes / modify / regenerate)
 ### Sampling Rate
 - **Per task commit:** `node --test tests/tiered-registry.test.cjs tests/config.test.cjs`
 - **Per wave merge:** `npm test`
-- **Phase gate:** Full suite green before `/odoo-gsd:verify-work`
+- **Phase gate:** Full suite green before `/amil:verify-work`
 
 ### Wave 0 Gaps
 - [ ] `tests/tiered-registry.test.cjs` -- covers REG-08 tiered injection (direct/transitive/rest filtering)
@@ -422,12 +422,12 @@ Approve this decomposition? (yes / modify / regenerate)
 ## Sources
 
 ### Primary (HIGH confidence)
-- Codebase inspection: `odoo-gsd/bin/lib/registry.cjs` (326 LOC) -- verified CRUD operations, atomicWriteJSON pattern
-- Codebase inspection: `odoo-gsd/bin/lib/config.cjs` (223 LOC) -- verified validateOdooConfigKey, cmdConfigSet
-- Codebase inspection: `odoo-gsd/bin/lib/dependency-graph.cjs` (201 LOC) -- verified topoSort, computeTiers
-- Codebase inspection: `odoo-gsd/bin/lib/module-status.cjs` (205 LOC) -- verified cmdModuleStatusInit, readStatusFile
-- Codebase inspection: `odoo-gsd/workflows/new-project.md` (1112 LOC) -- verified Task() spawning pattern for parallel agents
-- Codebase inspection: `commands/odoo-gsd/new-project.md` -- verified command/workflow separation pattern
+- Codebase inspection: `amil/bin/lib/registry.cjs` (326 LOC) -- verified CRUD operations, atomicWriteJSON pattern
+- Codebase inspection: `amil/bin/lib/config.cjs` (223 LOC) -- verified validateOdooConfigKey, cmdConfigSet
+- Codebase inspection: `amil/bin/lib/dependency-graph.cjs` (201 LOC) -- verified topoSort, computeTiers
+- Codebase inspection: `amil/bin/lib/module-status.cjs` (205 LOC) -- verified cmdModuleStatusInit, readStatusFile
+- Codebase inspection: `amil/workflows/new-project.md` (1112 LOC) -- verified Task() spawning pattern for parallel agents
+- Codebase inspection: `commands/amil/new-project.md` -- verified command/workflow separation pattern
 - Phase 2 CONTEXT.md -- all locked decisions from user discussion
 
 ### Secondary (MEDIUM confidence)

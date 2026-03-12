@@ -21,9 +21,9 @@ import pytest
 
 from click.testing import CliRunner
 
-from odoo_gen_utils.auto_fix import fix_missing_mail_thread, fix_unused_imports
-from odoo_gen_utils.cli import main
-from odoo_gen_utils.validation.types import Result, Violation
+from amil_utils.auto_fix import fix_missing_mail_thread, fix_unused_imports
+from amil_utils.cli import main
+from amil_utils.validation.types import Result, Violation
 
 # Path to the fixture module with known violations
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "auto_fix_module"
@@ -171,7 +171,7 @@ class TestValidateAutoFixIntegration:
         runner = CliRunner()
 
         with patch(
-            "odoo_gen_utils.auto_fix.run_pylint_odoo",
+            "amil_utils.auto_fix.run_pylint_odoo",
             side_effect=_make_multi_cycle_mock(),
         ):
             runner.invoke(
@@ -194,7 +194,7 @@ class TestValidateAutoFixIntegration:
         runner = CliRunner()
 
         with patch(
-            "odoo_gen_utils.auto_fix.run_pylint_odoo",
+            "amil_utils.auto_fix.run_pylint_odoo",
             side_effect=_make_multi_cycle_mock(),
         ):
             runner.invoke(
@@ -218,7 +218,7 @@ class TestValidateAutoFixIntegration:
         runner = CliRunner()
 
         with patch(
-            "odoo_gen_utils.auto_fix.run_pylint_odoo",
+            "amil_utils.auto_fix.run_pylint_odoo",
             side_effect=_make_multi_cycle_mock(),
         ):
             result = runner.invoke(
@@ -250,7 +250,7 @@ class TestValidateAutoFixIntegration:
         runner = CliRunner()
 
         with patch(
-            "odoo_gen_utils.auto_fix.run_pylint_odoo",
+            "amil_utils.auto_fix.run_pylint_odoo",
             side_effect=_make_multi_cycle_mock(),
         ):
             runner.invoke(

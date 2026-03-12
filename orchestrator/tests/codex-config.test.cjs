@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - codex-config.cjs
+ * Amil Tools Tests - codex-config.cjs
  *
  * Tests for Codex adapter header, agent conversion, config.toml generation/merge,
  * per-agent .toml generation, and uninstall cleanup.
@@ -29,7 +29,7 @@ const {
 
 describe('getCodexSkillAdapterHeader', () => {
   test('contains all three sections', () => {
-    const result = getCodexSkillAdapterHeader('odoo-gsd-execute-phase');
+    const result = getCodexSkillAdapterHeader('amil-execute-phase');
     assert.ok(result.includes('<codex_skill_adapter>'), 'has opening tag');
     assert.ok(result.includes('</codex_skill_adapter>'), 'has closing tag');
     assert.ok(result.includes('## A. Skill Invocation'), 'has section A');
@@ -38,13 +38,13 @@ describe('getCodexSkillAdapterHeader', () => {
   });
 
   test('includes correct invocation syntax', () => {
-    const result = getCodexSkillAdapterHeader('odoo-gsd-plan-phase');
-    assert.ok(result.includes('`$odoo-gsd-plan-phase`'), 'has $skillName invocation');
+    const result = getCodexSkillAdapterHeader('amil-plan-phase');
+    assert.ok(result.includes('`$amil-plan-phase`'), 'has $skillName invocation');
     assert.ok(result.includes('{{GSD_ARGS}}'), 'has GSD_ARGS variable');
   });
 
   test('section B maps AskUserQuestion parameters', () => {
-    const result = getCodexSkillAdapterHeader('odoo-gsd-discuss-phase');
+    const result = getCodexSkillAdapterHeader('amil-discuss-phase');
     assert.ok(result.includes('request_user_input'), 'maps to request_user_input');
     assert.ok(result.includes('header'), 'maps header parameter');
     assert.ok(result.includes('question'), 'maps question parameter');
@@ -55,7 +55,7 @@ describe('getCodexSkillAdapterHeader', () => {
   });
 
   test('section C maps Task to spawn_agent', () => {
-    const result = getCodexSkillAdapterHeader('odoo-gsd-execute-phase');
+    const result = getCodexSkillAdapterHeader('amil-execute-phase');
     assert.ok(result.includes('spawn_agent'), 'maps to spawn_agent');
     assert.ok(result.includes('agent_type'), 'maps subagent_type to agent_type');
     assert.ok(result.includes('fork_context'), 'documents fork_context default');
@@ -70,22 +70,22 @@ describe('getCodexSkillAdapterHeader', () => {
 describe('convertClaudeAgentToCodexAgent', () => {
   test('adds codex_agent_role header and cleans frontmatter', () => {
     const input = `---
-name: odoo-gsd-executor
-description: Executes GSD plans with atomic commits
+name: amil-executor
+description: Executes Amil plans with atomic commits
 tools: Read, Write, Edit, Bash, Grep, Glob
 color: yellow
 ---
 
 <role>
-You are a GSD plan executor.
+You are a Amil plan executor.
 </role>`;
 
     const result = convertClaudeAgentToCodexAgent(input);
 
     // Frontmatter rebuilt with only name and description
     assert.ok(result.startsWith('---\n'), 'starts with frontmatter');
-    assert.ok(result.includes('"odoo-gsd-executor"'), 'has quoted name');
-    assert.ok(result.includes('"Executes GSD plans with atomic commits"'), 'has quoted description');
+    assert.ok(result.includes('"amil-executor"'), 'has quoted name');
+    assert.ok(result.includes('"Executes Amil plans with atomic commits"'), 'has quoted description');
     assert.ok(!result.includes('color: yellow'), 'drops color field');
     // Tools should be in <codex_agent_role> but NOT in frontmatter
     const fmEnd = result.indexOf('---', 4);
@@ -94,9 +94,9 @@ You are a GSD plan executor.
 
     // Has codex_agent_role block
     assert.ok(result.includes('<codex_agent_role>'), 'has role header');
-    assert.ok(result.includes('role: odoo-gsd-executor'), 'role matches agent name');
+    assert.ok(result.includes('role: amil-executor'), 'role matches agent name');
     assert.ok(result.includes('tools: Read, Write, Edit, Bash, Grep, Glob'), 'tools in role block');
-    assert.ok(result.includes('purpose: Executes GSD plans with atomic commits'), 'purpose from description');
+    assert.ok(result.includes('purpose: Executes Amil plans with atomic commits'), 'purpose from description');
     assert.ok(result.includes('</codex_agent_role>'), 'has closing tag');
 
     // Body preserved
@@ -105,16 +105,16 @@ You are a GSD plan executor.
 
   test('converts slash commands in body', () => {
     const input = `---
-name: odoo-gsd-test
+name: amil-test
 description: Test agent
 tools: Read
 ---
 
-Run /odoo-gsd:execute-phase to proceed.`;
+Run /amil:execute-phase to proceed.`;
 
     const result = convertClaudeAgentToCodexAgent(input);
-    assert.ok(result.includes('$odoo-gsd-execute-phase'), 'converts slash commands');
-    assert.ok(!result.includes('/odoo-gsd:execute-phase'), 'original slash command removed');
+    assert.ok(result.includes('$amil-execute-phase'), 'converts slash commands');
+    assert.ok(!result.includes('/amil:execute-phase'), 'original slash command removed');
   });
 
   test('handles content without frontmatter', () => {
@@ -128,7 +128,7 @@ Run /odoo-gsd:execute-phase to proceed.`;
 
 describe('generateCodexAgentToml', () => {
   const sampleAgent = `---
-name: odoo-gsd-executor
+name: amil-executor
 description: Executes plans
 tools: Read, Write, Edit
 color: yellow
@@ -137,31 +137,31 @@ color: yellow
 <role>You are an executor.</role>`;
 
   test('sets workspace-write for executor', () => {
-    const result = generateCodexAgentToml('odoo-gsd-executor', sampleAgent);
+    const result = generateCodexAgentToml('amil-executor', sampleAgent);
     assert.ok(result.includes('sandbox_mode = "workspace-write"'), 'has workspace-write');
   });
 
   test('sets read-only for plan-checker', () => {
     const checker = `---
-name: odoo-gsd-plan-checker
+name: amil-plan-checker
 description: Checks plans
 tools: Read, Grep, Glob
 ---
 
 <role>You check plans.</role>`;
-    const result = generateCodexAgentToml('odoo-gsd-plan-checker', checker);
+    const result = generateCodexAgentToml('amil-plan-checker', checker);
     assert.ok(result.includes('sandbox_mode = "read-only"'), 'has read-only');
   });
 
   test('includes developer_instructions from body', () => {
-    const result = generateCodexAgentToml('odoo-gsd-executor', sampleAgent);
+    const result = generateCodexAgentToml('amil-executor', sampleAgent);
     assert.ok(result.includes('developer_instructions = """'), 'has triple-quoted instructions');
     assert.ok(result.includes('<role>You are an executor.</role>'), 'body content in instructions');
     assert.ok(result.includes('"""'), 'has closing triple quotes');
   });
 
   test('defaults unknown agents to read-only', () => {
-    const result = generateCodexAgentToml('odoo-gsd-unknown', sampleAgent);
+    const result = generateCodexAgentToml('amil-unknown', sampleAgent);
     assert.ok(result.includes('sandbox_mode = "read-only"'), 'defaults to read-only');
   });
 });
@@ -176,9 +176,9 @@ describe('CODEX_AGENT_SANDBOX', () => {
 
   test('workspace-write agents have write tools', () => {
     const writeAgents = [
-      'odoo-gsd-executor', 'odoo-gsd-planner', 'odoo-gsd-phase-researcher',
-      'odoo-gsd-project-researcher', 'odoo-gsd-research-synthesizer', 'odoo-gsd-verifier',
-      'odoo-gsd-codebase-mapper', 'odoo-gsd-roadmapper', 'odoo-gsd-debugger',
+      'amil-executor', 'amil-planner', 'amil-phase-researcher',
+      'amil-project-researcher', 'amil-research-synthesizer', 'amil-verifier',
+      'amil-codebase-mapper', 'amil-roadmapper', 'amil-debugger',
     ];
     for (const name of writeAgents) {
       assert.strictEqual(CODEX_AGENT_SANDBOX[name], 'workspace-write', `${name} is workspace-write`);
@@ -186,7 +186,7 @@ describe('CODEX_AGENT_SANDBOX', () => {
   });
 
   test('read-only agents have no write tools', () => {
-    const readOnlyAgents = ['odoo-gsd-plan-checker', 'odoo-gsd-integration-checker'];
+    const readOnlyAgents = ['amil-plan-checker', 'amil-integration-checker'];
     for (const name of readOnlyAgents) {
       assert.strictEqual(CODEX_AGENT_SANDBOX[name], 'read-only', `${name} is read-only`);
     }
@@ -197,11 +197,11 @@ describe('CODEX_AGENT_SANDBOX', () => {
 
 describe('generateCodexConfigBlock', () => {
   const agents = [
-    { name: 'odoo-gsd-executor', description: 'Executes plans' },
-    { name: 'odoo-gsd-planner', description: 'Creates plans' },
+    { name: 'amil-executor', description: 'Executes plans' },
+    { name: 'amil-planner', description: 'Creates plans' },
   ];
 
-  test('starts with GSD marker', () => {
+  test('starts with Amil marker', () => {
     const result = generateCodexConfigBlock(agents);
     assert.ok(result.startsWith(GSD_CODEX_MARKER), 'starts with marker');
   });
@@ -222,9 +222,9 @@ describe('generateCodexConfigBlock', () => {
 
   test('includes per-agent sections', () => {
     const result = generateCodexConfigBlock(agents);
-    assert.ok(result.includes('[agents.odoo-gsd-executor]'), 'has executor section');
-    assert.ok(result.includes('[agents.odoo-gsd-planner]'), 'has planner section');
-    assert.ok(result.includes('config_file = "agents/odoo-gsd-executor.toml"'), 'has executor config_file');
+    assert.ok(result.includes('[agents.amil-executor]'), 'has executor section');
+    assert.ok(result.includes('[agents.amil-planner]'), 'has planner section');
+    assert.ok(result.includes('config_file = "agents/amil-executor.toml"'), 'has executor config_file');
     assert.ok(result.includes('"Executes plans"'), 'has executor description');
   });
 });
@@ -232,10 +232,10 @@ describe('generateCodexConfigBlock', () => {
 // ─── stripGsdFromCodexConfig ────────────────────────────────────────────────────
 
 describe('stripGsdFromCodexConfig', () => {
-  test('returns null for GSD-only config', () => {
+  test('returns null for Amil-only config', () => {
     const content = `${GSD_CODEX_MARKER}\n[features]\nmulti_agent = true\n`;
     const result = stripGsdFromCodexConfig(content);
-    assert.strictEqual(result, null, 'returns null when GSD-only');
+    assert.strictEqual(result, null, 'returns null when Amil-only');
   });
 
   test('preserves user content before marker', () => {
@@ -243,7 +243,7 @@ describe('stripGsdFromCodexConfig', () => {
     const result = stripGsdFromCodexConfig(content);
     assert.ok(result.includes('[model]'), 'preserves user section');
     assert.ok(result.includes('name = "o3"'), 'preserves user values');
-    assert.ok(!result.includes('multi_agent'), 'removes GSD content');
+    assert.ok(!result.includes('multi_agent'), 'removes Amil content');
     assert.ok(!result.includes(GSD_CODEX_MARKER), 'removes marker');
   });
 
@@ -273,10 +273,10 @@ describe('stripGsdFromCodexConfig', () => {
     assert.ok(!result.includes(GSD_CODEX_MARKER), 'strips marker');
   });
 
-  test('removes [agents.odoo-gsd-*] sections', () => {
-    const content = `[agents.odoo-gsd-executor]\ndescription = "test"\nconfig_file = "agents/odoo-gsd-executor.toml"\n\n[agents.custom-agent]\ndescription = "user agent"\n`;
+  test('removes [agents.amil-*] sections', () => {
+    const content = `[agents.amil-executor]\ndescription = "test"\nconfig_file = "agents/amil-executor.toml"\n\n[agents.custom-agent]\ndescription = "user agent"\n`;
     const result = stripGsdFromCodexConfig(content);
-    assert.ok(!result.includes('[agents.odoo-gsd-executor]'), 'removes GSD agent section');
+    assert.ok(!result.includes('[agents.amil-executor]'), 'removes Amil agent section');
     assert.ok(result.includes('[agents.custom-agent]'), 'preserves user agent section');
   });
 });
@@ -287,7 +287,7 @@ describe('mergeCodexConfig', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'odoo-gsd-codex-merge-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'amil-codex-merge-'));
   });
 
   afterEach(() => {
@@ -295,7 +295,7 @@ describe('mergeCodexConfig', () => {
   });
 
   const sampleBlock = generateCodexConfigBlock([
-    { name: 'odoo-gsd-executor', description: 'Executes plans' },
+    { name: 'amil-executor', description: 'Executes plans' },
   ]);
 
   test('case 1: creates new config.toml', () => {
@@ -306,31 +306,31 @@ describe('mergeCodexConfig', () => {
     const content = fs.readFileSync(configPath, 'utf8');
     assert.ok(content.includes(GSD_CODEX_MARKER), 'has marker');
     assert.ok(content.includes('multi_agent = true'), 'has feature flag');
-    assert.ok(content.includes('[agents.odoo-gsd-executor]'), 'has agent');
+    assert.ok(content.includes('[agents.amil-executor]'), 'has agent');
   });
 
-  test('case 2: replaces existing GSD block', () => {
+  test('case 2: replaces existing Amil block', () => {
     const configPath = path.join(tmpDir, 'config.toml');
     const userContent = '[model]\nname = "o3"\n';
     fs.writeFileSync(configPath, userContent + '\n' + sampleBlock + '\n');
 
     // Re-merge with updated block
     const newBlock = generateCodexConfigBlock([
-      { name: 'odoo-gsd-executor', description: 'Updated description' },
-      { name: 'odoo-gsd-planner', description: 'New agent' },
+      { name: 'amil-executor', description: 'Updated description' },
+      { name: 'amil-planner', description: 'New agent' },
     ]);
     mergeCodexConfig(configPath, newBlock);
 
     const content = fs.readFileSync(configPath, 'utf8');
     assert.ok(content.includes('[model]'), 'preserves user content');
     assert.ok(content.includes('Updated description'), 'has new description');
-    assert.ok(content.includes('[agents.odoo-gsd-planner]'), 'has new agent');
+    assert.ok(content.includes('[agents.amil-planner]'), 'has new agent');
     // Verify no duplicate markers
     const markerCount = (content.match(new RegExp(GSD_CODEX_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
     assert.strictEqual(markerCount, 1, 'exactly one marker');
   });
 
-  test('case 3: appends to config without GSD marker', () => {
+  test('case 3: appends to config without Amil marker', () => {
     const configPath = path.join(tmpDir, 'config.toml');
     fs.writeFileSync(configPath, '[model]\nname = "o3"\n');
 
@@ -379,8 +379,8 @@ describe('mergeCodexConfig', () => {
     assert.strictEqual(featuresCount, 1, 'exactly one [features] section');
     assert.strictEqual(agentsCount, 1, 'exactly one [agents] section');
     assert.ok(content.includes('other_feature = true'), 'preserves user feature keys');
-    assert.ok(content.includes('multi_agent = true'), 'has GSD feature key');
-    assert.ok(content.includes('[agents.odoo-gsd-executor]'), 'has agent');
+    assert.ok(content.includes('multi_agent = true'), 'has Amil feature key');
+    assert.ok(content.includes('[agents.amil-executor]'), 'has agent');
   });
 
   test('case 2 re-injects missing feature keys', () => {
@@ -408,9 +408,9 @@ describe('mergeCodexConfig', () => {
       'max_threads = 4',
       'max_depth = 2',
       '',
-      '[agents.odoo-gsd-executor]',
+      '[agents.amil-executor]',
       'description = "old"',
-      'config_file = "agents/odoo-gsd-executor.toml"',
+      'config_file = "agents/amil-executor.toml"',
       '',
       GSD_CODEX_MARKER,
       '[agents]',
@@ -425,7 +425,7 @@ describe('mergeCodexConfig', () => {
     const agentsCount = (content.match(/^\[agents\]\s*$/gm) || []).length;
     assert.strictEqual(agentsCount, 1, 'exactly one [agents] section');
     assert.ok(content.includes('child_agents_md = false'), 'preserves user feature keys');
-    assert.ok(content.includes('[agents.odoo-gsd-executor]'), 'has agent from fresh block');
+    assert.ok(content.includes('[agents.amil-executor]'), 'has agent from fresh block');
   });
 
   test('case 2 idempotent after case 3 with existing [features]', () => {
@@ -452,7 +452,7 @@ describe('installCodexConfig (integration)', () => {
   const agentsSrc = path.join(__dirname, '..', 'agents');
 
   beforeEach(() => {
-    tmpTarget = fs.mkdtempSync(path.join(os.tmpdir(), 'odoo-gsd-codex-install-'));
+    tmpTarget = fs.mkdtempSync(path.join(os.tmpdir(), 'amil-codex-install-'));
   });
 
   afterEach(() => {
@@ -473,18 +473,18 @@ describe('installCodexConfig (integration)', () => {
     assert.ok(fs.existsSync(configPath), 'config.toml exists');
     const config = fs.readFileSync(configPath, 'utf8');
     assert.ok(config.includes('multi_agent = true'), 'has multi_agent feature');
-    assert.ok(config.includes('[agents.odoo-gsd-executor]'), 'has executor agent');
+    assert.ok(config.includes('[agents.amil-executor]'), 'has executor agent');
 
     // Verify per-agent .toml files
     const agentsDir = path.join(tmpTarget, 'agents');
-    assert.ok(fs.existsSync(path.join(agentsDir, 'odoo-gsd-executor.toml')), 'executor .toml exists');
-    assert.ok(fs.existsSync(path.join(agentsDir, 'odoo-gsd-plan-checker.toml')), 'plan-checker .toml exists');
+    assert.ok(fs.existsSync(path.join(agentsDir, 'amil-executor.toml')), 'executor .toml exists');
+    assert.ok(fs.existsSync(path.join(agentsDir, 'amil-plan-checker.toml')), 'plan-checker .toml exists');
 
-    const executorToml = fs.readFileSync(path.join(agentsDir, 'odoo-gsd-executor.toml'), 'utf8');
+    const executorToml = fs.readFileSync(path.join(agentsDir, 'amil-executor.toml'), 'utf8');
     assert.ok(executorToml.includes('sandbox_mode = "workspace-write"'), 'executor is workspace-write');
     assert.ok(executorToml.includes('developer_instructions'), 'has developer_instructions');
 
-    const checkerToml = fs.readFileSync(path.join(agentsDir, 'odoo-gsd-plan-checker.toml'), 'utf8');
+    const checkerToml = fs.readFileSync(path.join(agentsDir, 'amil-plan-checker.toml'), 'utf8');
     assert.ok(checkerToml.includes('sandbox_mode = "read-only"'), 'plan-checker is read-only');
   });
 });

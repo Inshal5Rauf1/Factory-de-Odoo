@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { scoreModule, scoreAllModules, getDiscussionBatches, getDiscussionSummary } = require('../odoo-gsd/bin/lib/spec-completeness.cjs');
+const { scoreModule, scoreAllModules, getDiscussionBatches, getDiscussionSummary } = require('../amil/bin/lib/spec-completeness.cjs');
 
 // Test: well-specified module scores >= 70
 {

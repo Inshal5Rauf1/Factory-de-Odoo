@@ -11,14 +11,14 @@ from typing import Any
 
 import pytest
 
-from odoo_gen_utils.preprocessors.computation_chains import (
+from amil_utils.preprocessors.computation_chains import (
     _validate_chain_types,
     _validate_chain_traversal,
     _validate_chain_store_propagation,
     _validate_chain_cycles,
     _validate_chain_field_existence,
 )
-from odoo_gen_utils.spec_schema import ChainSpec, ChainStepSpec
+from amil_utils.spec_schema import ChainSpec, ChainStepSpec
 
 
 # ---------------------------------------------------------------------------
@@ -557,7 +557,7 @@ class TestValidatorIntegration:
 
     def test_preprocessor_raises_on_cycle(self):
         """Preprocessor raises ValueError when chains have cycles."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -598,7 +598,7 @@ class TestValidatorIntegration:
 
     def test_preprocessor_raises_on_type_error(self):
         """Preprocessor raises ValueError when aggregation type is incompatible."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -622,7 +622,7 @@ class TestValidatorIntegration:
 
     def test_preprocessor_passes_valid_chain(self):
         """Preprocessor completes without error on valid chain."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 

@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from odoo_gen_utils.mcp.server import (
+from amil_utils.mcp.server import (
     find_field_conflicts,
     get_model_relations,
     get_view_inheritance_chain,
@@ -21,7 +21,7 @@ from odoo_gen_utils.mcp.server import (
 def mock_client():
     """Return a MagicMock OdooClient with patched _get_client."""
     client = MagicMock()
-    with patch("odoo_gen_utils.mcp.server._get_client", return_value=client):
+    with patch("amil_utils.mcp.server._get_client", return_value=client):
         yield client
 
 
@@ -87,7 +87,7 @@ class TestFindFieldConflicts:
 
 class TestNewToolsErrorHandling:
     def test_all_new_tools_handle_connection_error(self):
-        with patch("odoo_gen_utils.mcp.server._get_client",
+        with patch("amil_utils.mcp.server._get_client",
                    side_effect=ConnectionRefusedError("Connection refused")):
             r1 = get_view_inheritance_chain("res.partner")
             r2 = get_model_relations("res.partner")

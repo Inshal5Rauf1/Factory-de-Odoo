@@ -1,5 +1,5 @@
 ---
-name: odoo-gsd-module-questioner
+name: amil-module-questioner
 description: Run per-type Q&A session for Odoo module design decisions
 tools: Read, Write, Bash, AskUserQuestion
 color: yellow
@@ -7,7 +7,7 @@ model_tier: quality
 input: Module type + question template + decomposition entry + config odoo block
 output: .planning/modules/{module}/CONTEXT.md
 skills:
-  - odoo-gsd-module-questioner-workflow
+  - amil-module-questioner-workflow
 # hooks:
 #   PostToolUse:
 #     - matcher: "Write|Edit"

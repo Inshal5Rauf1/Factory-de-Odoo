@@ -18,8 +18,8 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.renderer import get_template_dir, render_module
-from odoo_gen_utils.spec_schema import ModuleSpec
+from amil_utils.renderer import get_template_dir, render_module
+from amil_utils.spec_schema import ModuleSpec
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 SPEC_PATH = FIXTURES_DIR / "integration_spec.json"
@@ -186,7 +186,7 @@ class TestSemanticValidation:
         - Inline One2many child fields appearing in parent views
         - mail.thread mixin fields on line item models
         """
-        from odoo_gen_utils.validation.semantic import semantic_validate
+        from amil_utils.validation.semantic import semantic_validate
 
         # Known false positive patterns: child model fields in parent inline tree,
         # mail.thread mixin fields on models that don't inherit mail.thread
@@ -226,7 +226,7 @@ class TestDockerIntegration:
     @pytest.fixture(autouse=True)
     def _skip_no_docker(self):
         """Skip all tests in this class if Docker is unavailable."""
-        from odoo_gen_utils.validation.docker_runner import check_docker_available
+        from amil_utils.validation.docker_runner import check_docker_available
 
         if not check_docker_available():
             pytest.skip("Docker daemon not available")
@@ -237,7 +237,7 @@ class TestDockerIntegration:
     )
     def test_docker_install(self, rendered_module: Path):
         """Module should install successfully in Docker Odoo."""
-        from odoo_gen_utils.validation.docker_runner import docker_install_module
+        from amil_utils.validation.docker_runner import docker_install_module
 
         result = docker_install_module(rendered_module)
         assert result.success, f"Docker install failed: {result.errors}"
@@ -249,7 +249,7 @@ class TestDockerIntegration:
     )
     def test_docker_tests(self, rendered_module: Path):
         """Generated Odoo tests should pass in Docker."""
-        from odoo_gen_utils.validation.docker_runner import docker_run_tests
+        from amil_utils.validation.docker_runner import docker_run_tests
 
         result = docker_run_tests(rendered_module)
         assert result.success, f"Docker test run failed: {result.errors}"

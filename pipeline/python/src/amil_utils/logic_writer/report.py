@@ -1,9 +1,9 @@
 """JSON stub report generation -- orchestrates detection + context + classification.
 
-Produces a ``.odoo-gen-stubs.json`` sidecar file in the module output
+Produces a ``.amil-stubs.json`` sidecar file in the module output
 directory matching the locked schema from CONTEXT.md.  The report is
 the contract between the deterministic belt and the external LLM layer
-(Claude Code / odoo-gsd) that fills the stubs.
+(Claude Code / amil) that fills the stubs.
 
 This module is a **leaf** -- it imports only from sibling modules
 (``stub_detector``, ``context_builder``, ``classifier``) and
@@ -19,14 +19,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from odoo_gen_utils.logic_writer.classifier import classify_complexity
-from odoo_gen_utils.logic_writer.context_builder import StubContext, build_stub_context
-from odoo_gen_utils.logic_writer.stub_detector import StubInfo, detect_stubs
-from odoo_gen_utils.registry import ModelRegistry
+from amil_utils.logic_writer.classifier import classify_complexity
+from amil_utils.logic_writer.context_builder import StubContext, build_stub_context
+from amil_utils.logic_writer.stub_detector import StubInfo, detect_stubs
+from amil_utils.registry import ModelRegistry
 
 logger = logging.getLogger(__name__)
 
-_REPORT_FILENAME = ".odoo-gen-stubs.json"
+_REPORT_FILENAME = ".amil-stubs.json"
 
 
 # ---------------------------------------------------------------------------
@@ -54,7 +54,7 @@ def generate_stub_report(
     spec: dict[str, Any],
     registry: ModelRegistry | None = None,
 ) -> StubReport:
-    """Generate ``.odoo-gen-stubs.json`` in *module_dir*.
+    """Generate ``.amil-stubs.json`` in *module_dir*.
 
     Orchestrates the full pipeline:
     1. Detect stubs via AST scanning.
@@ -84,7 +84,7 @@ def generate_stub_report(
 
     report = {
         "_meta": {
-            "generator": "odoo-gen-utils",
+            "generator": "amil-utils",
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "module": module_dir.name,
             "total_stubs": total_stubs,

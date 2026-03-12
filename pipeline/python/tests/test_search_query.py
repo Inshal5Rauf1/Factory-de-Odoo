@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from odoo_gen_utils.search.query import (
+from amil_utils.search.query import (
     SearchResult,
     format_results_json,
     format_results_text,
@@ -73,7 +73,7 @@ class TestSearchResult:
 class TestSearchModulesSorted:
     """search_modules returns tuple of SearchResult sorted by relevance_score descending."""
 
-    @patch("odoo_gen_utils.search.query.chromadb")
+    @patch("amil_utils.search.query.chromadb")
     def test_returns_sorted_by_relevance_descending(self, mock_chromadb: MagicMock) -> None:
         mock_collection = MagicMock()
         mock_collection.query.return_value = {
@@ -109,7 +109,7 @@ class TestSearchModulesSorted:
 class TestSearchModulesLimit:
     """search_modules returns at most n_results items (default 5)."""
 
-    @patch("odoo_gen_utils.search.query.chromadb")
+    @patch("amil_utils.search.query.chromadb")
     def test_default_limit_is_5(self, mock_chromadb: MagicMock) -> None:
         mock_collection = MagicMock()
         mock_collection.query.return_value = {
@@ -143,7 +143,7 @@ class TestSearchModulesLimit:
 class TestCosineConversion:
     """Cosine distance converted correctly to similarity: similarity = 1.0 - (distance / 2.0)."""
 
-    @patch("odoo_gen_utils.search.query.chromadb")
+    @patch("amil_utils.search.query.chromadb")
     def test_cosine_distance_to_similarity(self, mock_chromadb: MagicMock) -> None:
         mock_collection = MagicMock()
         mock_collection.query.return_value = {
@@ -162,7 +162,7 @@ class TestCosineConversion:
         assert len(results) == 1
         assert results[0].relevance_score == pytest.approx(0.8, abs=0.01)
 
-    @patch("odoo_gen_utils.search.query.chromadb")
+    @patch("amil_utils.search.query.chromadb")
     def test_similarity_range_0_to_1(self, mock_chromadb: MagicMock) -> None:
         """Distance 0.0 -> score 1.0, distance 2.0 -> score 0.0."""
         mock_collection = MagicMock()
@@ -192,7 +192,7 @@ class TestCosineConversion:
 class TestSearchModulesIndexError:
     """search_modules raises clear error when index does not exist."""
 
-    @patch("odoo_gen_utils.search.query.chromadb")
+    @patch("amil_utils.search.query.chromadb")
     def test_raises_error_when_collection_not_found(self, mock_chromadb: MagicMock) -> None:
         mock_client = MagicMock()
         mock_client.get_collection.side_effect = ValueError("Collection odoo_modules does not exist")
@@ -267,8 +267,8 @@ class TestSearchModulesJson:
 class TestGitHubFallback:
     """search_modules with github_fallback=True calls `gh search repos` when OCA results empty."""
 
-    @patch("odoo_gen_utils.search.query.subprocess")
-    @patch("odoo_gen_utils.search.query.chromadb")
+    @patch("amil_utils.search.query.subprocess")
+    @patch("amil_utils.search.query.chromadb")
     def test_github_fallback_when_oca_empty(self, mock_chromadb: MagicMock, mock_subprocess: MagicMock) -> None:
         # OCA returns empty results
         mock_collection = MagicMock()
@@ -311,8 +311,8 @@ class TestGitHubFallback:
         assert "search" in call_args[0][0]
         assert "repos" in call_args[0][0]
 
-    @patch("odoo_gen_utils.search.query.subprocess")
-    @patch("odoo_gen_utils.search.query.chromadb")
+    @patch("amil_utils.search.query.subprocess")
+    @patch("amil_utils.search.query.chromadb")
     def test_github_fallback_results_have_org_github(self, mock_chromadb: MagicMock, mock_subprocess: MagicMock) -> None:
         # OCA returns empty results
         mock_collection = MagicMock()
@@ -348,7 +348,7 @@ class TestGitHubFallback:
         assert results[0].url == "https://github.com/someone/odoo-hr-module"
         assert results[0].summary == "HR module for Odoo 17"
 
-    @patch("odoo_gen_utils.search.query.chromadb")
+    @patch("amil_utils.search.query.chromadb")
     def test_no_github_fallback_when_oca_has_results(self, mock_chromadb: MagicMock) -> None:
         """When OCA returns results, GitHub fallback is NOT called even if flag is set."""
         mock_collection = MagicMock()

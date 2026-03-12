@@ -1,5 +1,5 @@
 ---
-name: gsd:new-project
+name: amil:new-project
 description: Initialize a new project with deep context gathering and PROJECT.md
 argument-hint: "[--auto]"
 allowed-tools:
@@ -25,18 +25,18 @@ Initialize a new project through unified flow: questioning → research (optiona
 - `.planning/ROADMAP.md` — phase structure
 - `.planning/STATE.md` — project memory
 
-**After this command:** Run `/odoo-gsd:plan-phase 1` to start execution.
+**After this command:** Run `/amil:plan-phase 1` to start execution.
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gsd/workflows/new-project.md
-@~/.claude/odoo-gsd/references/questioning.md
-@~/.claude/odoo-gsd/references/ui-brand.md
-@~/.claude/odoo-gsd/templates/project.md
-@~/.claude/odoo-gsd/templates/requirements.md
+@~/.claude/amil/workflows/new-project.md
+@~/.claude/amil/references/questioning.md
+@~/.claude/amil/references/ui-brand.md
+@~/.claude/amil/templates/project.md
+@~/.claude/amil/templates/requirements.md
 </execution_context>
 
 <process>
-Execute the new-project workflow from @~/.claude/odoo-gsd/workflows/new-project.md end-to-end.
+Execute the new-project workflow from @~/.claude/amil/workflows/new-project.md end-to-end.
 Preserve all workflow gates (validation, approvals, commits, routing).
 </process>

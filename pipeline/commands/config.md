@@ -1,5 +1,5 @@
 ---
-name: odoo-gen:config
+name: amil:config
 description: View or edit Odoo-specific configuration (odoo_version, edition, output_dir)
 argument-hint: "[key] [value]"
 ---
@@ -7,7 +7,7 @@ argument-hint: "[key] [value]"
 View or edit Odoo-specific configuration values.
 
 Manages two layers of configuration:
-1. **Global defaults:** `~/.claude/odoo-gen/defaults.json` (applies to all projects)
+1. **Global defaults:** `~/.claude/amil/defaults.json` (applies to all projects)
 2. **Project overrides:** `.planning/config.json` `odoo` section (applies to current project)
 
 Project overrides take precedence over global defaults.
@@ -15,7 +15,7 @@ Project overrides take precedence over global defaults.
 
 <process>
 1. Parse $ARGUMENTS for optional key and value
-2. Read global defaults from `~/.claude/odoo-gen/defaults.json`
+2. Read global defaults from `~/.claude/amil/defaults.json`
 3. Read project overrides from `.planning/config.json` (look for `odoo` section)
 4. Merge configuration (project overrides win)
 

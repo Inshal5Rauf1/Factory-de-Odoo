@@ -25,7 +25,7 @@ class TestC7HintsDefault:
     """PIPE-01e: _build_module_context() includes c7_hints key defaulting to {}."""
 
     def test_minimal_spec_has_c7_hints(self) -> None:
-        from odoo_gen_utils.renderer_context import _build_module_context
+        from amil_utils.renderer_context import _build_module_context
 
         spec: dict = {"module_name": "test_mod", "models": []}
         ctx = _build_module_context(spec, "test_mod")
@@ -33,7 +33,7 @@ class TestC7HintsDefault:
         assert ctx["c7_hints"] == {}, "c7_hints must default to empty dict"
 
     def test_c7_hints_is_dict_type(self) -> None:
-        from odoo_gen_utils.renderer_context import _build_module_context
+        from amil_utils.renderer_context import _build_module_context
 
         spec: dict = {"module_name": "test_mod", "models": []}
         ctx = _build_module_context(spec, "test_mod")
@@ -47,12 +47,12 @@ class TestC7HintsDefault:
 class TestC7HintsInjection:
     """PIPE-01f: render_module() calls context7_enrich and injects hints into ctx."""
 
-    @patch("odoo_gen_utils.renderer.context7_enrich")
-    @patch("odoo_gen_utils.renderer.build_context7_from_env")
+    @patch("amil_utils.renderer.context7_enrich")
+    @patch("amil_utils.renderer.build_context7_from_env")
     def test_context7_enrich_called_and_hints_injected(
         self, mock_build_env: MagicMock, mock_enrich: MagicMock, tmp_path: Path,
     ) -> None:
-        from odoo_gen_utils.renderer import render_module, get_template_dir
+        from amil_utils.renderer import render_module, get_template_dir
 
         mock_client = MagicMock()
         mock_build_env.return_value = mock_client
@@ -78,12 +78,12 @@ class TestC7HintsInjection:
         call_args = mock_enrich.call_args
         assert call_args[0][0]["module_name"] == "test_c7_inject"
 
-    @patch("odoo_gen_utils.renderer.context7_enrich")
-    @patch("odoo_gen_utils.renderer.build_context7_from_env")
+    @patch("amil_utils.renderer.context7_enrich")
+    @patch("amil_utils.renderer.build_context7_from_env")
     def test_no_context7_skips_enrich(
         self, mock_build_env: MagicMock, mock_enrich: MagicMock, tmp_path: Path,
     ) -> None:
-        from odoo_gen_utils.renderer import render_module, get_template_dir
+        from amil_utils.renderer import render_module, get_template_dir
 
         spec = {
             "module_name": "test_c7_skip",
@@ -113,7 +113,7 @@ class TestRenderModuleWithoutContext7:
     """PIPE-01j: render_module(no_context7=True) produces same output as before."""
 
     def test_render_succeeds_with_no_context7(self, tmp_path: Path) -> None:
-        from odoo_gen_utils.renderer import render_module, get_template_dir
+        from amil_utils.renderer import render_module, get_template_dir
 
         spec = {
             "module_name": "test_no_c7",
@@ -133,13 +133,13 @@ class TestRenderModuleWithoutContext7:
         # Verify module directory was created
         assert (tmp_path / "test_no_c7").is_dir()
 
-    @patch("odoo_gen_utils.renderer.context7_enrich")
-    @patch("odoo_gen_utils.renderer.build_context7_from_env")
+    @patch("amil_utils.renderer.context7_enrich")
+    @patch("amil_utils.renderer.build_context7_from_env")
     def test_backward_compat_default_params(
         self, mock_build_env: MagicMock, mock_enrich: MagicMock, tmp_path: Path,
     ) -> None:
         """render_module() called without new kwargs still works (defaults)."""
-        from odoo_gen_utils.renderer import render_module, get_template_dir
+        from amil_utils.renderer import render_module, get_template_dir
 
         mock_client = MagicMock()
         mock_build_env.return_value = mock_client
@@ -169,12 +169,12 @@ class TestRenderModuleWithoutContext7:
 class TestCliNoContext7:
     """PIPE-01g: --no-context7 flag passes no_context7=True to render_module()."""
 
-    @patch("odoo_gen_utils.verifier.build_verifier_from_env", return_value=None)
-    @patch("odoo_gen_utils.renderer.render_module")
+    @patch("amil_utils.verifier.build_verifier_from_env", return_value=None)
+    @patch("amil_utils.renderer.render_module")
     def test_no_context7_flag_passes_through(
         self, mock_render: MagicMock, mock_verifier: MagicMock, tmp_path: Path,
     ) -> None:
-        from odoo_gen_utils.cli import main
+        from amil_utils.cli import main
 
         mock_render.return_value = ([], [])
 
@@ -196,12 +196,12 @@ class TestCliNoContext7:
         call_kwargs = mock_render.call_args
         assert call_kwargs.kwargs.get("no_context7") is True
 
-    @patch("odoo_gen_utils.verifier.build_verifier_from_env", return_value=None)
-    @patch("odoo_gen_utils.renderer.render_module")
+    @patch("amil_utils.verifier.build_verifier_from_env", return_value=None)
+    @patch("amil_utils.renderer.render_module")
     def test_no_context7_default_is_false(
         self, mock_render: MagicMock, mock_verifier: MagicMock, tmp_path: Path,
     ) -> None:
-        from odoo_gen_utils.cli import main
+        from amil_utils.cli import main
 
         mock_render.return_value = ([], [])
 
@@ -230,12 +230,12 @@ class TestCliNoContext7:
 class TestCliFreshContext7:
     """PIPE-01h: --fresh-context7 flag passes fresh_context7=True to render_module()."""
 
-    @patch("odoo_gen_utils.verifier.build_verifier_from_env", return_value=None)
-    @patch("odoo_gen_utils.renderer.render_module")
+    @patch("amil_utils.verifier.build_verifier_from_env", return_value=None)
+    @patch("amil_utils.renderer.render_module")
     def test_fresh_context7_flag_passes_through(
         self, mock_render: MagicMock, mock_verifier: MagicMock, tmp_path: Path,
     ) -> None:
-        from odoo_gen_utils.cli import main
+        from amil_utils.cli import main
 
         mock_render.return_value = ([], [])
 
@@ -257,12 +257,12 @@ class TestCliFreshContext7:
         call_kwargs = mock_render.call_args
         assert call_kwargs.kwargs.get("fresh_context7") is True
 
-    @patch("odoo_gen_utils.verifier.build_verifier_from_env", return_value=None)
-    @patch("odoo_gen_utils.renderer.render_module")
+    @patch("amil_utils.verifier.build_verifier_from_env", return_value=None)
+    @patch("amil_utils.renderer.render_module")
     def test_fresh_context7_default_is_false(
         self, mock_render: MagicMock, mock_verifier: MagicMock, tmp_path: Path,
     ) -> None:
-        from odoo_gen_utils.cli import main
+        from amil_utils.cli import main
 
         mock_render.return_value = ([], [])
 

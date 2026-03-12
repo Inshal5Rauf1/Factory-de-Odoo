@@ -16,10 +16,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from odoo_gen_utils.renderer import STAGE_NAMES
+from amil_utils.renderer import STAGE_NAMES
 
 if TYPE_CHECKING:
-    from odoo_gen_utils.spec_differ import SpecDiff
+    from amil_utils.spec_differ import SpecDiff
 
 # ---------------------------------------------------------------------------
 # Valid stage names (pipeline stages + virtual "stubs")

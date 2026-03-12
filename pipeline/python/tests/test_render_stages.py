@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.renderer import (
+from amil_utils.renderer import (
     create_versioned_renderer,
     get_template_dir,
     render_controllers,
@@ -27,7 +27,7 @@ from odoo_gen_utils.renderer import (
     render_views,
     render_wizards,
 )
-from odoo_gen_utils.validation.types import Result
+from amil_utils.validation.types import Result
 
 
 # ---------------------------------------------------------------------------
@@ -71,8 +71,8 @@ def _make_model(name: str = "test.model", fields: list[dict] | None = None) -> d
 
 def _make_module_context(spec: dict) -> dict:
     """Build shared module context from spec (mirrors render_module setup)."""
-    from odoo_gen_utils.renderer import _compute_view_files, _to_python_var, _to_xml_id
-    from odoo_gen_utils.preprocessors import _process_security_patterns
+    from amil_utils.renderer import _compute_view_files, _to_python_var, _to_xml_id
+    from amil_utils.preprocessors import _process_security_patterns
 
     # Run security preprocessor to enrich models with security_acl/record_rule_scopes
     spec = _process_security_patterns(spec)
@@ -81,7 +81,7 @@ def _make_module_context(spec: dict) -> dict:
     spec_wizards = spec.get("wizards", [])
     has_wizards = bool(spec_wizards)
 
-    from odoo_gen_utils.renderer import SEQUENCE_FIELD_NAMES
+    from amil_utils.renderer import SEQUENCE_FIELD_NAMES
 
     models_with_sequences = [
         m for m in models
@@ -113,7 +113,7 @@ def _make_module_context(spec: dict) -> dict:
         wizard_xml_id = _to_xml_id(wizard["name"])
         wizard_view_files.append(f"views/{wizard_xml_id}_wizard_form.xml")
 
-    from odoo_gen_utils.renderer import _compute_manifest_data
+    from amil_utils.renderer import _compute_manifest_data
     all_manifest_files = _compute_manifest_data(
         spec, data_files, wizard_view_files, has_company_modules=has_company_modules
     )
@@ -2183,9 +2183,9 @@ class TestRenderSecuritySpecDriven:
     def test_three_roles_in_security_xml(self, env, tmp_module):
         spec = _make_security_spec_for_render()
         # Run preprocessor to enrich
-        from odoo_gen_utils.preprocessors import _process_security_patterns
+        from amil_utils.preprocessors import _process_security_patterns
         spec = _process_security_patterns(spec)
-        from odoo_gen_utils.renderer_context import _build_module_context
+        from amil_utils.renderer_context import _build_module_context
         ctx = _build_module_context(spec, spec["module_name"])
         result = render_security(env, spec, tmp_module, ctx)
         assert result.success
@@ -2199,9 +2199,9 @@ class TestRenderSecuritySpecDriven:
 
     def test_acl_csv_has_role_x_model_rows(self, env, tmp_module):
         spec = _make_security_spec_for_render()
-        from odoo_gen_utils.preprocessors import _process_security_patterns
+        from amil_utils.preprocessors import _process_security_patterns
         spec = _process_security_patterns(spec)
-        from odoo_gen_utils.renderer_context import _build_module_context
+        from amil_utils.renderer_context import _build_module_context
         ctx = _build_module_context(spec, spec["module_name"])
         result = render_security(env, spec, tmp_module, ctx)
         assert result.success
@@ -2212,9 +2212,9 @@ class TestRenderSecuritySpecDriven:
 
     def test_record_rules_with_company_and_department(self, env, tmp_module):
         spec = _make_security_spec_for_render()
-        from odoo_gen_utils.preprocessors import _process_security_patterns
+        from amil_utils.preprocessors import _process_security_patterns
         spec = _process_security_patterns(spec)
-        from odoo_gen_utils.renderer_context import _build_module_context
+        from amil_utils.renderer_context import _build_module_context
         ctx = _build_module_context(spec, spec["module_name"])
         result = render_security(env, spec, tmp_module, ctx)
         assert result.success
@@ -2232,9 +2232,9 @@ class TestRenderSecuritySpecDriven:
             "description": "Test Model",
             "fields": [{"name": "name", "type": "Char", "required": True}],
         }])
-        from odoo_gen_utils.preprocessors import _process_security_patterns
+        from amil_utils.preprocessors import _process_security_patterns
         spec = _process_security_patterns(spec)
-        from odoo_gen_utils.renderer_context import _build_module_context
+        from amil_utils.renderer_context import _build_module_context
         ctx = _build_module_context(spec, spec["module_name"])
         result = render_security(env, spec, tmp_module, ctx)
         assert result.success
@@ -2291,8 +2291,8 @@ class TestRenderModelsFieldGroups:
 
     def test_sensitive_field_renders_groups_after_preprocessing(self, env, tmp_module):
         """Full pipeline: sensitive field -> preprocessor -> template -> groups= in output."""
-        from odoo_gen_utils.preprocessors import _process_security_patterns
-        from odoo_gen_utils.renderer_context import _build_model_context
+        from amil_utils.preprocessors import _process_security_patterns
+        from amil_utils.renderer_context import _build_model_context
 
         model = {
             "name": "test.model",

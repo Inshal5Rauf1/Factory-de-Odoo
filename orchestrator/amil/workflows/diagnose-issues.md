@@ -80,7 +80,7 @@ For each gap, fill the debug-subagent-prompt template and spawn:
 ```
 Task(
   prompt=filled_debug_subagent_prompt + "\n\n<files_to_read>\n- {phase_dir}/{phase_num}-UAT.md\n- .planning/STATE.md\n</files_to_read>",
-  subagent_type="odoo-gsd-debugger",
+  subagent_type="amil-debugger",
   description="Debug: {truth_short}"
 )
 ```
@@ -158,7 +158,7 @@ Update status in frontmatter to "diagnosed".
 
 Commit the updated UAT.md:
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" commit "docs({phase_num}): add root causes from diagnosis" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs({phase_num}): add root causes from diagnosis" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
 ```
 </step>
 
@@ -168,7 +168,7 @@ node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" commit "docs({phase_num}): 
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DIAGNOSIS COMPLETE
+ Amil ► DIAGNOSIS COMPLETE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 | Gap (Truth) | Root Cause | Files |
@@ -201,7 +201,7 @@ Agents only diagnose—plan-phase --gaps handles fixes (no fix application).
 
 **Agent times out:**
 - Check DEBUG-{slug}.md for partial progress
-- Can resume with /odoo-gsd:debug
+- Can resume with /amil:debug
 
 **All agents fail:**
 - Something systemic (permissions, git, etc.)

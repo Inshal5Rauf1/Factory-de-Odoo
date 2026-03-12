@@ -15,8 +15,8 @@ from unittest.mock import MagicMock, patch
 import click.testing
 import pytest
 
-from odoo_gen_utils.cli import main
-from odoo_gen_utils.registry import ModelEntry, ModelRegistry
+from amil_utils.cli import main
+from amil_utils.registry import ModelEntry, ModelRegistry
 
 
 # ---------------------------------------------------------------------------
@@ -166,32 +166,32 @@ class TestMermaidId:
     """Tests for _mermaid_id() sanitization."""
 
     def test_dots_replaced(self) -> None:
-        from odoo_gen_utils.mermaid import _mermaid_id
+        from amil_utils.mermaid import _mermaid_id
 
         assert _mermaid_id("res.partner") == "res_partner"
 
     def test_hyphens_replaced(self) -> None:
-        from odoo_gen_utils.mermaid import _mermaid_id
+        from amil_utils.mermaid import _mermaid_id
 
         assert _mermaid_id("uni-fee") == "uni_fee"
 
     def test_underscores_unchanged(self) -> None:
-        from odoo_gen_utils.mermaid import _mermaid_id
+        from amil_utils.mermaid import _mermaid_id
 
         assert _mermaid_id("uni_student") == "uni_student"
 
     def test_mixed_dots_and_hyphens(self) -> None:
-        from odoo_gen_utils.mermaid import _mermaid_id
+        from amil_utils.mermaid import _mermaid_id
 
         assert _mermaid_id("res.partner-info") == "res_partner_info"
 
     def test_multiple_dots(self) -> None:
-        from odoo_gen_utils.mermaid import _mermaid_id
+        from amil_utils.mermaid import _mermaid_id
 
         assert _mermaid_id("uni.fee.invoice") == "uni_fee_invoice"
 
     def test_already_clean(self) -> None:
-        from odoo_gen_utils.mermaid import _mermaid_id
+        from amil_utils.mermaid import _mermaid_id
 
         assert _mermaid_id("mail") == "mail"
 
@@ -205,57 +205,57 @@ class TestIsKeyField:
     """Tests for _is_key_field() filtering heuristic."""
 
     def test_name_field(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert _is_key_field("name", {"type": "Char"}) is True
 
     def test_state_field(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert _is_key_field("state", {"type": "Selection"}) is True
 
     def test_monetary_field(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert _is_key_field("amount_total", {"type": "Monetary"}) is True
 
     def test_selection_field(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert _is_key_field("payment_type", {"type": "Selection"}) is True
 
     def test_technical_field_excluded(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert _is_key_field("create_uid", {"type": "Many2one"}) is False
 
     def test_write_date_excluded(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert _is_key_field("write_date", {"type": "Datetime"}) is False
 
     def test_message_ids_excluded(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert _is_key_field("message_ids", {"type": "One2many"}) is False
 
     def test_text_type_excluded(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert _is_key_field("notes", {"type": "Text"}) is False
 
     def test_binary_type_excluded(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert _is_key_field("attachment", {"type": "Binary"}) is False
 
     def test_html_type_excluded(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert _is_key_field("body_html", {"type": "Html"}) is False
 
     def test_non_stored_computed_excluded(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert (
             _is_key_field("computed_field", {"type": "Char", "compute": "_compute_x"})
@@ -263,7 +263,7 @@ class TestIsKeyField:
         )
 
     def test_stored_computed_included(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert (
             _is_key_field(
@@ -275,17 +275,17 @@ class TestIsKeyField:
 
     def test_regular_char_excluded(self) -> None:
         """A plain Char field that is not 'name' should be excluded."""
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert _is_key_field("description", {"type": "Char"}) is False
 
     def test_regular_integer_excluded(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert _is_key_field("sequence", {"type": "Integer"}) is False
 
     def test_activity_ids_excluded(self) -> None:
-        from odoo_gen_utils.mermaid import _is_key_field
+        from amil_utils.mermaid import _is_key_field
 
         assert _is_key_field("activity_ids", {"type": "One2many"}) is False
 
@@ -299,17 +299,17 @@ class TestIsExternalModule:
     """Tests for _is_external_module()."""
 
     def test_external_module(self, project_modules: set[str]) -> None:
-        from odoo_gen_utils.mermaid import _is_external_module
+        from amil_utils.mermaid import _is_external_module
 
         assert _is_external_module("mail", project_modules) is True
 
     def test_project_module(self, project_modules: set[str]) -> None:
-        from odoo_gen_utils.mermaid import _is_external_module
+        from amil_utils.mermaid import _is_external_module
 
         assert _is_external_module("uni_fee", project_modules) is False
 
     def test_base_is_external(self, project_modules: set[str]) -> None:
-        from odoo_gen_utils.mermaid import _is_external_module
+        from amil_utils.mermaid import _is_external_module
 
         assert _is_external_module("base", project_modules) is True
 
@@ -323,7 +323,7 @@ class TestDependencyDag:
     """Tests for generate_dependency_dag()."""
 
     def test_basic_dag_structure(self) -> None:
-        from odoo_gen_utils.mermaid import generate_dependency_dag
+        from amil_utils.mermaid import generate_dependency_dag
 
         dep_graph = {
             "uni_fee": ["uni_core", "uni_student", "mail"],
@@ -335,7 +335,7 @@ class TestDependencyDag:
         assert result.endswith("\n")
 
     def test_node_declarations(self) -> None:
-        from odoo_gen_utils.mermaid import generate_dependency_dag
+        from amil_utils.mermaid import generate_dependency_dag
 
         dep_graph = {"uni_fee": ["uni_core", "mail"]}
         project_mods = {"uni_fee", "uni_core"}
@@ -345,7 +345,7 @@ class TestDependencyDag:
         assert 'uni_core["uni_core"]' in result
 
     def test_external_class_marker(self) -> None:
-        from odoo_gen_utils.mermaid import generate_dependency_dag
+        from amil_utils.mermaid import generate_dependency_dag
 
         dep_graph = {"uni_fee": ["mail"]}
         project_mods = {"uni_fee"}
@@ -354,7 +354,7 @@ class TestDependencyDag:
         assert 'mail["mail"]:::external' in result
 
     def test_edges(self) -> None:
-        from odoo_gen_utils.mermaid import generate_dependency_dag
+        from amil_utils.mermaid import generate_dependency_dag
 
         dep_graph = {"uni_fee": ["uni_core", "mail"]}
         project_mods = {"uni_fee", "uni_core"}
@@ -364,7 +364,7 @@ class TestDependencyDag:
         assert "uni_fee --> mail" in result
 
     def test_classdef_line(self) -> None:
-        from odoo_gen_utils.mermaid import generate_dependency_dag
+        from amil_utils.mermaid import generate_dependency_dag
 
         dep_graph = {"uni_fee": ["mail"]}
         project_mods = {"uni_fee"}
@@ -373,7 +373,7 @@ class TestDependencyDag:
         assert "classDef external fill:#f0f0f0,stroke:#999,stroke-dasharray: 5 5" in result
 
     def test_no_deps_minimal_graph(self) -> None:
-        from odoo_gen_utils.mermaid import generate_dependency_dag
+        from amil_utils.mermaid import generate_dependency_dag
 
         dep_graph = {"uni_core": []}
         project_mods = {"uni_core"}
@@ -385,7 +385,7 @@ class TestDependencyDag:
 
     def test_module_not_in_graph(self) -> None:
         """Module not in dependency_graph should still produce a minimal graph."""
-        from odoo_gen_utils.mermaid import generate_dependency_dag
+        from amil_utils.mermaid import generate_dependency_dag
 
         dep_graph: dict[str, list[str]] = {}
         project_mods = {"uni_core"}
@@ -395,7 +395,7 @@ class TestDependencyDag:
         assert 'uni_core["uni_core"]' in result
 
     def test_trailing_newline(self) -> None:
-        from odoo_gen_utils.mermaid import generate_dependency_dag
+        from amil_utils.mermaid import generate_dependency_dag
 
         result = generate_dependency_dag("uni_fee", {"uni_fee": ["mail"]}, {"uni_fee"})
         assert result.endswith("\n")
@@ -414,7 +414,7 @@ class TestErDiagram:
         sample_models: dict[str, ModelEntry],
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("uni_fee", sample_models, registry_with_models)
 
@@ -426,7 +426,7 @@ class TestErDiagram:
         sample_models: dict[str, ModelEntry],
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("uni_fee", sample_models, registry_with_models)
 
@@ -438,7 +438,7 @@ class TestErDiagram:
         sample_models: dict[str, ModelEntry],
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("uni_fee", sample_models, registry_with_models)
 
@@ -452,7 +452,7 @@ class TestErDiagram:
         sample_models: dict[str, ModelEntry],
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("uni_fee", sample_models, registry_with_models)
 
@@ -463,7 +463,7 @@ class TestErDiagram:
         sample_models: dict[str, ModelEntry],
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("uni_fee", sample_models, registry_with_models)
 
@@ -491,7 +491,7 @@ class TestErDiagram:
         registry_with_models: ModelRegistry,
     ) -> None:
         """Same-module Many2one uses solid line."""
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("uni_fee", sample_models, registry_with_models)
 
@@ -504,7 +504,7 @@ class TestErDiagram:
         registry_with_models: ModelRegistry,
     ) -> None:
         """Same-module One2many uses solid line."""
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("uni_fee", sample_models, registry_with_models)
 
@@ -517,7 +517,7 @@ class TestErDiagram:
         registry_with_models: ModelRegistry,
     ) -> None:
         """Cross-module references use dotted lines."""
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("uni_fee", sample_models, registry_with_models)
 
@@ -530,7 +530,7 @@ class TestErDiagram:
         registry_with_models: ModelRegistry,
     ) -> None:
         """Technical fields like create_uid should not appear as relationships."""
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("uni_fee", sample_models, registry_with_models)
 
@@ -538,7 +538,7 @@ class TestErDiagram:
 
     def test_empty_module_minimal_er(self, registry_with_models: ModelRegistry) -> None:
         """Empty module produces minimal valid erDiagram."""
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("empty_mod", {}, registry_with_models)
 
@@ -551,7 +551,7 @@ class TestErDiagram:
         registry_with_models: ModelRegistry,
     ) -> None:
         """Field types are shown next to field names in entities."""
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("uni_fee", sample_models, registry_with_models)
 
@@ -564,7 +564,7 @@ class TestErDiagram:
         sample_models: dict[str, ModelEntry],
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("uni_fee", sample_models, registry_with_models)
         assert result.endswith("\n")
@@ -575,7 +575,7 @@ class TestErDiagram:
         registry_with_models: ModelRegistry,
     ) -> None:
         """Cross-module models get a minimal entity stub."""
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("uni_fee", sample_models, registry_with_models)
 
@@ -592,7 +592,7 @@ class TestMermaidSyntax:
     """Basic Mermaid syntax validation on generated output."""
 
     def test_dag_no_empty_lines_in_edges(self) -> None:
-        from odoo_gen_utils.mermaid import generate_dependency_dag
+        from amil_utils.mermaid import generate_dependency_dag
 
         dep_graph = {"uni_fee": ["uni_core", "mail"]}
         project_mods = {"uni_fee", "uni_core"}
@@ -609,7 +609,7 @@ class TestMermaidSyntax:
         """All relationship lines match expected patterns."""
         import re
 
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         result = generate_er_diagram("uni_fee", sample_models, registry_with_models)
 
@@ -624,7 +624,7 @@ class TestMermaidSyntax:
                 assert rel_pattern.match(line), f"Invalid relationship syntax: {line!r}"
 
     def test_dag_all_arrows_valid(self) -> None:
-        from odoo_gen_utils.mermaid import generate_dependency_dag
+        from amil_utils.mermaid import generate_dependency_dag
 
         dep_graph = {"uni_fee": ["uni_core", "mail"]}
         project_mods = {"uni_fee", "uni_core"}
@@ -649,7 +649,7 @@ class TestModuleDiagrams:
         tmp_path: Path,
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_module_diagrams
+        from amil_utils.mermaid import generate_module_diagrams
 
         spec = {
             "module_name": "uni_fee",
@@ -674,7 +674,7 @@ class TestModuleDiagrams:
         tmp_path: Path,
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_module_diagrams
+        from amil_utils.mermaid import generate_module_diagrams
 
         spec = {
             "module_name": "uni_fee",
@@ -692,7 +692,7 @@ class TestModuleDiagrams:
         tmp_path: Path,
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_module_diagrams
+        from amil_utils.mermaid import generate_module_diagrams
 
         spec = {
             "module_name": "uni_fee",
@@ -731,7 +731,7 @@ class TestProjectDiagrams:
         tmp_path: Path,
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_project_diagrams
+        from amil_utils.mermaid import generate_project_diagrams
 
         output_dir = tmp_path / "diagrams"
         generate_project_diagrams(registry_with_models, output_dir)
@@ -744,7 +744,7 @@ class TestProjectDiagrams:
         tmp_path: Path,
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_project_diagrams
+        from amil_utils.mermaid import generate_project_diagrams
 
         output_dir = tmp_path / "new" / "diagrams"
         generate_project_diagrams(registry_with_models, output_dir)
@@ -756,7 +756,7 @@ class TestProjectDiagrams:
         tmp_path: Path,
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_project_diagrams
+        from amil_utils.mermaid import generate_project_diagrams
 
         output_dir = tmp_path / "diagrams"
         generate_project_diagrams(registry_with_models, output_dir)
@@ -771,7 +771,7 @@ class TestProjectDiagrams:
         tmp_path: Path,
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_project_diagrams
+        from amil_utils.mermaid import generate_project_diagrams
 
         output_dir = tmp_path / "diagrams"
         generate_project_diagrams(registry_with_models, output_dir)
@@ -785,7 +785,7 @@ class TestProjectDiagrams:
         tmp_path: Path,
         registry_with_models: ModelRegistry,
     ) -> None:
-        from odoo_gen_utils.mermaid import generate_project_diagrams
+        from amil_utils.mermaid import generate_project_diagrams
 
         output_dir = tmp_path / "diagrams"
         generate_project_diagrams(registry_with_models, output_dir)
@@ -805,7 +805,7 @@ class TestManyToManyRelationship:
     """Tests for Many2many relationship rendering."""
 
     def test_many2many_same_module(self, registry_with_models: ModelRegistry) -> None:
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         models = {
             "uni.course": ModelEntry(
@@ -829,7 +829,7 @@ class TestManyToManyRelationship:
         assert "uni_course }o--o{ uni_config : student_ids" in result
 
     def test_many2many_cross_module(self, registry_with_models: ModelRegistry) -> None:
-        from odoo_gen_utils.mermaid import generate_er_diagram
+        from amil_utils.mermaid import generate_er_diagram
 
         models = {
             "uni.course": ModelEntry(
@@ -954,14 +954,14 @@ def cli_spec(tmp_path: Path) -> dict:
 
 
 class TestMermaidCli:
-    """Integration tests for the `odoo-gen mermaid` CLI command."""
+    """Integration tests for the `amil mermaid` CLI command."""
 
     def test_deps_writes_file(
         self, runner: click.testing.CliRunner, cli_registry: Path, tmp_path: Path
     ) -> None:
         """mermaid --module uni_fee --type deps writes dependencies.mmd."""
         output_dir = tmp_path / "output" / "uni_fee" / "docs"
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
             result = runner.invoke(
                 main, ["mermaid", "--module", "uni_fee", "--type", "deps"]
             )
@@ -972,7 +972,7 @@ class TestMermaidCli:
         self, runner: click.testing.CliRunner, cli_registry: Path, tmp_path: Path
     ) -> None:
         """mermaid --module uni_fee --type er writes er_diagram.mmd."""
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
             result = runner.invoke(
                 main, ["mermaid", "--module", "uni_fee", "--type", "er"]
             )
@@ -982,7 +982,7 @@ class TestMermaidCli:
         self, runner: click.testing.CliRunner, cli_registry: Path, tmp_path: Path
     ) -> None:
         """mermaid --module uni_fee --type all writes both .mmd files."""
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
             result = runner.invoke(
                 main, ["mermaid", "--module", "uni_fee", "--type", "all"]
             )
@@ -994,7 +994,7 @@ class TestMermaidCli:
         self, runner: click.testing.CliRunner, cli_registry: Path, tmp_path: Path
     ) -> None:
         """mermaid --module uni_fee (no --type) defaults to all."""
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
             result = runner.invoke(main, ["mermaid", "--module", "uni_fee"])
         assert result.exit_code == 0, f"CLI failed: {result.output}"
         assert "dependencies.mmd" in result.output
@@ -1004,7 +1004,7 @@ class TestMermaidCli:
         self, runner: click.testing.CliRunner, cli_registry: Path, tmp_path: Path
     ) -> None:
         """mermaid --project --type deps writes project_dependencies.mmd."""
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
             result = runner.invoke(
                 main, ["mermaid", "--project", "--type", "deps"]
             )
@@ -1015,7 +1015,7 @@ class TestMermaidCli:
         self, runner: click.testing.CliRunner, cli_registry: Path, tmp_path: Path
     ) -> None:
         """mermaid --project --type er writes project_er.mmd."""
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
             result = runner.invoke(
                 main, ["mermaid", "--project", "--type", "er"]
             )
@@ -1026,7 +1026,7 @@ class TestMermaidCli:
         self, runner: click.testing.CliRunner, cli_registry: Path, tmp_path: Path
     ) -> None:
         """mermaid --module uni_fee --stdout prints diagram to stdout."""
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
             result = runner.invoke(
                 main, ["mermaid", "--module", "uni_fee", "--type", "deps", "--stdout"]
             )
@@ -1087,13 +1087,13 @@ class TestAutoGeneration:
         output_dir.mkdir()
 
         with (
-            patch("odoo_gen_utils.cli._find_registry_path", return_value=cli_registry),
+            patch("amil_utils.cli._find_registry_path", return_value=cli_registry),
             patch(
-                "odoo_gen_utils.renderer.render_module",
+                "amil_utils.renderer.render_module",
                 return_value=(["file1.py"], []),
             ),
             patch(
-                "odoo_gen_utils.renderer.get_template_dir",
+                "amil_utils.renderer.get_template_dir",
                 return_value=tmp_path,
             ),
         ):
@@ -1125,17 +1125,17 @@ class TestAutoGeneration:
         output_dir.mkdir()
 
         with (
-            patch("odoo_gen_utils.cli._find_registry_path", return_value=cli_registry),
+            patch("amil_utils.cli._find_registry_path", return_value=cli_registry),
             patch(
-                "odoo_gen_utils.renderer.render_module",
+                "amil_utils.renderer.render_module",
                 return_value=(["file1.py"], []),
             ),
             patch(
-                "odoo_gen_utils.renderer.get_template_dir",
+                "amil_utils.renderer.get_template_dir",
                 return_value=tmp_path,
             ),
             patch(
-                "odoo_gen_utils.mermaid.generate_module_diagrams",
+                "amil_utils.mermaid.generate_module_diagrams",
                 side_effect=RuntimeError("mermaid broken"),
             ),
         ):
@@ -1167,13 +1167,13 @@ class TestAutoGeneration:
         output_dir.mkdir()
 
         with (
-            patch("odoo_gen_utils.cli._find_registry_path", return_value=cli_registry),
+            patch("amil_utils.cli._find_registry_path", return_value=cli_registry),
             patch(
-                "odoo_gen_utils.renderer.render_module",
+                "amil_utils.renderer.render_module",
                 return_value=(["file1.py"], []),
             ),
             patch(
-                "odoo_gen_utils.renderer.get_template_dir",
+                "amil_utils.renderer.get_template_dir",
                 return_value=tmp_path,
             ),
         ):

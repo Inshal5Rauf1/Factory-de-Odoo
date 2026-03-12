@@ -9,7 +9,7 @@ from __future__ import annotations
 import dataclasses
 from typing import Any
 
-from odoo_gen_utils.validation.types import ValidationReport
+from amil_utils.validation.types import ValidationReport
 
 # Severity ordering: higher priority first
 _SEVERITY_ORDER = {

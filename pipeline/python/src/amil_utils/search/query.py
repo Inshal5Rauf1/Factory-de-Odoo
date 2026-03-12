@@ -17,7 +17,7 @@ try:
 except ImportError:  # pragma: no cover
     chromadb = None  # type: ignore[assignment]
 
-from odoo_gen_utils.search.index import DEFAULT_DB_PATH
+from amil_utils.search.index import DEFAULT_DB_PATH
 
 
 @dataclass(frozen=True)

@@ -7,7 +7,7 @@ const {
   generateChecklist,
   recordResult,
   getUATSummary,
-} = require('../odoo-gsd/bin/lib/uat-checkpoint.cjs');
+} = require('../amil/bin/lib/uat-checkpoint.cjs');
 
 function makeTmpDir() {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'uat-test-'));

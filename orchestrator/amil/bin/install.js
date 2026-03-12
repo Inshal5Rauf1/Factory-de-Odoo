@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * odoo-gsd installer -- Claude Code only
+ * amil installer -- Claude Code only
  *
- * Installs the odoo-gsd orchestrator into ~/.claude/ for Claude Code usage.
- * Checks for odoo-gen belt and Python 3.8+ availability.
+ * Installs the amil orchestrator into ~/.claude/ for Claude Code usage.
+ * Checks for amil belt and Python 3.8+ availability.
  *
- * Usage: node odoo-gsd/bin/install.js [--global | --local] [--uninstall]
+ * Usage: node amil/bin/install.js [--global | --local] [--uninstall]
  */
 
 const fs = require('fs');
@@ -27,9 +27,9 @@ const reset = '\x1b[0m';
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const CLAUDE_CONFIG_DIR = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
-const ODOO_GSD_DIR = 'odoo-gsd';
-const ODOO_GEN_DIR = 'odoo-gen';
-const COMMANDS_DIR = 'commands/odoo-gsd';
+const AMIL_DIR = 'amil';
+const AMIL_DIR = 'amil';
+const COMMANDS_DIR = 'commands/amil';
 const AGENTS_DIR = 'agents';
 const HOOKS_DIR = 'hooks';
 const MIN_PYTHON_VERSION = [3, 8];
@@ -101,22 +101,22 @@ function checkClaudeCode() {
 }
 
 /**
- * Check for odoo-gen belt at ~/.claude/odoo-gen/.
+ * Check for amil belt at ~/.claude/amil/.
  * Warns if missing but does not block installation.
  */
 function checkOdooGen() {
-  const odooGenPath = path.join(CLAUDE_CONFIG_DIR, ODOO_GEN_DIR);
+  const odooGenPath = path.join(CLAUDE_CONFIG_DIR, AMIL_DIR);
 
   if (!fs.existsSync(odooGenPath)) {
-    warn(`odoo-gen belt not found at ${odooGenPath}`);
-    log(`  The odoo-gen belt is required for module generation (Phase 5).`);
+    warn(`amil belt not found at ${odooGenPath}`);
+    log(`  The amil belt is required for module generation (Phase 5).`);
     log(`  Install it with:`);
-    log(`    ${dim}git clone <odoo-gen-repo> ${odooGenPath}${reset}`);
+    log(`    ${dim}git clone <amil-repo> ${odooGenPath}${reset}`);
     log(`  You can continue without it -- generation features will not be available.`);
     return false;
   }
 
-  success(`odoo-gen belt found at ${odooGenPath}`);
+  success(`amil belt found at ${odooGenPath}`);
   return true;
 }
 
@@ -142,7 +142,7 @@ function checkPython() {
 
     if (major < MIN_PYTHON_VERSION[0] || (major === MIN_PYTHON_VERSION[0] && minor < MIN_PYTHON_VERSION[1])) {
       warn(`Python ${major}.${minor} found but ${MIN_PYTHON_VERSION.join('.')}+ is required`);
-      log(`  odoo-gen belt requires Python ${MIN_PYTHON_VERSION.join('.')} or higher.`);
+      log(`  amil belt requires Python ${MIN_PYTHON_VERSION.join('.')} or higher.`);
       return false;
     }
 
@@ -150,7 +150,7 @@ function checkPython() {
     return true;
   } catch {
     warn('python3 not found on PATH');
-    log(`  odoo-gen belt requires Python ${MIN_PYTHON_VERSION.join('.')}+.`);
+    log(`  amil belt requires Python ${MIN_PYTHON_VERSION.join('.')}+.`);
     log(`  Install Python: https://www.python.org/downloads/`);
     return false;
   }
@@ -163,22 +163,22 @@ function checkPython() {
  * Works whether run from npm/npx or directly.
  */
 function getSourceRoot() {
-  // install.js is at odoo-gsd/bin/install.js, so source root is two levels up
+  // install.js is at amil/bin/install.js, so source root is two levels up
   return path.resolve(__dirname, '..', '..');
 }
 
 /**
- * Install odoo-gsd files into the Claude Code config directory.
+ * Install amil files into the Claude Code config directory.
  */
 function installGlobal() {
   const sourceRoot = getSourceRoot();
   const targetBase = CLAUDE_CONFIG_DIR;
 
-  heading('Installing odoo-gsd to Claude Code...');
+  heading('Installing amil to Claude Code...');
 
-  // 1. Copy odoo-gsd/ (core tools, workflows, templates, references)
-  const odooGsdSrc = path.join(sourceRoot, ODOO_GSD_DIR);
-  const odooGsdDest = path.join(targetBase, ODOO_GSD_DIR);
+  // 1. Copy amil/ (core tools, workflows, templates, references)
+  const odooGsdSrc = path.join(sourceRoot, AMIL_DIR);
+  const odooGsdDest = path.join(targetBase, AMIL_DIR);
 
   if (!fs.existsSync(odooGsdSrc)) {
     fail(`Source directory not found: ${odooGsdSrc}`);
@@ -187,9 +187,9 @@ function installGlobal() {
 
   removeDirSync(odooGsdDest);
   copyDirSync(odooGsdSrc, odooGsdDest);
-  success(`Installed ${ODOO_GSD_DIR}/ to ${odooGsdDest}`);
+  success(`Installed ${AMIL_DIR}/ to ${odooGsdDest}`);
 
-  // 2. Register slash commands from commands/odoo-gsd/
+  // 2. Register slash commands from commands/amil/
   const commandsSrc = path.join(sourceRoot, COMMANDS_DIR);
   const commandsDest = path.join(targetBase, COMMANDS_DIR);
 
@@ -207,7 +207,7 @@ function installGlobal() {
 
   if (fs.existsSync(agentsSrc)) {
     fs.mkdirSync(agentsDest, { recursive: true });
-    const agentFiles = fs.readdirSync(agentsSrc).filter(f => f.startsWith('odoo-gsd-'));
+    const agentFiles = fs.readdirSync(agentsSrc).filter(f => f.startsWith('amil-'));
     for (const file of agentFiles) {
       fs.copyFileSync(path.join(agentsSrc, file), path.join(agentsDest, file));
     }
@@ -220,7 +220,7 @@ function installGlobal() {
 
   if (fs.existsSync(hooksSrc)) {
     fs.mkdirSync(hooksDest, { recursive: true });
-    const hookFiles = fs.readdirSync(hooksSrc).filter(f => f.startsWith('odoo-gsd-'));
+    const hookFiles = fs.readdirSync(hooksSrc).filter(f => f.startsWith('amil-'));
     for (const file of hookFiles) {
       fs.copyFileSync(path.join(hooksSrc, file), path.join(hooksDest, file));
     }
@@ -233,16 +233,16 @@ function installGlobal() {
 }
 
 /**
- * Install odoo-gsd files into the current working directory (local project).
+ * Install amil files into the current working directory (local project).
  */
 function installLocal() {
   const sourceRoot = getSourceRoot();
   const targetBase = process.cwd();
 
-  heading('Installing odoo-gsd locally...');
+  heading('Installing amil locally...');
 
-  const odooGsdSrc = path.join(sourceRoot, ODOO_GSD_DIR);
-  const odooGsdDest = path.join(targetBase, ODOO_GSD_DIR);
+  const odooGsdSrc = path.join(sourceRoot, AMIL_DIR);
+  const odooGsdDest = path.join(targetBase, AMIL_DIR);
 
   if (!fs.existsSync(odooGsdSrc)) {
     fail(`Source directory not found: ${odooGsdSrc}`);
@@ -251,21 +251,21 @@ function installLocal() {
 
   removeDirSync(odooGsdDest);
   copyDirSync(odooGsdSrc, odooGsdDest);
-  success(`Installed ${ODOO_GSD_DIR}/ to ${odooGsdDest}`);
+  success(`Installed ${AMIL_DIR}/ to ${odooGsdDest}`);
 
   return true;
 }
 
 /**
- * Uninstall odoo-gsd from Claude Code config directory.
+ * Uninstall amil from Claude Code config directory.
  */
 function uninstall() {
   const targetBase = CLAUDE_CONFIG_DIR;
 
-  heading('Uninstalling odoo-gsd from Claude Code...');
+  heading('Uninstalling amil from Claude Code...');
 
   const dirsToRemove = [
-    path.join(targetBase, ODOO_GSD_DIR),
+    path.join(targetBase, AMIL_DIR),
     path.join(targetBase, COMMANDS_DIR),
   ];
 
@@ -276,10 +276,10 @@ function uninstall() {
     }
   }
 
-  // Remove agent files (only odoo-gsd-* ones)
+  // Remove agent files (only amil-* ones)
   const agentsDir = path.join(targetBase, AGENTS_DIR);
   if (fs.existsSync(agentsDir)) {
-    const agentFiles = fs.readdirSync(agentsDir).filter(f => f.startsWith('odoo-gsd-'));
+    const agentFiles = fs.readdirSync(agentsDir).filter(f => f.startsWith('amil-'));
     for (const file of agentFiles) {
       fs.unlinkSync(path.join(agentsDir, file));
     }
@@ -288,10 +288,10 @@ function uninstall() {
     }
   }
 
-  // Remove hook files (only odoo-gsd-* ones)
+  // Remove hook files (only amil-* ones)
   const hooksDir = path.join(targetBase, HOOKS_DIR);
   if (fs.existsSync(hooksDir)) {
-    const hookFiles = fs.readdirSync(hooksDir).filter(f => f.startsWith('odoo-gsd-'));
+    const hookFiles = fs.readdirSync(hooksDir).filter(f => f.startsWith('amil-'));
     for (const file of hookFiles) {
       fs.unlinkSync(path.join(hooksDir, file));
     }
@@ -300,33 +300,33 @@ function uninstall() {
     }
   }
 
-  log(`\n${green}odoo-gsd uninstalled successfully.${reset}`);
+  log(`\n${green}amil uninstalled successfully.${reset}`);
 }
 
 // ─── CLI ─────────────────────────────────────────────────────────────────────
 
 function printHelp() {
   log(`
-${bold}odoo-gsd installer${reset} -- Odoo ERP module orchestrator for Claude Code
+${bold}amil installer${reset} -- Odoo ERP module orchestrator for Claude Code
 
 ${yellow}Usage:${reset}
-  node odoo-gsd/bin/install.js [options]
+  node amil/bin/install.js [options]
 
 ${yellow}Options:${reset}
   ${cyan}-g, --global${reset}       Install globally (to ~/.claude/)
   ${cyan}-l, --local${reset}        Install locally (to current directory)
-  ${cyan}-u, --uninstall${reset}    Uninstall odoo-gsd from Claude Code
+  ${cyan}-u, --uninstall${reset}    Uninstall amil from Claude Code
   ${cyan}-h, --help${reset}         Show this help message
 
 ${yellow}Examples:${reset}
   ${dim}# Install to Claude Code config${reset}
-  node odoo-gsd/bin/install.js --global
+  node amil/bin/install.js --global
 
   ${dim}# Install to current project${reset}
-  node odoo-gsd/bin/install.js --local
+  node amil/bin/install.js --local
 
   ${dim}# Uninstall${reset}
-  node odoo-gsd/bin/install.js --uninstall
+  node amil/bin/install.js --uninstall
 `);
 }
 
@@ -340,21 +340,21 @@ function printSummary(hasOdooGen, hasPython) {
     ? fs.readdirSync(commandsSrc).filter(f => f.endsWith('.md')).length
     : 0;
 
-  log(`  ${green}Core tools:${reset}     odoo-gsd/bin/odoo-gsd-tools.cjs`);
-  log(`  ${green}Commands:${reset}       ${commandCount} slash commands (/odoo-gsd:*)`);
-  log(`  ${green}Workflows:${reset}      odoo-gsd/workflows/`);
-  log(`  ${green}Templates:${reset}      odoo-gsd/templates/`);
+  log(`  ${green}Core tools:${reset}     amil/bin/amil-tools.cjs`);
+  log(`  ${green}Commands:${reset}       ${commandCount} slash commands (/amil:*)`);
+  log(`  ${green}Workflows:${reset}      amil/workflows/`);
+  log(`  ${green}Templates:${reset}      amil/templates/`);
   log('');
 
   if (!hasOdooGen) {
-    log(`  ${yellow}[!]${reset} odoo-gen belt not installed -- module generation unavailable`);
+    log(`  ${yellow}[!]${reset} amil belt not installed -- module generation unavailable`);
   }
   if (!hasPython) {
-    log(`  ${yellow}[!]${reset} Python 3.8+ not found -- odoo-gen belt will not work`);
+    log(`  ${yellow}[!]${reset} Python 3.8+ not found -- amil belt will not work`);
   }
 
   log('');
-  log(`  ${dim}Get started: /odoo-gsd:new-project${reset}`);
+  log(`  ${dim}Get started: /amil:new-project${reset}`);
   log('');
 }
 
@@ -378,7 +378,7 @@ function main() {
     process.exit(0);
   }
 
-  heading('odoo-gsd Installer');
+  heading('amil Installer');
   log(`${dim}Odoo ERP module orchestrator for Claude Code${reset}\n`);
 
   // Step 1: Verify Claude Code

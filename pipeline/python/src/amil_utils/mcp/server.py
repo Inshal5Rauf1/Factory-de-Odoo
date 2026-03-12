@@ -23,7 +23,7 @@ except ImportError:
     FastMCP = None  # type: ignore[assignment,misc]
     _HAS_MCP = False
 
-from odoo_gen_utils.mcp.odoo_client import OdooClient, OdooConfig
+from amil_utils.mcp.odoo_client import OdooClient, OdooConfig
 
 # Configure logging to stderr -- stdout is the JSON-RPC transport
 logging.basicConfig(
@@ -466,12 +466,12 @@ def find_field_conflicts(model_name: str, field_name: str) -> str:
 def main() -> None:
     """Run the MCP server on stdio transport.
 
-    Invoked via `python -m odoo_gen_utils.mcp.server` or
-    `python -m odoo_gen_utils.mcp` (via __main__.py).
+    Invoked via `python -m amil_utils.mcp.server` or
+    `python -m amil_utils.mcp` (via __main__.py).
     """
     if not _HAS_MCP:
         raise RuntimeError(
-            "mcp package not installed. Install with: pip install 'odoo-gen-utils[mcp]'"
+            "mcp package not installed. Install with: pip install 'amil-utils[mcp]'"
         )
     logger.info("Starting Odoo MCP server (stdio transport)...")
     mcp.run(transport="stdio")

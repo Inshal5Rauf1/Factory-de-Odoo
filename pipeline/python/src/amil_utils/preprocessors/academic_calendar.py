@@ -13,8 +13,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from odoo_gen_utils.preprocessors._registry import register_preprocessor
-from odoo_gen_utils.utils.copy import deep_copy_model, has_field as _has_field
+from amil_utils.preprocessors._registry import register_preprocessor
+from amil_utils.utils.copy import deep_copy_model, has_field as _has_field
 
 
 # -- String constants for constraint check_body --------------------------------

@@ -1,10 +1,10 @@
 ---
-name: odoo-gsd-project-researcher
-description: Researches domain ecosystem before roadmap creation. Produces files in .planning/research/ consumed during roadmap creation. Spawned by /odoo-gsd:new-project or /odoo-gsd:new-milestone orchestrators.
+name: amil-project-researcher
+description: Researches domain ecosystem before roadmap creation. Produces files in .planning/research/ consumed during roadmap creation. Spawned by /amil:new-project or /amil:new-milestone orchestrators.
 tools: Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp__context7__*
 color: cyan
 skills:
-  - odoo-gsd-researcher-workflow
+  - amil-researcher-workflow
 # hooks:
 #   PostToolUse:
 #     - matcher: "Write|Edit"
@@ -14,7 +14,7 @@ skills:
 ---
 
 <role>
-You are a GSD project researcher spawned by `/odoo-gsd:new-project` or `/odoo-gsd:new-milestone` (Phase 6: Research).
+You are a Amil project researcher spawned by `/amil:new-project` or `/amil:new-milestone` (Phase 6: Research).
 
 Answer "What does this domain ecosystem look like?" Write research files in `.planning/research/` that inform roadmap creation.
 
@@ -107,7 +107,7 @@ Always include current year. Use multiple query variations. Mark WebSearch-only 
 Check `brave_search` from orchestrator context. If `true`, use Brave Search for higher quality results:
 
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" websearch "your query" --limit 10
+node "$HOME/.claude/amil/bin/amil-tools.cjs" websearch "your query" --limit 10
 ```
 
 **Options:**

@@ -1,6 +1,6 @@
 # Scaffold Workflow
 
-End-to-end workflow for `/odoo-gen:new`. Referenced by the `odoo-scaffold` agent and the `new` command.
+End-to-end workflow for `/amil:new`. Referenced by the `amil-scaffold` agent and the `new` command.
 
 ## Overview
 
@@ -8,7 +8,7 @@ This workflow defines the complete scaffold pipeline:
 
 1. **Input Parsing** -- Parse natural language description into a module specification
 2. **Spec Confirmation** -- Present inferred spec for user review and approval
-3. **Generation** -- Render all templates via `odoo-gen-utils render-module`
+3. **Generation** -- Render all templates via `amil-utils render-module`
 4. **Post-Generation** -- Summarize output, list files, suggest next steps
 
 ---
@@ -21,7 +21,7 @@ Receive the module description from `$ARGUMENTS` and parse it into a structured 
 
 1. **Extract the description** from `$ARGUMENTS`:
    ```
-   /odoo-gen:new "inventory tracking with stock moves and warehouse locations"
+   /amil:new "inventory tracking with stock moves and warehouse locations"
    ```
 
 2. **Infer module technical name** -- Convert the description to `snake_case`:
@@ -79,7 +79,7 @@ Receive the module description from `$ARGUMENTS` and parse it into a structured 
    | CRM, lead, opportunity, pipeline | `crm` |
    | product, variant, pricelist | `product` |
 
-7. **Read defaults** -- Check `~/.claude/odoo-gen/defaults.json` for:
+7. **Read defaults** -- Check `~/.claude/amil/defaults.json` for:
    - `odoo_version` (default: "17.0")
    - `license` (default: "LGPL-3")
    - `author` (default: "")
@@ -150,7 +150,7 @@ After presenting the spec, **wait for user confirmation**:
 
 ## Phase 3: Generation
 
-Generate the complete module using `odoo-gen-utils render-module`.
+Generate the complete module using `amil-utils render-module`.
 
 ### Step 3.1: Create Spec JSON
 
@@ -229,7 +229,7 @@ EOF
 Call the render-module command:
 
 ```bash
-$HOME/.claude/odoo-gen/bin/odoo-gen-utils render-module \
+$HOME/.claude/amil/bin/amil-utils render-module \
   --spec-file /tmp/odoo_gen_spec.json \
   --output-dir ./<module_name>/
 ```
@@ -339,7 +339,7 @@ Next steps:
      Apps -> search for "{module_title}" -> Install
 
 For validation (available in Phase 3):
-  /odoo-gen:validate ./{module_name}/
+  /amil:validate ./{module_name}/
 ```
 
 ### Cleanup
@@ -354,14 +354,14 @@ rm -f /tmp/odoo_gen_spec.json
 
 ## Error Handling
 
-- If `odoo-gen-utils` is not available (package not installed), fall back to generating files directly using the Write tool, following the same template patterns and OCA conventions.
+- If `amil-utils` is not available (package not installed), fall back to generating files directly using the Write tool, following the same template patterns and OCA conventions.
 - If a template rendering fails, report the error clearly and continue with remaining templates.
 - If the output directory already exists, warn the user and ask before overwriting.
 
 ## References
 
-- Agent: `agents/odoo-scaffold.md`
+- Agent: `agents/amil-scaffold.md`
 - Command: `commands/new.md`
-- Python CLI: `python/src/odoo_gen_utils/cli.py`
-- Templates: `python/src/odoo_gen_utils/templates/*.j2`
+- Python CLI: `python/src/amil_utils/cli.py`
+- Templates: `python/src/amil_utils/templates/*.j2`
 - Defaults: `defaults.json`

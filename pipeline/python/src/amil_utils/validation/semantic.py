@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from odoo_gen_utils.registry import ModelRegistry
+    from amil_utils.registry import ModelRegistry
 
 # Mapping of relative file path -> parsed AST tree, built once in Phase 2
 # and reused by Phase 3 checks to avoid redundant file I/O and parsing.
@@ -1018,10 +1018,10 @@ def _bare_field_names_in_for_body(
 
 
 def _read_sidecar_targets(module_dir: Path) -> dict[str, list[str]]:
-    """Read ``.odoo-gen-stubs.json`` sidecar and return
+    """Read ``.amil-stubs.json`` sidecar and return
     ``{method_name: [target_fields]}`` mapping.
     """
-    sidecar_path = module_dir / ".odoo-gen-stubs.json"
+    sidecar_path = module_dir / ".amil-stubs.json"
     if not sidecar_path.exists():
         return {}
     try:
@@ -1095,7 +1095,7 @@ def _check_e8(
 ) -> list[ValidationIssue]:
     """E8: Compute method doesn't set target field.
 
-    Reads ``.odoo-gen-stubs.json`` sidecar for ``target_fields``.
+    Reads ``.amil-stubs.json`` sidecar for ``target_fields``.
     Falls back to ``_compute_X`` -> field ``X`` naming convention.
     """
     issues: list[ValidationIssue] = []
@@ -1526,18 +1526,18 @@ def _check_e16(
 ) -> list[ValidationIssue]:
     """E16: Exclusion zone violation -- template code outside markers modified.
 
-    Compares filled ``.py`` files against ``.odoo-gen-skeleton/`` baseline.
+    Compares filled ``.py`` files against ``.amil-skeleton/`` baseline.
     Lines outside ``BUSINESS LOGIC START/END`` marker zones must match.
     Silently returns ``[]`` when skeleton directory does not exist.
 
     Since stub filling may add/remove lines inside marker zones, we extract
     the lines OUTSIDE zones from both files and compare those sequences.
     """
-    from odoo_gen_utils.logic_writer.stub_detector import _find_stub_zones
+    from amil_utils.logic_writer.stub_detector import _find_stub_zones
 
     issues: list[ValidationIssue] = []
 
-    skeleton_dir = module_dir.parent / ".odoo-gen-skeleton" / module_dir.name
+    skeleton_dir = module_dir.parent / ".amil-skeleton" / module_dir.name
     if not skeleton_dir.exists():
         return issues
 
@@ -1588,7 +1588,7 @@ def _lines_outside_zones(
     Marker lines (START/END) are considered outside the zone (they are
     template-generated) but the content between them is inside.
     """
-    from odoo_gen_utils.logic_writer.stub_detector import _find_stub_zones
+    from amil_utils.logic_writer.stub_detector import _find_stub_zones
 
     zones = _find_stub_zones(source_lines)
 

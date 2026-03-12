@@ -31,9 +31,9 @@ except ImportError:  # pragma: no cover
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from odoo_gen_utils.search.types import IndexStatus
+    from amil_utils.search.types import IndexStatus
 
-DEFAULT_DB_PATH = Path.home() / ".local" / "share" / "odoo-gen" / "chromadb"
+DEFAULT_DB_PATH = Path.home() / ".local" / "share" / "amil" / "chromadb"
 
 
 def _check_rate_limit(gh: object, min_remaining: int = 10) -> None:
@@ -352,7 +352,7 @@ def get_index_status(db_path: str | None = None) -> IndexStatus:
     Returns:
         IndexStatus with index existence, module count, build timestamp, and size.
     """
-    from odoo_gen_utils.search.types import IndexStatus
+    from amil_utils.search.types import IndexStatus
 
     resolved_path = db_path or str(DEFAULT_DB_PATH)
     path_obj = Path(resolved_path)

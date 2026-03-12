@@ -1,5 +1,5 @@
 <purpose>
-Create all phases necessary to close gaps identified by `/odoo-gsd:audit-milestone`. Reads MILESTONE-AUDIT.md, groups gaps into logical phases, creates phase entries in ROADMAP.md, and offers to plan each phase. One command creates all fix phases — no manual `/odoo-gsd:add-phase` per gap.
+Create all phases necessary to close gaps identified by `/amil:audit-milestone`. Reads MILESTONE-AUDIT.md, groups gaps into logical phases, creates phase entries in ROADMAP.md, and offers to plan each phase. One command creates all fix phases — no manual `/amil:add-phase` per gap.
 </purpose>
 
 <required_reading>
@@ -22,7 +22,7 @@ Parse YAML frontmatter to extract structured gaps:
 
 If no audit file exists or has no gaps, error:
 ```
-No audit gaps found. Run `/odoo-gsd:audit-milestone` first.
+No audit gaps found. Run `/amil:audit-milestone` first.
 ```
 
 ## 2. Prioritize Gaps
@@ -65,7 +65,7 @@ Gap: Flow "View dashboard" broken at data fetch
 Find highest existing phase:
 ```bash
 # Get sorted phase list, extract last one
-PHASES=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" phases list)
+PHASES=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" phases list)
 HIGHEST=$(printf '%s\n' "$PHASES" | jq -r '.directories[-1]')
 ```
 
@@ -147,7 +147,7 @@ mkdir -p ".planning/phases/{NN}-{name}"
 ## 9. Commit Roadmap and Requirements Update
 
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" commit "docs(roadmap): add gap closure phases {N}-{M}" --files .planning/ROADMAP.md .planning/REQUIREMENTS.md
+node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs(roadmap): add gap closure phases {N}-{M}" --files .planning/ROADMAP.md .planning/REQUIREMENTS.md
 ```
 
 ## 10. Offer Next Steps
@@ -164,22 +164,22 @@ node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" commit "docs(roadmap): add 
 
 **Plan first gap closure phase**
 
-`/odoo-gsd:plan-phase {N}`
+`/amil:plan-phase {N}`
 
 <sub>`/clear` first → fresh context window</sub>
 
 ---
 
 **Also available:**
-- `/odoo-gsd:execute-phase {N}` — if plans already exist
+- `/amil:execute-phase {N}` — if plans already exist
 - `cat .planning/ROADMAP.md` — see updated roadmap
 
 ---
 
 **After all gap phases complete:**
 
-`/odoo-gsd:audit-milestone` — re-audit to verify gaps closed
-`/odoo-gsd:complete-milestone {version}` — archive when audit passes
+`/amil:audit-milestone` — re-audit to verify gaps closed
+`/amil:complete-milestone {version}` — archive when audit passes
 ```
 
 </process>
@@ -270,5 +270,5 @@ becomes:
 - [ ] Coverage count updated in REQUIREMENTS.md
 - [ ] Phase directories created
 - [ ] Changes committed (includes REQUIREMENTS.md)
-- [ ] User knows to run `/odoo-gsd:plan-phase` next
+- [ ] User knows to run `/amil:plan-phase` next
 </success_criteria>

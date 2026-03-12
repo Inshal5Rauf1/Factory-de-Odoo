@@ -7,17 +7,17 @@ from unittest.mock import MagicMock, patch
 
 from click.testing import CliRunner
 
-from odoo_gen_utils.cli import main
-from odoo_gen_utils.search.types import IndexStatus
+from amil_utils.cli import main
+from amil_utils.search.types import IndexStatus
 
 
 class TestBuildIndexCommand:
     """build-index CLI command tests."""
 
-    @patch("odoo_gen_utils.search.wizard.check_github_auth")
-    @patch("odoo_gen_utils.search.get_github_token", return_value=None)
+    @patch("amil_utils.search.wizard.check_github_auth")
+    @patch("amil_utils.search.get_github_token", return_value=None)
     def test_no_token_exits_code_1(self, mock_token: MagicMock, mock_wizard: MagicMock) -> None:
-        from odoo_gen_utils.search.wizard import AuthStatus
+        from amil_utils.search.wizard import AuthStatus
 
         mock_wizard.return_value = AuthStatus(
             gh_installed=True,
@@ -30,7 +30,7 @@ class TestBuildIndexCommand:
         assert result.exit_code == 1
         assert "gh auth login" in result.output
 
-    @patch("odoo_gen_utils.search.get_github_token", return_value=None)
+    @patch("amil_utils.search.get_github_token", return_value=None)
     def test_no_token_no_wizard_exits_code_1(self, mock_token: MagicMock) -> None:
         runner = CliRunner()
         result = runner.invoke(main, ["build-index", "--no-wizard"])
@@ -38,8 +38,8 @@ class TestBuildIndexCommand:
         assert "GitHub authentication required" in result.output
         assert "gh auth login" in result.output
 
-    @patch("odoo_gen_utils.search.build_oca_index", return_value=42)
-    @patch("odoo_gen_utils.search.get_github_token", return_value="test-token")
+    @patch("amil_utils.search.build_oca_index", return_value=42)
+    @patch("amil_utils.search.get_github_token", return_value="test-token")
     def test_with_token_prints_success(self, mock_token: MagicMock, mock_build: MagicMock) -> None:
         runner = CliRunner()
         result = runner.invoke(main, ["build-index"])
@@ -53,7 +53,7 @@ class TestIndexStatusCommand:
     """index-status CLI command tests."""
 
     @patch(
-        "odoo_gen_utils.search.get_index_status",
+        "amil_utils.search.get_index_status",
         return_value=IndexStatus(
             exists=True,
             module_count=150,
@@ -72,7 +72,7 @@ class TestIndexStatusCommand:
         assert "db_path" in data
 
     @patch(
-        "odoo_gen_utils.search.get_index_status",
+        "amil_utils.search.get_index_status",
         return_value=IndexStatus(
             exists=True,
             module_count=150,

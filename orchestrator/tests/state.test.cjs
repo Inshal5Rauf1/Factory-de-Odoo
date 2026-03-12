@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - State
+ * Amil Tools Tests - State
  */
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
@@ -158,7 +158,7 @@ describe('state-snapshot command', () => {
 **Status:** Ready to plan
 `
     );
-    const outsideDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'odoo-gsd-test-outside-'));
+    const outsideDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'amil-test-outside-'));
 
     try {
       const result = runGsdTools(`state-snapshot --cwd "${tmpDir}"`, outsideDir);
@@ -506,7 +506,7 @@ describe('STATE.md frontmatter sync', () => {
 // stateExtractField and stateReplaceField helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { stateExtractField, stateReplaceField } = require('../odoo-gsd/bin/lib/state.cjs');
+const { stateExtractField, stateReplaceField } = require('../amil/bin/lib/state.cjs');
 
 describe('stateExtractField and stateReplaceField helpers', () => {
   // stateExtractField tests

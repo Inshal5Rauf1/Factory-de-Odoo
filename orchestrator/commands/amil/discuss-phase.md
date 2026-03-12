@@ -1,5 +1,5 @@
 ---
-name: gsd:discuss-phase
+name: amil:discuss-phase
 description: Gather phase context through adaptive questioning before planning
 argument-hint: "<phase> [--auto]"
 allowed-tools:
@@ -29,8 +29,8 @@ Extract implementation decisions that downstream agents need — researcher and 
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gsd/workflows/discuss-phase.md
-@~/.claude/odoo-gsd/templates/context.md
+@~/.claude/amil/workflows/discuss-phase.md
+@~/.claude/amil/templates/context.md
 </execution_context>
 
 <context>

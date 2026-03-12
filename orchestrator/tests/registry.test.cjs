@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - registry.cjs
+ * Amil Tools Tests - registry.cjs
  *
  * CLI integration tests for registry subcommands: read, read-model, update,
  * rollback, validate, stats.
@@ -14,7 +14,7 @@ const path = require('path');
 const { createTempProject, cleanup } = require('./helpers.cjs');
 
 // Direct-require the registry module for unit tests
-const registryPath = path.join(__dirname, '..', 'odoo-gsd', 'bin', 'lib', 'registry.cjs');
+const registryPath = path.join(__dirname, '..', 'amil', 'bin', 'lib', 'registry.cjs');
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 

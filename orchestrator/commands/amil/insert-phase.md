@@ -1,5 +1,5 @@
 ---
-name: gsd:insert-phase
+name: amil:insert-phase
 description: Insert urgent work as decimal phase (e.g., 72.1) between existing phases
 argument-hint: <after> <description>
 allowed-tools:
@@ -17,7 +17,7 @@ Purpose: Handle urgent work discovered during execution without renumbering enti
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gsd/workflows/insert-phase.md
+@~/.claude/amil/workflows/insert-phase.md
 </execution_context>
 
 <context>
@@ -27,6 +27,6 @@ Roadmap and state are resolved in-workflow via `init phase-op` and targeted tool
 </context>
 
 <process>
-Execute the insert-phase workflow from @~/.claude/odoo-gsd/workflows/insert-phase.md end-to-end.
+Execute the insert-phase workflow from @~/.claude/amil/workflows/insert-phase.md end-to-end.
 Preserve all validation gates (argument parsing, phase verification, decimal calculation, roadmap updates).
 </process>

@@ -1,5 +1,5 @@
 <purpose>
-Check for GSD updates via npm, display changelog for versions between installed and latest, obtain user confirmation, and execute clean installation with cache clearing.
+Check for Amil updates via npm, display changelog for versions between installed and latest, obtain user confirmation, and execute clean installation with cache clearing.
 </purpose>
 
 <required_reading>
@@ -9,25 +9,25 @@ Read all files referenced by the invoking prompt's execution_context before star
 <process>
 
 <step name="get_installed_version">
-Detect whether GSD is installed locally or globally by checking both locations and validating install integrity:
+Detect whether Amil is installed locally or globally by checking both locations and validating install integrity:
 
 ```bash
 # Check local first (takes priority only if valid)
 # Detect runtime config directory (supports Claude, OpenCode, Gemini)
 LOCAL_VERSION_FILE="" LOCAL_MARKER_FILE="" LOCAL_DIR=""
 for dir in .claude .config/opencode .opencode .gemini; do
-  if [ -f "./$dir/odoo-gsd/VERSION" ]; then
-    LOCAL_VERSION_FILE="./$dir/odoo-gsd/VERSION"
-    LOCAL_MARKER_FILE="./$dir/odoo-gsd/workflows/update.md"
+  if [ -f "./$dir/amil/VERSION" ]; then
+    LOCAL_VERSION_FILE="./$dir/amil/VERSION"
+    LOCAL_MARKER_FILE="./$dir/amil/workflows/update.md"
     LOCAL_DIR="$(cd "./$dir" 2>/dev/null && pwd)"
     break
   fi
 done
 GLOBAL_VERSION_FILE="" GLOBAL_MARKER_FILE="" GLOBAL_DIR=""
 for dir in .claude .config/opencode .opencode .gemini; do
-  if [ -f "$HOME/$dir/odoo-gsd/VERSION" ]; then
-    GLOBAL_VERSION_FILE="$HOME/$dir/odoo-gsd/VERSION"
-    GLOBAL_MARKER_FILE="$HOME/$dir/odoo-gsd/workflows/update.md"
+  if [ -f "$HOME/$dir/amil/VERSION" ]; then
+    GLOBAL_VERSION_FILE="$HOME/$dir/amil/VERSION"
+    GLOBAL_MARKER_FILE="$HOME/$dir/amil/workflows/update.md"
     GLOBAL_DIR="$(cd "$HOME/$dir" 2>/dev/null && pwd)"
     break
   fi
@@ -59,7 +59,7 @@ Parse output:
 
 **If VERSION file missing:**
 ```
-## GSD Update
+## Amil Update
 
 **Installed version:** Unknown
 
@@ -75,14 +75,14 @@ Proceed to install step (treat as version 0.0.0 for comparison).
 Check npm for latest version:
 
 ```bash
-npm view odoo-gsd-cc version 2>/dev/null
+npm view amil-cc version 2>/dev/null
 ```
 
 **If npm check fails:**
 ```
 Couldn't check for updates (offline or npm unavailable).
 
-To update manually: `npx odoo-gsd-cc --global`
+To update manually: `npx amil-cc --global`
 ```
 
 Exit.
@@ -93,7 +93,7 @@ Compare installed vs latest:
 
 **If installed == latest:**
 ```
-## GSD Update
+## Amil Update
 
 **Installed:** X.Y.Z
 **Latest:** X.Y.Z
@@ -105,7 +105,7 @@ Exit.
 
 **If installed > latest:**
 ```
-## GSD Update
+## Amil Update
 
 **Installed:** X.Y.Z
 **Latest:** A.B.C
@@ -124,7 +124,7 @@ Exit.
 3. Display preview and ask for confirmation:
 
 ```
-## GSD Update Available
+## Amil Update Available
 
 **Installed:** 1.5.10
 **Latest:** 1.5.15
@@ -144,20 +144,20 @@ Exit.
 
 ────────────────────────────────────────────────────────────
 
-⚠️  **Note:** The installer performs a clean install of GSD folders:
+⚠️  **Note:** The installer performs a clean install of Amil folders:
 - `commands/gsd/` will be wiped and replaced
-- `odoo-gsd/` will be wiped and replaced
-- `agents/odoo-gsd-*` files will be replaced
+- `amil/` will be wiped and replaced
+- `agents/amil-*` files will be replaced
 
 (Paths are relative to your install location: `~/.claude/` for global, `./.claude/` for local)
 
 Your custom files in other locations are preserved:
 - Custom commands not in `commands/gsd/` ✓
-- Custom agents not prefixed with `odoo-gsd-` ✓
+- Custom agents not prefixed with `amil-` ✓
 - Custom hooks ✓
 - Your CLAUDE.md files ✓
 
-If you've modified any GSD files directly, they'll be automatically backed up to `odoo-gsd-local-patches/` and can be reapplied with `/odoo-gsd:reapply-patches` after the update.
+If you've modified any Amil files directly, they'll be automatically backed up to `amil-local-patches/` and can be reapplied with `/amil:reapply-patches` after the update.
 ```
 
 Use AskUserQuestion:
@@ -174,12 +174,12 @@ Run the update using the install type detected in step 1:
 
 **If LOCAL install:**
 ```bash
-npx -y odoo-gsd-cc@latest --local
+npx -y amil-cc@latest --local
 ```
 
 **If GLOBAL install (or unknown):**
 ```bash
-npx -y odoo-gsd-cc@latest --global
+npx -y amil-cc@latest --global
 ```
 
 Capture output. If install fails, show error and exit.
@@ -189,12 +189,12 @@ Clear the update cache so statusline indicator disappears:
 ```bash
 # Clear update cache across all runtime directories
 for dir in .claude .config/opencode .opencode .gemini; do
-  rm -f "./$dir/cache/odoo-gsd-update-check.json"
-  rm -f "$HOME/$dir/cache/odoo-gsd-update-check.json"
+  rm -f "./$dir/cache/amil-update-check.json"
+  rm -f "$HOME/$dir/cache/amil-update-check.json"
 done
 ```
 
-The SessionStart hook (`odoo-gsd-check-update.js`) writes to the detected runtime's cache directory, so all paths must be cleared to prevent stale update indicators.
+The SessionStart hook (`amil-check-update.js`) writes to the detected runtime's cache directory, so all paths must be cleared to prevent stale update indicators.
 </step>
 
 <step name="display_result">
@@ -202,12 +202,12 @@ Format completion message (changelog was already shown in confirmation step):
 
 ```
 ╔═══════════════════════════════════════════════════════════╗
-║  GSD Updated: v1.5.10 → v1.5.15                           ║
+║  Amil Updated: v1.5.10 → v1.5.15                           ║
 ╚═══════════════════════════════════════════════════════════╝
 
 ⚠️  Restart Claude Code to pick up the new commands.
 
-[View full changelog](https://github.com/glittercowboy/odoo-gsd/blob/main/CHANGELOG.md)
+[View full changelog](https://github.com/glittercowboy/amil/blob/main/CHANGELOG.md)
 ```
 </step>
 
@@ -215,13 +215,13 @@ Format completion message (changelog was already shown in confirmation step):
 <step name="check_local_patches">
 After update completes, check if the installer detected and backed up any locally modified files:
 
-Check for odoo-gsd-local-patches/backup-meta.json in the config directory.
+Check for amil-local-patches/backup-meta.json in the config directory.
 
 **If patches found:**
 
 ```
 Local patches were backed up before the update.
-Run /odoo-gsd:reapply-patches to merge your modifications into the new version.
+Run /amil:reapply-patches to merge your modifications into the new version.
 ```
 
 **If no patches:** Continue normally.

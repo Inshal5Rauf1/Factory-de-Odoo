@@ -6,9 +6,9 @@
 
 ## Summary
 
-Phase 3 creates the `/odoo-gsd:discuss-module` command and workflow that runs an interactive, module-type-aware Q&A session to produce a structured CONTEXT.md for each Odoo module. The phase also enhances the existing `odoo-gsd-module-researcher` agent with per-module Odoo knowledge (used in Phase 4, not Phase 3).
+Phase 3 creates the `/amil:discuss-module` command and workflow that runs an interactive, module-type-aware Q&A session to produce a structured CONTEXT.md for each Odoo module. The phase also enhances the existing `amil-module-researcher` agent with per-module Odoo knowledge (used in Phase 4, not Phase 3).
 
-The implementation follows well-established patterns from Phases 1-2: a slash command file (`commands/odoo-gsd/discuss-module.md`) that references a workflow file (`odoo-gsd/workflows/discuss-module.md`), which spawns a new agent (`agents/odoo-gsd-module-questioner.md`). A new JSON reference file (`odoo-gsd/references/module-questions.json`) stores the 10 question templates (9 types + 1 generic). No new CJS library modules are needed -- the workflow reads `module_status.json` and `decomposition.json` directly using existing CLI subcommands.
+The implementation follows well-established patterns from Phases 1-2: a slash command file (`commands/amil/discuss-module.md`) that references a workflow file (`amil/workflows/discuss-module.md`), which spawns a new agent (`agents/amil-module-questioner.md`). A new JSON reference file (`amil/references/module-questions.json`) stores the 10 question templates (9 types + 1 generic). No new CJS library modules are needed -- the workflow reads `module_status.json` and `decomposition.json` directly using existing CLI subcommands.
 
 **Primary recommendation:** Follow the exact command/workflow/agent pattern from `new-erp` (Phase 2). The questioner agent uses `AskUserQuestion` for interactive Q&A, receives the question template + module metadata as prompt context, and writes CONTEXT.md using the `Write` tool.
 
@@ -17,9 +17,9 @@ The implementation follows well-established patterns from Phases 1-2: a slash co
 
 ### Locked Decisions
 - **Module Type Detection (DISC-02):** Hybrid auto-detect from name + user confirmation. Pattern match `uni_fee` -> "fee", `uni_student` -> "student", etc. using a lookup table. If no match, user selects from type list. Quick confirmation: "Detected module type: **fee**. Correct? (yes / change)"
-- **Question Templates (DISC-03):** 9 typed templates + 1 generic fallback, stored as single JSON file `odoo-gsd/references/module-questions.json`. Format: `{ "fee": { "questions": [...], "context_hints": [...] } }`. 8-12 questions per type.
-- **Discussion Flow Architecture (DISC-01, DISC-04):** Single `odoo-gsd-module-questioner` agent handles full Q&A session. Agent receives: module type, question template, decomposition.json entry (models/depends/complexity), config.json odoo block. Adaptive: agent uses template as guide but can skip irrelevant questions or ask follow-ups. Session is interactive via AskUserQuestion -- present 1-2 questions at a time.
-- **Researcher Agent Scope (AGNT-01):** Enhance existing `odoo-gsd-module-researcher.md`, used in Phase 4 not Phase 3. Add: field type recommendations, security pattern lookup, view inheritance patterns, Odoo pitfalls per domain. Training knowledge only (no web search).
+- **Question Templates (DISC-03):** 9 typed templates + 1 generic fallback, stored as single JSON file `amil/references/module-questions.json`. Format: `{ "fee": { "questions": [...], "context_hints": [...] } }`. 8-12 questions per type.
+- **Discussion Flow Architecture (DISC-01, DISC-04):** Single `amil-module-questioner` agent handles full Q&A session. Agent receives: module type, question template, decomposition.json entry (models/depends/complexity), config.json odoo block. Adaptive: agent uses template as guide but can skip irrelevant questions or ask follow-ups. Session is interactive via AskUserQuestion -- present 1-2 questions at a time.
+- **Researcher Agent Scope (AGNT-01):** Enhance existing `amil-module-researcher.md`, used in Phase 4 not Phase 3. Add: field type recommendations, security pattern lookup, view inheritance patterns, Odoo pitfalls per domain. Training knowledge only (no web search).
 
 ### Claude's Discretion
 - Exact question wording in module-questions.json
@@ -42,12 +42,12 @@ The implementation follows well-established patterns from Phases 1-2: a slash co
 
 | ID | Description | Research Support |
 |----|-------------|-----------------|
-| DISC-01 | `/odoo-gsd:discuss-module` command and workflow created | Command/workflow pattern from `new-erp` (Phase 2); command references workflow via `@~/.claude/odoo-gsd/workflows/discuss-module.md` |
+| DISC-01 | `/amil:discuss-module` command and workflow created | Command/workflow pattern from `new-erp` (Phase 2); command references workflow via `@~/.claude/amil/workflows/discuss-module.md` |
 | DISC-02 | Module type detected from name/description | Lookup table in workflow with 9 known type prefixes; fallback to user selection via `AskUserQuestion` |
 | DISC-03 | Module-type-specific question templates loaded | `module-questions.json` reference file with 10 entries (9 types + generic); 8-12 questions each with id, question, options, default, context fields |
-| DISC-04 | `odoo-module-questioner` agent created with per-type expertise | Agent file `agents/odoo-gsd-module-questioner.md` with frontmatter matching existing agent pattern; receives template + metadata in prompt |
+| DISC-04 | `odoo-module-questioner` agent created with per-type expertise | Agent file `agents/amil-module-questioner.md` with frontmatter matching existing agent pattern; receives template + metadata in prompt |
 | DISC-05 | Q&A output written to `.planning/modules/{module}/CONTEXT.md` | Questioner agent uses Write tool to produce structured CONTEXT.md at the artifact path from `module_status.json` |
-| AGNT-01 | `researcher.md` agent specialized for Odoo research | Enhance existing `agents/odoo-gsd-module-researcher.md` with per-domain field type knowledge, security patterns, view inheritance, and pitfall awareness |
+| AGNT-01 | `researcher.md` agent specialized for Odoo research | Enhance existing `agents/amil-module-researcher.md` with per-domain field type knowledge, security patterns, view inheritance, and pitfall awareness |
 </phase_requirements>
 
 ## Standard Stack
@@ -56,7 +56,7 @@ The implementation follows well-established patterns from Phases 1-2: a slash co
 | Library | Version | Purpose | Why Standard |
 |---------|---------|---------|--------------|
 | Node.js built-ins (fs, path) | N/A | File I/O for JSON templates and CONTEXT.md | Zero npm runtime deps rule (CLAUDE.md) |
-| `odoo-gsd-tools.cjs` CLI | Current | `module-status get`, `config-get` subcommands | Established CLI tool; never edit state files directly |
+| `amil-tools.cjs` CLI | Current | `module-status get`, `config-get` subcommands | Established CLI tool; never edit state files directly |
 
 ### Supporting
 | Library | Version | Purpose | When to Use |
@@ -82,30 +82,30 @@ The implementation follows well-established patterns from Phases 1-2: a slash co
 
 ### Recommended Project Structure
 ```
-commands/odoo-gsd/
+commands/amil/
   discuss-module.md              # Slash command definition (NEW)
 
-odoo-gsd/workflows/
+amil/workflows/
   discuss-module.md              # Workflow definition (NEW)
 
-odoo-gsd/references/
+amil/references/
   module-questions.json          # 10 question templates (NEW)
 
 agents/
-  odoo-gsd-module-questioner.md  # Questioner agent (NEW)
-  odoo-gsd-module-researcher.md  # Enhanced researcher (MODIFY)
+  amil-module-questioner.md  # Questioner agent (NEW)
+  amil-module-researcher.md  # Enhanced researcher (MODIFY)
 ```
 
 ### Pattern 1: Slash Command -> Workflow -> Agent
 
 **What:** Three-layer pattern established in Phase 2. Command is a thin wrapper that references a workflow file. Workflow orchestrates multi-step logic and spawns agents via `Task()`.
 
-**When to use:** Every new `/odoo-gsd:*` command.
+**When to use:** Every new `/amil:*` command.
 
 **Example (from new-erp.md command):**
 ```markdown
 ---
-name: odoo-gsd:discuss-module
+name: amil:discuss-module
 description: Run interactive module discussion to capture design decisions
 argument-hint: "{module_name}"
 allowed-tools:
@@ -127,7 +127,7 @@ Capture module design decisions through interactive discussion.
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gsd/workflows/discuss-module.md
+@~/.claude/amil/workflows/discuss-module.md
 </execution_context>
 
 <process>
@@ -144,7 +144,7 @@ Execute the discuss-module workflow end-to-end.
 **Example (from existing agents):**
 ```yaml
 ---
-name: odoo-gsd-module-questioner
+name: amil-module-questioner
 description: Run per-type Q&A session for Odoo module design decisions
 tools: Read, Write, Bash, AskUserQuestion
 color: yellow
@@ -163,7 +163,7 @@ output: .planning/modules/{module}/CONTEXT.md
 **Example:**
 ```bash
 # Check module exists and is at "planned" status
-STATUS=$(node odoo-gsd/bin/odoo-gsd-tools.cjs module-status get ${MODULE} --raw --cwd "$(pwd)")
+STATUS=$(node amil/bin/amil-tools.cjs module-status get ${MODULE} --raw --cwd "$(pwd)")
 # Parse STATUS JSON to check .status === "planned"
 ```
 
@@ -204,15 +204,15 @@ STATUS=$(node odoo-gsd/bin/odoo-gsd-tools.cjs module-status get ${MODULE} --raw 
 ### Anti-Patterns to Avoid
 - **Hardcoding questions in the agent file:** Questions must live in `module-questions.json` for maintainability. The agent receives them as prompt context.
 - **Multiple agent spawns per discussion:** Locked decision is single questioner agent. Do not spawn researcher during discussion.
-- **Reading state files directly with fs:** Always use `odoo-gsd-tools.cjs` CLI subcommands for state reads/writes (CLAUDE.md rule 2).
+- **Reading state files directly with fs:** Always use `amil-tools.cjs` CLI subcommands for state reads/writes (CLAUDE.md rule 2).
 - **Writing CONTEXT.md from the workflow:** The agent writes CONTEXT.md, not the workflow. Workflow only orchestrates.
 
 ## Don't Hand-Roll
 
 | Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
-| Module status lookup | Custom JSON parser | `odoo-gsd-tools.cjs module-status get {name}` | Atomic reads, consistent error handling |
-| Config reading | `fs.readFileSync` on config.json | `odoo-gsd-tools.cjs config-get odoo` | Validated schema, proper defaults |
+| Module status lookup | Custom JSON parser | `amil-tools.cjs module-status get {name}` | Atomic reads, consistent error handling |
+| Config reading | `fs.readFileSync` on config.json | `amil-tools.cjs config-get odoo` | Validated schema, proper defaults |
 | Module type detection | Complex regex | Simple prefix lookup table (object literal) | 9 known prefixes, deterministic |
 | Interactive Q&A | Custom prompt system | `AskUserQuestion` Claude Code tool | Built-in structured options, "Other" handling |
 
@@ -284,13 +284,13 @@ function detectModuleType(moduleName) {
 ### Reading Module Metadata in Workflow
 ```bash
 # Get module status and artifact path
-MODULE_STATUS=$(node odoo-gsd/bin/odoo-gsd-tools.cjs module-status get "${MODULE}" --raw --cwd "$(pwd)")
+MODULE_STATUS=$(node amil/bin/amil-tools.cjs module-status get "${MODULE}" --raw --cwd "$(pwd)")
 
 # Get decomposition entry for the module (models, depends, complexity)
 DECOMP=$(cat .planning/research/decomposition.json)
 
 # Get odoo config block
-ODOO_CONFIG=$(node odoo-gsd/bin/odoo-gsd-tools.cjs config-get odoo --raw --cwd "$(pwd)" 2>/dev/null || echo '{}')
+ODOO_CONFIG=$(node amil/bin/amil-tools.cjs config-get odoo --raw --cwd "$(pwd)" 2>/dev/null || echo '{}')
 ```
 
 ### Agent Prompt Structure (Task() call)
@@ -324,7 +324,7 @@ ${CONTEXT_HINTS}
 
 Follow your agent instructions to run the Q&A session and write CONTEXT.md to:
 .planning/modules/${MODULE_NAME}/CONTEXT.md",
-  subagent_type="odoo-gsd-module-questioner",
+  subagent_type="amil-module-questioner",
   description="Module discussion: ${MODULE_NAME}"
 )
 ```
@@ -406,7 +406,7 @@ Follow your agent instructions to run the Q&A session and write CONTEXT.md to:
 ### Sampling Rate
 - **Per task commit:** `node --test tests/discuss-module.test.cjs`
 - **Per wave merge:** `npm test`
-- **Phase gate:** Full suite green before `/odoo-gsd:verify-work`
+- **Phase gate:** Full suite green before `/amil:verify-work`
 
 ### Wave 0 Gaps
 - [ ] `tests/discuss-module.test.cjs` -- covers DISC-01 through DISC-05, AGNT-01
@@ -419,13 +419,13 @@ Follow your agent instructions to run the Q&A session and write CONTEXT.md to:
 ## Sources
 
 ### Primary (HIGH confidence)
-- Codebase inspection: `commands/odoo-gsd/new-erp.md` -- command pattern
-- Codebase inspection: `odoo-gsd/workflows/new-erp.md` -- workflow pattern with Task() spawning
-- Codebase inspection: `agents/odoo-gsd-module-researcher.md` -- agent frontmatter and structure
-- Codebase inspection: `agents/odoo-gsd-erp-decomposer.md` -- agent with structured JSON output
-- Codebase inspection: `odoo-gsd/bin/lib/module-status.cjs` -- module lifecycle API
-- Codebase inspection: `odoo-gsd/workflows/discuss-phase.md` -- AskUserQuestion patterns and questioning flow
-- Codebase inspection: `odoo-gsd/references/questioning.md` -- question design philosophy
+- Codebase inspection: `commands/amil/new-erp.md` -- command pattern
+- Codebase inspection: `amil/workflows/new-erp.md` -- workflow pattern with Task() spawning
+- Codebase inspection: `agents/amil-module-researcher.md` -- agent frontmatter and structure
+- Codebase inspection: `agents/amil-erp-decomposer.md` -- agent with structured JSON output
+- Codebase inspection: `amil/bin/lib/module-status.cjs` -- module lifecycle API
+- Codebase inspection: `amil/workflows/discuss-phase.md` -- AskUserQuestion patterns and questioning flow
+- Codebase inspection: `amil/references/questioning.md` -- question design philosophy
 - Codebase inspection: `tests/new-erp.test.cjs` -- test pattern with fixtures and node:test
 - Codebase inspection: `CLAUDE.md` -- project rules (CJS, zero deps, atomic writes)
 

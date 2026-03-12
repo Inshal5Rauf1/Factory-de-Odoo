@@ -34,7 +34,7 @@ def e2e_index_db(tmp_path_factory: pytest.TempPathFactory) -> str:
     if not token:
         pytest.skip("GITHUB_TOKEN not set -- cannot build e2e index")
 
-    from odoo_gen_utils.search.index import build_oca_index
+    from amil_utils.search.index import build_oca_index
 
     db_path = str(tmp_path_factory.mktemp("e2e_chromadb"))
     build_oca_index(token=token, db_path=db_path)
@@ -44,7 +44,7 @@ def e2e_index_db(tmp_path_factory: pytest.TempPathFactory) -> str:
 @skip_no_token
 def test_github_token_available() -> None:
     """Verify get_github_token() returns a non-empty string when GITHUB_TOKEN is set."""
-    from odoo_gen_utils.search.index import get_github_token
+    from amil_utils.search.index import get_github_token
 
     token = get_github_token()
     assert token is not None, "Expected a GitHub token but got None"
@@ -54,7 +54,7 @@ def test_github_token_available() -> None:
 @skip_no_token
 def test_build_index_returns_modules(e2e_index_db: str) -> None:
     """Verify build_oca_index returns a positive module count."""
-    from odoo_gen_utils.search.index import get_index_status
+    from amil_utils.search.index import get_index_status
 
     status = get_index_status(db_path=e2e_index_db)
     assert status.module_count > 0, (
@@ -65,7 +65,7 @@ def test_build_index_returns_modules(e2e_index_db: str) -> None:
 @skip_no_token
 def test_index_status_reports_modules(e2e_index_db: str) -> None:
     """Verify get_index_status reports exists=True and module_count > 0 on a built index."""
-    from odoo_gen_utils.search.index import get_index_status
+    from amil_utils.search.index import get_index_status
 
     status = get_index_status(db_path=e2e_index_db)
     assert status.exists is True, "Expected index to exist"
@@ -79,7 +79,7 @@ def test_index_status_reports_modules(e2e_index_db: str) -> None:
 @skip_no_token
 def test_search_returns_results(e2e_index_db: str) -> None:
     """Verify search_modules returns non-empty results for a common query."""
-    from odoo_gen_utils.search.query import search_modules
+    from amil_utils.search.query import search_modules
 
     results = search_modules("inventory management", db_path=e2e_index_db)
     assert len(results) > 0, "Expected at least one search result for 'inventory management'"
@@ -92,7 +92,7 @@ def test_search_returns_results(e2e_index_db: str) -> None:
 @skip_no_token
 def test_github_fallback_returns_results() -> None:
     """Verify _github_search_fallback returns results via real gh search repos."""
-    from odoo_gen_utils.search.query import _github_search_fallback
+    from amil_utils.search.query import _github_search_fallback
 
     results = _github_search_fallback("odoo inventory", 3)
     # gh search repos may return empty if gh CLI is not authenticated,
@@ -114,7 +114,7 @@ def test_full_oca_index_build(tmp_path: object) -> None:
     """
     from pathlib import Path
 
-    from odoo_gen_utils.search.index import build_oca_index
+    from amil_utils.search.index import build_oca_index
 
     token = os.environ.get("GITHUB_TOKEN")
     assert token, "GITHUB_TOKEN required for full build test"

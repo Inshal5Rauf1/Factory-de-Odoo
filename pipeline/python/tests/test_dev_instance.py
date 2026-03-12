@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.validation.docker_runner import check_docker_available
+from amil_utils.validation.docker_runner import check_docker_available
 
 # Project root: two parents up from tests/ dir
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -317,7 +317,7 @@ class TestDevInstanceDocker:
         partner_id = models.execute_kw(
             _ODOO_DB, uid, _ODOO_PASSWORD,
             "res.partner", "create",
-            [{"name": "odoo-gen-test-persistence"}],
+            [{"name": "amil-test-persistence"}],
         )
         assert partner_id, "Failed to create test partner"
 
@@ -348,7 +348,7 @@ class TestDevInstanceDocker:
         found = models2.execute_kw(
             _ODOO_DB, uid2, _ODOO_PASSWORD,
             "res.partner", "search",
-            [[["name", "=", "odoo-gen-test-persistence"]]],
+            [[["name", "=", "amil-test-persistence"]]],
         )
         assert len(found) > 0, "Test partner did not persist across stop/start"
 

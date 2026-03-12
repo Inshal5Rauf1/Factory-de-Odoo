@@ -1,5 +1,5 @@
 ---
-name: odoo-gen:history
+name: amil:history
 description: Show generation history and past modules
 ---
 <objective>
@@ -7,7 +7,7 @@ Show the history of past module generations, including module names, description
 
 **This command is not yet available.** It will be implemented in Phase 7 (Human Review & Quality Loops).
 
-Run `/odoo-gen:help` to see currently available commands.
+Run `/amil:help` to see currently available commands.
 </objective>
 
 <planned_capabilities>

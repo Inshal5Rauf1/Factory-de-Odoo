@@ -1,5 +1,5 @@
 <purpose>
-Switch the model profile used by GSD agents. Controls which Claude model each agent uses, balancing quality vs token spend.
+Switch the model profile used by Amil agents. Controls which Claude model each agent uses, balancing quality vs token spend.
 </purpose>
 
 <required_reading>
@@ -23,8 +23,8 @@ if $ARGUMENTS.profile not in ["quality", "balanced", "budget"]:
 Ensure config exists and load current state:
 
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-ensure-section
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" state load)
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config-ensure-section
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" state load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -52,14 +52,14 @@ Display confirmation with model table for selected profile:
 
 Agents will now use:
 
-[Show table from MODEL_PROFILES in odoo-gsd-tools.cjs for selected profile]
+[Show table from MODEL_PROFILES in amil-tools.cjs for selected profile]
 
 Example:
 | Agent | Model |
 |-------|-------|
-| odoo-gsd-planner | opus |
-| odoo-gsd-executor | sonnet |
-| odoo-gsd-verifier | haiku |
+| amil-planner | opus |
+| amil-executor | sonnet |
+| amil-verifier | haiku |
 | ... | ... |
 
 Next spawned agents will use the new profile.

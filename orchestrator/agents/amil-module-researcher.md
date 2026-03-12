@@ -1,5 +1,5 @@
 ---
-name: odoo-gsd-module-researcher
+name: amil-module-researcher
 description: Odoo module research -- OCA registry checks, field type recommendations, security patterns, view inheritance
 tools: Read, Write, Bash
 color: cyan
@@ -7,7 +7,7 @@ model_tier: quality
 input: PRD text + existing_modules list (OCA mode) OR module spec + registry context (research mode)
 output: .planning/research/oca-analysis.json (OCA mode) OR research recommendations in prompt response (research mode)
 skills:
-  - odoo-gsd-module-researcher-workflow
+  - amil-module-researcher-workflow
 # hooks:
 #   PostToolUse:
 #     - matcher: "Write|Edit"

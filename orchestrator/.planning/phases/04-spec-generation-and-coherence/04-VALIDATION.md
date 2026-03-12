@@ -29,7 +29,7 @@ created: 2026-03-05
 
 - **After every task commit:** `node --test tests/coherence.test.cjs tests/plan-module.test.cjs`
 - **After every plan wave:** `npm test`
-- **Before `/gsd:verify-work`:** Full suite must be green
+- **Before `/amil:verify-work`:** Full suite must be green
 - **Max feedback latency:** 12 seconds
 
 ---
@@ -66,7 +66,7 @@ created: 2026-03-05
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Human approval flow | SPEC-07, SPEC-08 | Depends on AskUserQuestion + module_status transition in runtime | Run `/odoo-gsd:plan-module uni_core` with test data and verify coherence report shown, approval works |
+| Human approval flow | SPEC-07, SPEC-08 | Depends on AskUserQuestion + module_status transition in runtime | Run `/amil:plan-module uni_core` with test data and verify coherence report shown, approval works |
 
 ---
 

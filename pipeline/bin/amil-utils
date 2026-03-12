@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Thin wrapper that runs odoo-gen-utils from the extension's venv.
+# Thin wrapper that runs amil-utils from the extension's venv.
 # This solves path resolution issues across platforms (Pitfall 4).
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-exec "$SCRIPT_DIR/.venv/bin/odoo-gen-utils" "$@"
+exec "$SCRIPT_DIR/.venv/bin/amil-utils" "$@"

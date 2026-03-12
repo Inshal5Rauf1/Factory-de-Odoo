@@ -1,5 +1,5 @@
 ---
-name: odoo-gsd:discuss-module
+name: amil:discuss-module
 description: Run interactive module discussion to capture design decisions
 argument-hint: "{module_name}"
 allowed-tools:
@@ -19,11 +19,11 @@ Runs a module-type-aware Q&A session producing structured CONTEXT.md. The workfl
 <objective>
 Capture module design decisions through interactive discussion.
 
-**After this command:** Review CONTEXT.md, then run `/odoo-gsd:plan-module {module}` to generate spec.
+**After this command:** Review CONTEXT.md, then run `/amil:plan-module {module}` to generate spec.
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gsd/workflows/discuss-module.md
+@~/.claude/amil/workflows/discuss-module.md
 </execution_context>
 
 <process>

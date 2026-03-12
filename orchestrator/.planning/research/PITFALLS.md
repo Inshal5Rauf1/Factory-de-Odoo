@@ -1,6 +1,6 @@
 # Pitfalls Research
 
-**Domain:** Odoo ERP module orchestration (fork of GSD CLI for AI-driven module generation at scale)
+**Domain:** Odoo ERP module orchestration (fork of Amil CLI for AI-driven module generation at scale)
 **Researched:** 2026-03-05
 **Confidence:** HIGH (domain-specific analysis based on actual codebase inspection + ecosystem research)
 
@@ -9,21 +9,21 @@
 ### Pitfall 1: Fork Drift — 233 Hardcoded Path References Create a Rename Minefield
 
 **What goes wrong:**
-The GSD codebase contains 203 hardcoded `get-shit-done` / `gsd-tools` / `gsd/` references in workflows alone, plus 23 in templates and 7 in bin files. A naive find-and-replace from `gsd` to `odoo-gsd` will produce false positives (e.g., `gsd-planner` becomes `odoo-gsd-planner` but the agent file might still be named `gsd-planner`), miss references embedded in string interpolation, and break the 12 agent role names hardcoded in `core.cjs`'s model profile map. Partial renames result in a CLI that appears to work until a specific workflow triggers an unrenamed path, causing silent failures deep in a multi-agent pipeline.
+The Amil codebase contains 203 hardcoded `get-shit-done` / `gsd-tools` / `gsd/` references in workflows alone, plus 23 in templates and 7 in bin files. A naive find-and-replace from `gsd` to `amil` will produce false positives (e.g., `gsd-planner` becomes `amil-planner` but the agent file might still be named `gsd-planner`), miss references embedded in string interpolation, and break the 12 agent role names hardcoded in `core.cjs`'s model profile map. Partial renames result in a CLI that appears to work until a specific workflow triggers an unrenamed path, causing silent failures deep in a multi-agent pipeline.
 
 **Why it happens:**
-GSD was never designed for forking. Path references are scattered across markdown workflow files (which are essentially code — they contain `bash` blocks with `$HOME/.claude/get-shit-done/` paths), JavaScript libraries, and template files. Developers underestimate how many distinct reference patterns exist: install paths, tool invocation paths, branch template prefixes, agent role names, config key prefixes, and npm package names.
+Amil was never designed for forking. Path references are scattered across markdown workflow files (which are essentially code — they contain `bash` blocks with `$HOME/.claude/get-shit-done/` paths), JavaScript libraries, and template files. Developers underestimate how many distinct reference patterns exist: install paths, tool invocation paths, branch template prefixes, agent role names, config key prefixes, and npm package names.
 
 **How to avoid:**
 1. Create a canonical rename manifest: enumerate every reference pattern (`~/.claude/get-shit-done/`, `gsd-tools.cjs`, `gsd/phase-`, `gsd-planner`, `gsd_state_version`, etc.) before touching any files.
 2. Build a rename verification script that greps for ALL old patterns after renaming — zero matches required.
 3. Rename in layers: paths first, then prefixes, then internal identifiers. Test each layer independently.
-4. Keep a `FORK_DIFF.md` documenting every structural change from upstream GSD, so future upstream cherry-picks are feasible.
+4. Keep a `FORK_DIFF.md` documenting every structural change from upstream Amil, so future upstream cherry-picks are feasible.
 
 **Warning signs:**
 - `command not found` or `file not found` errors during workflow execution
 - Agent spawned with wrong role name (check `Task()` invocations)
-- Branch names still using `gsd/` prefix instead of `odoo-gsd/`
+- Branch names still using `gsd/` prefix instead of `amil/`
 
 **Phase to address:**
 Phase 1 (Foundation) — this must be the very first task, before any new functionality is built.
@@ -63,7 +63,7 @@ Module B declares `Many2one('module_a.student')` but module A's model is actuall
 The AI agent generating Module B receives the registry snapshot, but it may hallucinate model names, field names, or relation types despite having correct data in context. There is no automated validation between generation and the next module's generation. The registry records what was planned (spec), not what was actually generated (code). Drift between spec and generated code accumulates silently.
 
 **How to avoid:**
-1. After each module generation, parse the actual generated Python code (AST analysis via odoo-gen-utils) and update the registry with what was ACTUALLY produced, not what was specified.
+1. After each module generation, parse the actual generated Python code (AST analysis via amil-utils) and update the registry with what was ACTUALLY produced, not what was specified.
 2. Implement a coherence check that runs after registry update: for every Many2one/One2many/Many2many field, verify the target model and inverse field exist in the registry.
 3. Block tier progression if coherence check fails — do not generate Module C until Module A and B are verified coherent.
 4. Store both `spec_fields` and `actual_fields` in registry entries. Diff them to detect spec-vs-reality drift.
@@ -81,15 +81,15 @@ Phase 2 (Core Workflow) — the generate-module command must include post-genera
 ### Pitfall 4: Belt Integration Assumes a Stable Contract That Does Not Exist Yet
 
 **What goes wrong:**
-odoo-gsd is being built before odoo-gen is installed or its output format is finalized. The orchestrator builds assumptions about what the belt produces (manifest structure, file layout, exit codes, error formats) that turn out to be wrong when integration actually happens. Rebuilding the integration layer after 20+ modules of workflow has been designed around incorrect assumptions wastes enormous effort.
+amil is being built before amil is installed or its output format is finalized. The orchestrator builds assumptions about what the belt produces (manifest structure, file layout, exit codes, error formats) that turn out to be wrong when integration actually happens. Rebuilding the integration layer after 20+ modules of workflow has been designed around incorrect assumptions wastes enormous effort.
 
 **Why it happens:**
-The project explicitly defers belt manifest schema to odoo-gen ("Schema defined by odoo-gen, not odoo-gsd — adapt to whatever the belt produces"). This is architecturally correct but operationally dangerous: without even a draft contract, every `Task()` invocation, every manifest parser, and every registry update routine is built on guesswork. The PROJECT.md even notes "odoo-gen is not yet installed."
+The project explicitly defers belt manifest schema to amil ("Schema defined by amil, not amil — adapt to whatever the belt produces"). This is architecturally correct but operationally dangerous: without even a draft contract, every `Task()` invocation, every manifest parser, and every registry update routine is built on guesswork. The PROJECT.md even notes "amil is not yet installed."
 
 **How to avoid:**
-1. Create a `belt_contract_draft.json` with the minimum expected interface: input format (what odoo-gsd passes to belt), output format (what belt returns), exit codes, and error envelope. Even if it changes, having a strawman prevents designing in a vacuum.
+1. Create a `belt_contract_draft.json` with the minimum expected interface: input format (what amil passes to belt), output format (what belt returns), exit codes, and error envelope. Even if it changes, having a strawman prevents designing in a vacuum.
 2. Build a mock belt for testing — a script that accepts spec.json and produces a dummy module with manifest and model stubs. Test the entire orchestration pipeline against this mock.
-3. Define the integration boundary as a single adapter module (`belt_adapter.js`) that translates between odoo-gsd's internal format and the belt's format. When the real belt arrives, only this adapter needs to change.
+3. Define the integration boundary as a single adapter module (`belt_adapter.js`) that translates between amil's internal format and the belt's format. When the real belt arrives, only this adapter needs to change.
 4. Ship a canary integration test early: generate one real module through the actual belt and validate every assumption.
 
 **Warning signs:**
@@ -105,7 +105,7 @@ Phase 1 (Foundation) for the adapter pattern and mock belt. Phase 2 (Core Workfl
 ### Pitfall 5: State File Corruption From Non-Atomic Writes
 
 **What goes wrong:**
-GSD's `state.cjs` uses raw `fs.writeFileSync` wrapped in a `writeStateMd` function. The new project adds three additional JSON state files (`model_registry.json`, `module_status.json`, `computation_chains.json`, `security_scope.json`). If a `Task()` subagent crashes mid-write (context window exhaustion, timeout, network issue), the JSON file is left in a truncated/corrupted state. The next operation reads corrupted JSON, `JSON.parse` throws, and the entire pipeline halts. Recovery requires manual file restoration because there's no backup.
+Amil's `state.cjs` uses raw `fs.writeFileSync` wrapped in a `writeStateMd` function. The new project adds three additional JSON state files (`model_registry.json`, `module_status.json`, `computation_chains.json`, `security_scope.json`). If a `Task()` subagent crashes mid-write (context window exhaustion, timeout, network issue), the JSON file is left in a truncated/corrupted state. The next operation reads corrupted JSON, `JSON.parse` throws, and the entire pipeline halts. Recovery requires manual file restoration because there's no backup.
 
 **Why it happens:**
 Developers assume `writeFileSync` is atomic — it is not. On Linux, `writeFileSync` can leave partial writes if the process is killed (SIGKILL, OOM). With multiple state files being updated in sequence (registry, then status, then computation chains), a crash between writes leaves the system in an inconsistent state where some files reflect the new module and others don't.
@@ -156,7 +156,7 @@ Phase 2 (Core Workflow) — security scope templates should be established befor
 When a custom module declares `depends: ['account']`, the registry needs account module's models (account.move, account.move.line, etc.) to validate cross-module references. On-demand scanning sounds efficient but breaks in practice: the scanner may not have access to the Odoo source (no local installation), may scan the wrong version (Odoo 16 models vs Odoo 17), or may produce an incomplete scan (missing computed fields, missing related fields). Downstream modules then generate references to fields that don't exist in the actual Odoo 17 base modules.
 
 **Why it happens:**
-Odoo's base modules are massive (account alone has 50+ models). Scanning them requires either a running Odoo instance (heavy) or static AST analysis of the source code (fragile — misses dynamic field additions via `_inherit`). The project plans on-demand scanning but the scanner (odoo-gen-utils) is a separate repo that may not be ready.
+Odoo's base modules are massive (account alone has 50+ models). Scanning them requires either a running Odoo instance (heavy) or static AST analysis of the source code (fragile — misses dynamic field additions via `_inherit`). The project plans on-demand scanning but the scanner (amil-utils) is a separate repo that may not be ready.
 
 **How to avoid:**
 1. Pre-build registry snapshots for common Odoo 17 base modules (base, account, hr, purchase, sale, stock, mail). These are static for a given Odoo version — scan once, ship as data files.
@@ -181,9 +181,9 @@ Shortcuts that seem reasonable but create long-term problems.
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
 | Storing full model definitions in a single JSON file | Simple reads, no database needed | File grows to 100KB+, slow reads, merge conflicts | MVP only — split by module within first milestone |
-| Skipping AST validation after generation | Faster pipeline, no dependency on odoo-gen-utils | Spec-vs-reality drift accumulates silently | Never — at minimum validate model names and field names |
+| Skipping AST validation after generation | Faster pipeline, no dependency on amil-utils | Spec-vs-reality drift accumulates silently | Never — at minimum validate model names and field names |
 | Hardcoding Odoo 17 assumptions in registry schema | Simpler schema, no version abstraction | Cannot reuse for Odoo 18+ projects | Acceptable for this milestone, add version field for future |
-| Using markdown regex parsing (inherited from GSD state.cjs) | Works, already built | Fragile — breaks on unexpected formatting, 194-line function for field extraction | Acceptable for STATE.md, but use JSON for all new state files |
+| Using markdown regex parsing (inherited from Amil state.cjs) | Works, already built | Fragile — breaks on unexpected formatting, 194-line function for field extraction | Acceptable for STATE.md, but use JSON for all new state files |
 | Sequential module generation without parallelism | Simpler pipeline, no race conditions | 20 modules at 5-10 min each = 2-3 hours per full generation run | Acceptable for first milestone per PROJECT.md constraint |
 
 ## Integration Gotchas
@@ -192,11 +192,11 @@ Common mistakes when connecting to external services/tools.
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| odoo-gen belt via Task() | Passing the entire registry as a string argument, blowing the Task() context | Pass only tiered registry subset; use file references for large payloads |
-| odoo-gen-utils AST scanner | Assuming scanner output matches registry schema directly | Build an adapter that normalizes scanner output to registry format |
+| amil belt via Task() | Passing the entire registry as a string argument, blowing the Task() context | Pass only tiered registry subset; use file references for large payloads |
+| amil-utils AST scanner | Assuming scanner output matches registry schema directly | Build an adapter that normalizes scanner output to registry format |
 | Claude Code Task() subagents | Assuming Task() inherits parent's file system state | Task() gets fresh 200K context — explicitly pass all needed file paths and content |
 | Docker validation (via belt) | Assuming Docker is available and Odoo instance is running | Check Docker availability before belt invocation; provide clear error when unavailable |
-| GSD upstream updates | Cherry-picking GSD commits directly into odoo-gsd fork | Maintain a FORK_DIFF.md; evaluate each upstream change for compatibility before merging |
+| Amil upstream updates | Cherry-picking Amil commits directly into amil fork | Maintain a FORK_DIFF.md; evaluate each upstream change for compatibility before merging |
 
 ## Performance Traps
 
@@ -208,7 +208,7 @@ Patterns that work at small scale but fail as usage grows.
 | Injecting full security_scope.json into every agent | Token waste, attention dilution | Only inject scope rules relevant to current module's depends | >10 modules with security rules |
 | Storing computation chains as a flat list | O(n) lookup for chain validation | Index by source model and target model | >50 computation chains |
 | Re-scanning third-party modules on every generation | 5-10 second delay per module | Cache scans with version+hash key; invalidate only on explicit request | Any module depending on base Odoo modules |
-| Full git diff in every workflow step (inherited from GSD) | Slow on large generated codebases | Scope git operations to current module's directory only | >10 generated modules in addons dir |
+| Full git diff in every workflow step (inherited from Amil) | Slow on large generated codebases | Scope git operations to current module's directory only | >10 generated modules in addons dir |
 
 ## Security Mistakes
 
@@ -223,14 +223,14 @@ Domain-specific security issues beyond general web security.
 
 ## UX Pitfalls
 
-Common user experience mistakes for the CLI operator (developer using odoo-gsd).
+Common user experience mistakes for the CLI operator (developer using amil).
 
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
 | No progress visibility during multi-module generation | Developer waits 2+ hours with no feedback | Show per-module status table with ETA; update after each module completes |
 | Coherence errors reported as raw Python tracebacks | Developer must decode Odoo internals to understand the problem | Translate coherence failures to plain English: "Module B references model 'student' but Module A defines 'student_record'" |
 | Failed module blocks entire tier with no suggested fix | Developer stuck; must manually debug and re-run | Suggest specific fixes: "Field 'enrollment_id' not found on 'uni.student'. Did you mean 'enrollment_ids'?" |
-| Registry state invisible — no way to inspect what's registered | Developer can't verify if generation used correct registry context | Provide `odoo-gsd registry show [module]` and `odoo-gsd registry diff` commands |
+| Registry state invisible — no way to inspect what's registered | Developer can't verify if generation used correct registry context | Provide `amil registry show [module]` and `amil registry diff` commands |
 | No dry-run mode for generation | Developer must commit to a full generation to see what would happen | Add `--dry-run` flag that shows spec + registry injection without invoking belt |
 
 ## "Looks Done But Isn't" Checklist
@@ -289,8 +289,8 @@ How roadmap phases should address these pitfalls.
 - [Odoo Forum — Many2one Related Field v17 Bug](https://www.odoo.com/forum/help-1/v17-module-upgrade-fails-due-to-many2one-related-field-289123) — KeyError during module upgrades
 - [Beyond Code Generation in Odoo — Oduist](https://oduist.com/blog/odoo-experience-2025-ai-summaries-2/305-beyond-code-generation-integrating-ai-into-odoo-s-development-lifecycle-lessons-learned-306) — version blindness, context vacuum, silent failure in AI-generated Odoo code
 - [Google Developers — Multi-Agent Framework](https://developers.googleblog.com/architecting-efficient-context-aware-multi-agent-framework-for-production/) — state-based context isolation patterns
-- Actual GSD codebase inspection: 96 files, 203 workflow path references, 721-line state.cjs, 169-line config.cjs
+- Actual Amil codebase inspection: 96 files, 203 workflow path references, 721-line state.cjs, 169-line config.cjs
 
 ---
-*Pitfalls research for: Odoo ERP module orchestration (odoo-gsd fork)*
+*Pitfalls research for: Odoo ERP module orchestration (amil fork)*
 *Researched: 2026-03-05*

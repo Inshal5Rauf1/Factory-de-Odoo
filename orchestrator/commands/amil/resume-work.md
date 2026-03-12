@@ -1,5 +1,5 @@
 ---
-name: gsd:resume-work
+name: amil:resume-work
 description: Resume work from previous session with full context restoration
 allowed-tools:
   - Read
@@ -22,11 +22,11 @@ Routes to the resume-project workflow which handles:
   </objective>
 
 <execution_context>
-@~/.claude/odoo-gsd/workflows/resume-project.md
+@~/.claude/amil/workflows/resume-project.md
 </execution_context>
 
 <process>
-**Follow the resume-project workflow** from `@~/.claude/odoo-gsd/workflows/resume-project.md`.
+**Follow the resume-project workflow** from `@~/.claude/amil/workflows/resume-project.md`.
 
 The workflow handles all resumption logic including:
 

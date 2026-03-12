@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from odoo_gen_utils.validation.log_parser import (
+from amil_utils.validation.log_parser import (
     extract_traceback,
     parse_install_log,
     parse_test_log,
 )
-from odoo_gen_utils.validation.types import TestResult
+from amil_utils.validation.types import TestResult
 
 
 # --- parse_install_log tests ---

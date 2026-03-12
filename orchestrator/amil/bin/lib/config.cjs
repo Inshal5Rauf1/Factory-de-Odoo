@@ -28,11 +28,11 @@ function cmdConfigEnsureSection(cwd, raw) {
 
   // Detect Brave Search API key availability
   const homedir = require('os').homedir();
-  const braveKeyFile = path.join(homedir, '.odoo-gsd', 'brave_api_key');
+  const braveKeyFile = path.join(homedir, '.amil', 'brave_api_key');
   const hasBraveSearch = !!(process.env.BRAVE_API_KEY || fs.existsSync(braveKeyFile));
 
-  // Load user-level defaults from ~/.odoo-gsd/defaults.json if available
-  const globalDefaultsPath = path.join(homedir, '.odoo-gsd', 'defaults.json');
+  // Load user-level defaults from ~/.amil/defaults.json if available
+  const globalDefaultsPath = path.join(homedir, '.amil', 'defaults.json');
   let userDefaults = {};
   try {
     if (fs.existsSync(globalDefaultsPath)) {
@@ -55,8 +55,8 @@ function cmdConfigEnsureSection(cwd, raw) {
     commit_docs: true,
     search_gitignored: false,
     branching_strategy: 'none',
-    phase_branch_template: 'odoo-gsd/phase-{phase}-{slug}',
-    milestone_branch_template: 'odoo-gsd/{milestone}-{slug}',
+    phase_branch_template: 'amil/phase-{phase}-{slug}',
+    milestone_branch_template: 'amil/{milestone}-{slug}',
     workflow: {
       research: true,
       plan_check: true,

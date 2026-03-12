@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - Commands
+ * Amil Tools Tests - Commands
  */
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
@@ -934,7 +934,7 @@ describe('resolve-model command', () => {
   });
 
   test('known agent returns model and profile without unknown_agent', () => {
-    const result = runGsdTools('resolve-model odoo-gsd-planner', tmpDir);
+    const result = runGsdTools('resolve-model amil-planner', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -953,7 +953,7 @@ describe('resolve-model command', () => {
 
   test('default profile fallback when no config exists', () => {
     // tmpDir has no config.json, so defaults to balanced profile
-    const result = runGsdTools('resolve-model odoo-gsd-executor', tmpDir);
+    const result = runGsdTools('resolve-model amil-executor', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -1068,7 +1068,7 @@ describe('commit command', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('websearch command', () => {
-  const { cmdWebsearch } = require('../odoo-gsd/bin/lib/commands.cjs');
+  const { cmdWebsearch } = require('../amil/bin/lib/commands.cjs');
   let origFetch;
   let origApiKey;
   let origStdoutWrite;

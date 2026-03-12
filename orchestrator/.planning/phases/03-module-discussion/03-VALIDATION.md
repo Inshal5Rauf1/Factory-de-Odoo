@@ -29,7 +29,7 @@ created: 2026-03-05
 
 - **After every task commit:** `node --test tests/discuss-module.test.cjs tests/agent-frontmatter.test.cjs`
 - **After every plan wave:** `npm test`
-- **Before `/gsd:verify-work`:** Full suite must be green
+- **Before `/amil:verify-work`:** Full suite must be green
 - **Max feedback latency:** 10 seconds
 
 ---
@@ -60,7 +60,7 @@ created: 2026-03-05
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Interactive Q&A session | DISC-05 | Depends on AskUserQuestion tool in Claude Code runtime | Run `/odoo-gsd:discuss-module uni_fee` and verify questions asked and CONTEXT.md written |
+| Interactive Q&A session | DISC-05 | Depends on AskUserQuestion tool in Claude Code runtime | Run `/amil:discuss-module uni_fee` and verify questions asked and CONTEXT.md written |
 | Adaptive question ordering | DISC-04 | Agent discretion during live session | Verify agent skips irrelevant questions based on config |
 
 ---

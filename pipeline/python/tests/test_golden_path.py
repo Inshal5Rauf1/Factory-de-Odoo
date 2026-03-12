@@ -20,8 +20,8 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.renderer import get_template_dir, render_module
-from odoo_gen_utils.validation.docker_runner import (
+from amil_utils.renderer import get_template_dir, render_module
+from amil_utils.validation.docker_runner import (
     check_docker_available,
     docker_install_module,
     docker_run_tests,

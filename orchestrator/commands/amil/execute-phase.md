@@ -1,5 +1,5 @@
 ---
-name: gsd:execute-phase
+name: amil:execute-phase
 description: Execute all plans in a phase with wave-based parallelization
 argument-hint: "<phase-number> [--gaps-only]"
 allowed-tools:
@@ -22,8 +22,8 @@ Context budget: ~15% orchestrator, 100% fresh per subagent.
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gsd/workflows/execute-phase.md
-@~/.claude/odoo-gsd/references/ui-brand.md
+@~/.claude/amil/workflows/execute-phase.md
+@~/.claude/amil/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -32,10 +32,10 @@ Phase: $ARGUMENTS
 **Flags:**
 - `--gaps-only` — Execute only gap closure plans (plans with `gap_closure: true` in frontmatter). Use after verify-work creates fix plans.
 
-Context files are resolved inside the workflow via `odoo-gsd-tools init execute-phase` and per-subagent `<files_to_read>` blocks.
+Context files are resolved inside the workflow via `amil-tools init execute-phase` and per-subagent `<files_to_read>` blocks.
 </context>
 
 <process>
-Execute the execute-phase workflow from @~/.claude/odoo-gsd/workflows/execute-phase.md end-to-end.
+Execute the execute-phase workflow from @~/.claude/amil/workflows/execute-phase.md end-to-end.
 Preserve all workflow gates (wave execution, checkpoint handling, verification, state updates, routing).
 </process>

@@ -30,7 +30,7 @@ This is wrong for:
 ### BUG-H2: [RESOLVED] docker_install_module() used `exec` — race condition
 > **RESOLVED:** Fixed in a prior phase. docker_install_module() now uses docker compose run --rm. Tests in TestDockerInstallUsesRunNotExec verify no exec usage.
 
-**Status:** Fixed. See python/src/odoo_gen_utils/validation/docker_runner.py lines 148-172.
+**Status:** Fixed. See python/src/amil_utils/validation/docker_runner.py lines 148-172.
 
 ---
 
@@ -118,13 +118,13 @@ You iterate 200+ OCA repos making 400-600+ sequential API calls. No rate limitin
 ### BUG-M5: CLI imports entire dependency tree at module level
 **File:** `cli.py`
 
-Top-level imports pull in chromadb (~200MB ONNX runtime), PyGithub, gitpython, Docker wrappers. Running `odoo-gen-utils --help` loads everything. This makes CLI startup slow and wastes memory for commands that don't need heavy dependencies.
+Top-level imports pull in chromadb (~200MB ONNX runtime), PyGithub, gitpython, Docker wrappers. Running `amil-utils --help` loads everything. This makes CLI startup slow and wastes memory for commands that don't need heavy dependencies.
 
 **Your fix:** Move heavy imports inside command functions:
 ```python
 @main.command("build-index")
 def build_index(...):
-    from odoo_gen_utils.search import build_oca_index, get_github_token
+    from amil_utils.search import build_oca_index, get_github_token
     ...
 ```
 Only the clicked/click core and command definitions should be at module level.
@@ -357,7 +357,7 @@ These aren't bugs (the code works as written) but the design choices cause probl
 ### FLAW-17: No migration script generation
 **The problem:** After first deployment, every schema change needs migration scripts. No version bump or migration tooling.
 
-**Your fix:** Build IMP-12. Add a `/odoo-gen:migrate` command that: (1) Diffs old spec.json vs new spec.json. (2) For added fields: generates `post-migration.py` that sets default values. (3) For renamed fields: generates `pre-migration.py` that renames the column before ORM sees it. (4) For changed field types: generates `pre-migration.py` that casts data. (5) Bumps version in `__manifest__.py`. (6) Creates the `migrations/<version>/` directory structure. The diff engine should be AST-based (compare spec structures), not text-based.
+**Your fix:** Build IMP-12. Add a `/amil:migrate` command that: (1) Diffs old spec.json vs new spec.json. (2) For added fields: generates `post-migration.py` that sets default values. (3) For renamed fields: generates `pre-migration.py` that renames the column before ORM sees it. (4) For changed field types: generates `pre-migration.py` that casts data. (5) Bumps version in `__manifest__.py`. (6) Creates the `migrations/<version>/` directory structure. The diff engine should be AST-based (compare spec structures), not text-based.
 
 ---
 
@@ -406,28 +406,28 @@ These aren't bugs (the code works as written) but the design choices cause probl
 ### FLAW-24: No dev environment setup generation
 **The problem:** No docker-compose.dev.yml, no devcontainer, no pre-commit hooks, no CI/CD templates.
 
-**Your fix:** Build IMP-24. Add a `/odoo-gen:devenv` command that generates: `docker-compose.dev.yml` (Odoo + PostgreSQL + Redis + pgAdmin), `.devcontainer/devcontainer.json` (for VS Code remote containers), `.pre-commit-config.yaml` (pylint-odoo + black + isort), `.github/workflows/ci.yml` (lint + test on PR), `.env.example` (documented environment variables). Generate these at project level (once per project), not per module.
+**Your fix:** Build IMP-24. Add a `/amil:devenv` command that generates: `docker-compose.dev.yml` (Odoo + PostgreSQL + Redis + pgAdmin), `.devcontainer/devcontainer.json` (for VS Code remote containers), `.pre-commit-config.yaml` (pylint-odoo + black + isort), `.github/workflows/ci.yml` (lint + test on PR), `.env.example` (documented environment variables). Generate these at project level (once per project), not per module.
 
 ---
 
 ### FLAW-25: No module dependency visualization
 **The problem:** With 10-20 modules, you can't see the dependency graph.
 
-**Your fix:** Build IMP-25. Add a `/odoo-gen:graph` command that: (1) Reads `__manifest__.py` from all generated modules. (2) Builds a directed graph of dependencies. (3) Outputs a Mermaid diagram. (4) Detects cycles (error). (5) Lists leaf modules (can install independently). (6) For a given module, shows impact: "If you change uni_core, these 8 modules are affected." Use `graphlib.TopologicalSorter` from Python 3.12 stdlib for the graph operations.
+**Your fix:** Build IMP-25. Add a `/amil:graph` command that: (1) Reads `__manifest__.py` from all generated modules. (2) Builds a directed graph of dependencies. (3) Outputs a Mermaid diagram. (4) Detects cycles (error). (5) Lists leaf modules (can install independently). (6) For a given module, shows impact: "If you change uni_core, these 8 modules are affected." Use `graphlib.TopologicalSorter` from Python 3.12 stdlib for the graph operations.
 
 ---
 
 ### FLAW-26: No spec diffing between versions
 **The problem:** No way to see what changed between spec iterations.
 
-**Your fix:** Build IMP-26. Add a `/odoo-gen:diff old_spec.json new_spec.json` command that compares: added/removed models, added/removed/changed fields (with type change highlighting), workflow state changes, new dependencies, new business rules. Output as a structured report (JSON + human-readable summary). Suggest migration actions based on the diff: "Field `fee_amount` changed from Float to Monetary — needs pre-migration script to add currency_id."
+**Your fix:** Build IMP-26. Add a `/amil:diff old_spec.json new_spec.json` command that compares: added/removed models, added/removed/changed fields (with type change highlighting), workflow state changes, new dependencies, new business rules. Output as a structured report (JSON + human-readable summary). Suggest migration actions based on the diff: "Field `fee_amount` changed from Float to Monetary — needs pre-migration script to add currency_id."
 
 ---
 
 ### FLAW-27: No orchestrator input — belt can't receive project context
 **The problem:** The belt generates one module at a time with no awareness of the larger project. No way to pass a model registry, cross-module constraints, or project context.
 
-**Your fix:** Add an `_available_models` key to spec.json that **odoo-gsd** populates before sending each spec to the belt. The model registry is a dict: `{"uni.student": {"fields": ["name", "cnic", ...], "module": "uni_student"}, ...}`. In the Model Architect pass (IMP-00B), when generating a Many2one field, check the registry to verify the target model exists. If it doesn't, flag a warning in the generation result (don't silently generate a broken reference). In `generate_module()`, accept an optional `project_context: dict` parameter with: model registry, security scope configuration, localization settings, and any cross-module constraints. Thread this context through all passes.
+**Your fix:** Add an `_available_models` key to spec.json that **amil** populates before sending each spec to the belt. The model registry is a dict: `{"uni.student": {"fields": ["name", "cnic", ...], "module": "uni_student"}, ...}`. In the Model Architect pass (IMP-00B), when generating a Many2one field, check the registry to verify the target model exists. If it doesn't, flag a warning in the generation result (don't silently generate a broken reference). In `generate_module()`, accept an optional `project_context: dict` parameter with: model registry, security scope configuration, localization settings, and any cross-module constraints. Thread this context through all passes.
 
 ---
 
@@ -486,7 +486,7 @@ class GenerationPipeline:
                 response = self._re_run_with_resolution(pass_type, prompt, amb, resolution)
         return self._parse_pass_output(pass_type, response)
 ```
-**odoo-gsd** provides the handler implementation that routes questions to the human. In standalone mode (no orchestrator), default to `input()` on the CLI.
+**amil** provides the handler implementation that routes questions to the human. In standalone mode (no orchestrator), default to `input()` on the CLI.
 
 ---
 
@@ -503,7 +503,7 @@ def _save_checkpoint(self, module_name, pass_name, ctx):
         "model_registry": self.model_registry,
         "timestamp": datetime.now().isoformat()
     }
-    Path(f".odoo-gen-checkpoints/{module_name}/{pass_name}.json").write_text(
+    Path(f".amil-checkpoints/{module_name}/{pass_name}.json").write_text(
         json.dumps(checkpoint))
 
 def generate_module(self, spec, output_dir, resume_from=None):
@@ -518,27 +518,27 @@ def generate_module(self, spec, output_dir, resume_from=None):
         ctx = self._run_pass(pass_name, spec, ctx)
         self._save_checkpoint(spec["name"], pass_name, ctx)
 ```
-Add a `--resume` flag to the CLI that detects the latest checkpoint and resumes. For project-level generation, **odoo-gsd**'s state (which modules completed, current model registry) is also checkpointed via odoo-gsd's built-in pause/resume (inherited from GSD).
+Add a `--resume` flag to the CLI that detects the latest checkpoint and resumes. For project-level generation, **amil**'s state (which modules completed, current model registry) is also checkpointed via amil's built-in pause/resume (inherited from Amil).
 
 ---
 
-### FLAW-32: Belt repo still references GSD instead of odoo-gsd
+### FLAW-32: Belt repo still references Amil instead of amil
 
 **Category:** DEBT — stale dependency references
 **Severity:** Blocks integration — belt and orchestrator won't wire up cleanly
-**When:** Day 1 of odoo-gsd fork creation
+**When:** Day 1 of amil fork creation
 
-**What's wrong:** The belt repo (Odoo-Development-Automation) was originally designed to be driven by GSD. Now that the orchestrator is odoo-gsd (a specialized fork), the belt repo has stale references: README, code imports, config files, CLI flags, Docker setup, and CI/CD workflows may still point to `get-shit-done` / `gsd` instead of `odoo-gsd`.
+**What's wrong:** The belt repo (Odoo-Development-Automation) was originally designed to be driven by Amil. Now that the orchestrator is amil (a specialized fork), the belt repo has stale references: README, code imports, config files, CLI flags, Docker setup, and CI/CD workflows may still point to `get-shit-done` / `gsd` instead of `amil`.
 
-**Your fix:** Grep the entire belt repo for `gsd`, `GSD`, `get-shit-done`, `get_shit_done`. Update every hit:
+**Your fix:** Grep the entire belt repo for `gsd`, `Amil`, `get-shit-done`, `get_shit_done`. Update every hit:
 - README.md: architecture diagram, installation instructions, orchestrator references
 - Python code: imports, subprocess calls, config keys, environment variables, string literals
 - Dependencies: package.json / pyproject.toml / requirements.txt
 - Docker / docker-compose: container mounts, repo paths
 - GitHub Actions: workflow steps that install or invoke the orchestrator
-- spec.json schema: add `"orchestrator": "odoo-gsd"` field
-- generation_manifest.json: add `"orchestrator": "odoo-gsd"` for traceability
+- spec.json schema: add `"orchestrator": "amil"` field
+- generation_manifest.json: add `"orchestrator": "amil"` for traceability
 
-Do NOT rename GSD's inherited state files (PROJECT.md, STATE.md, etc.) — those names stay. Only update references to the *tool* that manages them.
+Do NOT rename Amil's inherited state files (PROJECT.md, STATE.md, etc.) — those names stay. Only update references to the *tool* that manages them.
 
-See IMPROVEMENTS.md → "MIGRATION: Belt Repo → odoo-gsd Dependency" for the full checklist.
+See IMPROVEMENTS.md → "MIGRATION: Belt Repo → amil Dependency" for the full checklist.

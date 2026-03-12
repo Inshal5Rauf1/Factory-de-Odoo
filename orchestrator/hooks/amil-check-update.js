@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Check for GSD updates in background, write result to cache
+// Check for Amil updates in background, write result to cache
 // Called by SessionStart hook - runs once per session
 
 const fs = require('fs');
@@ -15,11 +15,11 @@ const cwd = process.cwd();
 function detectConfigDir(baseDir) {
   // Check env override first (supports multi-account setups)
   const envDir = process.env.CLAUDE_CONFIG_DIR;
-  if (envDir && fs.existsSync(path.join(envDir, 'odoo-gsd', 'VERSION'))) {
+  if (envDir && fs.existsSync(path.join(envDir, 'amil', 'VERSION'))) {
     return envDir;
   }
   for (const dir of ['.config/opencode', '.opencode', '.gemini', '.claude']) {
-    if (fs.existsSync(path.join(baseDir, dir, 'odoo-gsd', 'VERSION'))) {
+    if (fs.existsSync(path.join(baseDir, dir, 'amil', 'VERSION'))) {
       return path.join(baseDir, dir);
     }
   }
@@ -29,11 +29,11 @@ function detectConfigDir(baseDir) {
 const globalConfigDir = detectConfigDir(homeDir);
 const projectConfigDir = detectConfigDir(cwd);
 const cacheDir = path.join(globalConfigDir, 'cache');
-const cacheFile = path.join(cacheDir, 'odoo-gsd-update-check.json');
+const cacheFile = path.join(cacheDir, 'amil-update-check.json');
 
 // VERSION file locations (check project first, then global)
-const projectVersionFile = path.join(projectConfigDir, 'odoo-gsd', 'VERSION');
-const globalVersionFile = path.join(globalConfigDir, 'odoo-gsd', 'VERSION');
+const projectVersionFile = path.join(projectConfigDir, 'amil', 'VERSION');
+const globalVersionFile = path.join(globalConfigDir, 'amil', 'VERSION');
 
 // Ensure cache directory exists
 if (!fs.existsSync(cacheDir)) {
@@ -61,7 +61,7 @@ const child = spawn(process.execPath, ['-e', `
 
   let latest = null;
   try {
-    latest = execSync('npm view odoo-gsd-cc version', { encoding: 'utf8', timeout: 10000, windowsHide: true }).trim();
+    latest = execSync('npm view amil-cc version', { encoding: 'utf8', timeout: 10000, windowsHide: true }).trim();
   } catch (e) { /* npm unavailable or network error */ }
 
   const result = {

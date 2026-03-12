@@ -14,7 +14,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from odoo_gen_utils.spec_schema import ChainStepSpec, ChainSpec
+from amil_utils.spec_schema import ChainStepSpec, ChainSpec
 
 
 # ---------------------------------------------------------------------------
@@ -163,7 +163,7 @@ class TestPreprocessorBasic:
 
     def test_empty_chains_returns_unchanged(self):
         """Preprocessor with empty computation_chains returns spec unchanged."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -175,7 +175,7 @@ class TestPreprocessorBasic:
 
     def test_auto_adds_missing_field(self):
         """Preprocessor auto-adds field from chain step when not in model fields."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -210,7 +210,7 @@ class TestPreprocessorBasic:
 
     def test_does_not_duplicate_existing_field(self):
         """Preprocessor does NOT duplicate field when it already exists."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -246,7 +246,7 @@ class TestPreprocessorBasic:
 
     def test_merges_chain_attrs_into_existing_field(self):
         """Preprocessor merges chain attributes (store, compute, depends) into existing field without replacing type."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -283,7 +283,7 @@ class TestPreprocessorBasic:
 
     def test_sets_store_true_on_computed(self):
         """Preprocessor sets store=True on computed chain fields (source != direct_input)."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -315,7 +315,7 @@ class TestPreprocessorBasic:
 
     def test_sets_depends_with_dot_notation(self):
         """Preprocessor sets @api.depends from chain step depends array with dot notation preserved."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -351,7 +351,7 @@ class TestPreprocessorBasic:
 
     def test_sets_compute_method_name(self):
         """Preprocessor sets compute method name to _compute_{field_name} convention."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -378,7 +378,7 @@ class TestPreprocessorBasic:
 
     def test_enriches_field_with_chain_meta(self):
         """Preprocessor enriches field dict with _chain_meta key."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -419,7 +419,7 @@ class TestPreprocessorBasic:
 
     def test_stores_validated_chains_in_spec(self):
         """Preprocessor stores validated chains in spec['_computation_chains']."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -446,7 +446,7 @@ class TestPreprocessorBasic:
 
     def test_skips_direct_input_no_compute(self):
         """Preprocessor skips direct_input steps -- no compute, no depends."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -473,7 +473,7 @@ class TestPreprocessorBasic:
 
     def test_missing_model_logs_warning(self):
         """Preprocessor with chain step referencing model not in spec logs warning and continues."""
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -501,7 +501,7 @@ class TestPreprocessorBasic:
     def test_does_not_mutate_input(self):
         """Original spec dict is not mutated."""
         import copy
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -536,7 +536,7 @@ class TestCGPAChainFixture:
     """Full CGPA chain fixture (4 steps across 3 models) produces correct enriched fields."""
 
     def test_cgpa_chain_produces_correct_fields(self):
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -570,7 +570,7 @@ class TestCGPAChainFixture:
         assert "enrollment_ids.weighted_grade_points" in cgpa["depends"]
 
     def test_cgpa_chain_meta_on_last_step(self):
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 
@@ -592,7 +592,7 @@ class TestFeePenaltyChainFixture:
     """Fee penalty chain fixture (3 steps across 2 models)."""
 
     def test_fee_penalty_produces_correct_fields(self):
-        from odoo_gen_utils.preprocessors.computation_chains import (
+        from amil_utils.preprocessors.computation_chains import (
             _process_computation_chains,
         )
 

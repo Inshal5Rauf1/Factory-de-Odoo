@@ -1,5 +1,5 @@
 <purpose>
-Validate built features through conversational testing with persistent state. Creates UAT.md that tracks test progress, survives /clear, and feeds gaps into /odoo-gsd:plan-phase --gaps.
+Validate built features through conversational testing with persistent state. Creates UAT.md that tracks test progress, survives /clear, and feeds gaps into /amil:plan-phase --gaps.
 
 User tests, Claude records. One test at a time. Plain text responses.
 </purpose>
@@ -15,7 +15,7 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 </philosophy>
 
 <template>
-@~/.claude/odoo-gsd/templates/UAT.md
+@~/.claude/amil/templates/UAT.md
 </template>
 
 <process>
@@ -24,7 +24,7 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 If $ARGUMENTS contains a phase number, load context:
 
 ```bash
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" init verify-work "${PHASE_ARG}")
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init verify-work "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -70,7 +70,7 @@ If no, continue to `create_uat_file`.
 ```
 No active UAT sessions.
 
-Provide a phase number to start testing (e.g., /odoo-gsd:verify-work 4)
+Provide a phase number to start testing (e.g., /amil:verify-work 4)
 ```
 
 **If no active sessions AND $ARGUMENTS provided:**
@@ -306,7 +306,7 @@ Clear Current Test section:
 
 Commit the UAT file:
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" commit "test({phase_num}): complete UAT - {passed} passed, {issues} issues" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "test({phase_num}): complete UAT - {passed} passed, {issues} issues" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
 ```
 
 Present summary:
@@ -331,8 +331,8 @@ Present summary:
 ```
 All tests passed. Ready to continue.
 
-- `/odoo-gsd:plan-phase {next}` — Plan next phase
-- `/odoo-gsd:execute-phase {next}` — Execute next phase
+- `/amil:plan-phase {next}` — Plan next phase
+- `/amil:execute-phase {next}` — Execute next phase
 ```
 </step>
 
@@ -348,7 +348,7 @@ Spawning parallel debug agents to investigate each issue.
 ```
 
 - Load diagnose-issues workflow
-- Follow @~/.claude/odoo-gsd/workflows/diagnose-issues.md
+- Follow @~/.claude/amil/workflows/diagnose-issues.md
 - Spawn parallel debug agents for each issue
 - Collect root causes
 - Update UAT.md with root causes
@@ -363,13 +363,13 @@ Diagnosis runs automatically - no user prompt. Parallel agents investigate simul
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PLANNING FIXES
+ Amil ► PLANNING FIXES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning planner for gap closure...
 ```
 
-Spawn odoo-gsd-planner in --gaps mode:
+Spawn amil-planner in --gaps mode:
 
 ```
 Task(
@@ -388,11 +388,11 @@ Task(
 </planning_context>
 
 <downstream_consumer>
-Output consumed by /odoo-gsd:execute-phase
+Output consumed by /amil:execute-phase
 Plans must be executable prompts.
 </downstream_consumer>
 """,
-  subagent_type="odoo-gsd-planner",
+  subagent_type="amil-planner",
   model="{planner_model}",
   description="Plan gap fixes for Phase {phase}"
 )
@@ -409,7 +409,7 @@ On return:
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► VERIFYING FIX PLANS
+ Amil ► VERIFYING FIX PLANS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning plan checker...
@@ -417,7 +417,7 @@ Display:
 
 Initialize: `iteration_count = 1`
 
-Spawn odoo-gsd-plan-checker:
+Spawn amil-plan-checker:
 
 ```
 Task(
@@ -439,7 +439,7 @@ Return one of:
 - ## ISSUES FOUND — structured issue list
 </expected_output>
 """,
-  subagent_type="odoo-gsd-plan-checker",
+  subagent_type="amil-plan-checker",
   model="{checker_model}",
   description="Verify Phase {phase} fix plans"
 )
@@ -457,7 +457,7 @@ On return:
 
 Display: `Sending back to planner for revision... (iteration {N}/3)`
 
-Spawn odoo-gsd-planner with revision context:
+Spawn amil-planner with revision context:
 
 ```
 Task(
@@ -481,7 +481,7 @@ Read existing PLAN.md files. Make targeted updates to address checker issues.
 Do NOT replan from scratch unless issues are fundamental.
 </instructions>
 """,
-  subagent_type="odoo-gsd-planner",
+  subagent_type="amil-planner",
   model="{planner_model}",
   description="Revise Phase {phase} plans"
 )
@@ -497,7 +497,7 @@ Display: `Max iterations reached. {N} issues remain.`
 Offer options:
 1. Force proceed (execute despite issues)
 2. Provide guidance (user gives direction, retry)
-3. Abandon (exit, user runs /odoo-gsd:plan-phase manually)
+3. Abandon (exit, user runs /amil:plan-phase manually)
 
 Wait for user response.
 </step>
@@ -507,7 +507,7 @@ Wait for user response.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► FIXES READY ✓
+ Amil ► FIXES READY ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Phase {X}: {Name}** — {N} gap(s) diagnosed, {M} fix plan(s) created
@@ -525,7 +525,7 @@ Plans verified and ready for execution.
 
 **Execute fixes** — run fix plans
 
-`/clear` then `/odoo-gsd:execute-phase {phase} --gaps-only`
+`/clear` then `/amil:execute-phase {phase} --gaps-only`
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -576,8 +576,8 @@ Default to **major** if unclear. User can correct if needed.
 - [ ] Batched writes: on issue, every 5 passes, or completion
 - [ ] Committed on completion
 - [ ] If issues: parallel debug agents diagnose root causes
-- [ ] If issues: odoo-gsd-planner creates fix plans (gap_closure mode)
-- [ ] If issues: odoo-gsd-plan-checker verifies fix plans
+- [ ] If issues: amil-planner creates fix plans (gap_closure mode)
+- [ ] If issues: amil-plan-checker verifies fix plans
 - [ ] If issues: revision loop until plans pass (max 3 iterations)
-- [ ] Ready for `/odoo-gsd:execute-phase --gaps-only` when complete
+- [ ] Ready for `/amil:execute-phase --gaps-only` when complete
 </success_criteria>

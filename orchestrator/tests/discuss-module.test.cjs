@@ -8,9 +8,9 @@ const path = require('path');
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const AGENTS_DIR = path.join(__dirname, '..', 'agents');
-const COMMANDS_DIR = path.join(__dirname, '..', 'commands', 'odoo-gsd');
-const WORKFLOWS_DIR = path.join(__dirname, '..', 'odoo-gsd', 'workflows');
-const REFERENCES_DIR = path.join(__dirname, '..', 'odoo-gsd', 'references');
+const COMMANDS_DIR = path.join(__dirname, '..', 'commands', 'amil');
+const WORKFLOWS_DIR = path.join(__dirname, '..', 'amil', 'workflows');
+const REFERENCES_DIR = path.join(__dirname, '..', 'amil', 'references');
 
 const MODULE_TYPES = [
   'core', 'student', 'fee', 'exam', 'faculty',
@@ -141,14 +141,14 @@ describe('CMD: discuss-module command', () => {
   const commandPath = path.join(COMMANDS_DIR, 'discuss-module.md');
 
   it('discuss-module command file exists', () => {
-    assert.ok(fs.existsSync(commandPath), 'commands/odoo-gsd/discuss-module.md must exist');
+    assert.ok(fs.existsSync(commandPath), 'commands/amil/discuss-module.md must exist');
   });
 
   it('has correct name in frontmatter', () => {
     const content = fs.readFileSync(commandPath, 'utf-8');
     assert.ok(
-      content.includes('name: odoo-gsd:discuss-module'),
-      'command must have name: odoo-gsd:discuss-module'
+      content.includes('name: amil:discuss-module'),
+      'command must have name: amil:discuss-module'
     );
   });
 
@@ -165,14 +165,14 @@ describe('WF: discuss-module workflow', () => {
   const workflowPath = path.join(WORKFLOWS_DIR, 'discuss-module.md');
 
   it('discuss-module workflow file exists', () => {
-    assert.ok(fs.existsSync(workflowPath), 'odoo-gsd/workflows/discuss-module.md must exist');
+    assert.ok(fs.existsSync(workflowPath), 'amil/workflows/discuss-module.md must exist');
   });
 
   it('references the questioner agent', () => {
     const content = fs.readFileSync(workflowPath, 'utf-8');
     assert.ok(
-      content.includes('odoo-gsd-module-questioner'),
-      'workflow must reference odoo-gsd-module-questioner agent'
+      content.includes('amil-module-questioner'),
+      'workflow must reference amil-module-questioner agent'
     );
   });
 });
@@ -180,10 +180,10 @@ describe('WF: discuss-module workflow', () => {
 // ─── AGNT: questioner agent ─────────────────────────────────────────────────
 
 describe('AGNT: questioner agent', () => {
-  const agentPath = path.join(AGENTS_DIR, 'odoo-gsd-module-questioner.md');
+  const agentPath = path.join(AGENTS_DIR, 'amil-module-questioner.md');
 
   it('questioner agent file exists', () => {
-    assert.ok(fs.existsSync(agentPath), 'agents/odoo-gsd-module-questioner.md must exist');
+    assert.ok(fs.existsSync(agentPath), 'agents/amil-module-questioner.md must exist');
   });
 
   it('has AskUserQuestion in tools', () => {
@@ -207,10 +207,10 @@ describe('AGNT: questioner agent', () => {
 // ─── AGNT: enhanced researcher ──────────────────────────────────────────────
 
 describe('AGNT: enhanced researcher', () => {
-  const researcherPath = path.join(AGENTS_DIR, 'odoo-gsd-module-researcher.md');
+  const researcherPath = path.join(AGENTS_DIR, 'amil-module-researcher.md');
 
   it('researcher agent file exists', () => {
-    assert.ok(fs.existsSync(researcherPath), 'agents/odoo-gsd-module-researcher.md must exist');
+    assert.ok(fs.existsSync(researcherPath), 'agents/amil-module-researcher.md must exist');
   });
 
   it('contains field type section', () => {

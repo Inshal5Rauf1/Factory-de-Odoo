@@ -6,11 +6,11 @@
 
 ## Summary
 
-Phase 1 transforms the GSD CLI into odoo-gsd through systematic renaming of 233+ hardcoded references, then builds three new infrastructure modules: a model registry with atomic writes and rollback, a module status tracker with enforced lifecycle transitions, and a dependency graph with topological sort and circular dependency detection. The entire phase operates within GSD's zero-dependency Node.js CJS architecture using only built-in modules (fs, path, node:test, node:assert).
+Phase 1 transforms the Amil CLI into amil through systematic renaming of 233+ hardcoded references, then builds three new infrastructure modules: a model registry with atomic writes and rollback, a module status tracker with enforced lifecycle transitions, and a dependency graph with topological sort and circular dependency detection. The entire phase operates within Amil's zero-dependency Node.js CJS architecture using only built-in modules (fs, path, node:test, node:assert).
 
-The codebase has been directly inspected. There are 98 files containing `get-shit-done`, `gsd-tools`, or `/gsd:` references that need updating. The rename spans 6 distinct layers: directory paths (`get-shit-done/` directory), CLI tool name (`gsd-tools.cjs`), command prefix (`/gsd:`), agent role names (`gsd-planner` etc in MODEL_PROFILES), config defaults (`gsd/phase-{phase}` branch templates), and documentation/templates. The 2464-line `bin/install.js` must be rewritten to support Claude Code only and add odoo-gen/Python checks.
+The codebase has been directly inspected. There are 98 files containing `get-shit-done`, `gsd-tools`, or `/amil:` references that need updating. The rename spans 6 distinct layers: directory paths (`get-shit-done/` directory), CLI tool name (`gsd-tools.cjs`), command prefix (`/amil:`), agent role names (`gsd-planner` etc in MODEL_PROFILES), config defaults (`gsd/phase-{phase}` branch templates), and documentation/templates. The 2464-line `bin/install.js` must be rewritten to support Claude Code only and add amil/Python checks.
 
-The three new modules (registry.cjs ~400-600 LOC, module-status.cjs ~150-200 LOC, dependency-graph.cjs ~150-200 LOC) follow established GSD patterns: each exports functions consumed by `gsd-tools.cjs` via the CLI router, uses `output()`/`error()` from core.cjs, and operates on JSON files in `.planning/`. All are inline implementations with no npm dependencies -- topological sort is 20 LOC, atomic writes are 5 LOC, JSON validation is ~50 LOC.
+The three new modules (registry.cjs ~400-600 LOC, module-status.cjs ~150-200 LOC, dependency-graph.cjs ~150-200 LOC) follow established Amil patterns: each exports functions consumed by `gsd-tools.cjs` via the CLI router, uses `output()`/`error()` from core.cjs, and operates on JSON files in `.planning/`. All are inline implementations with no npm dependencies -- topological sort is 20 LOC, atomic writes are 5 LOC, JSON validation is ~50 LOC.
 
 **Primary recommendation:** Rename in strict layers (directory structure, then CLI entry point, then command prefix, then internal identifiers, then docs), verifying each layer with grep before proceeding. Build registry.cjs first as the keystone module, then module-status.cjs and dependency-graph.cjs which depend on its patterns.
 
@@ -19,15 +19,15 @@ The three new modules (registry.cjs ~400-600 LOC, module-status.cjs ~150-200 LOC
 
 | ID | Description | Research Support |
 |----|-------------|-----------------|
-| FORK-01 | All 32 command files renamed from `/gsd:` to `/odoo-gsd:` prefix | 32 files in `commands/gsd/` directory need directory rename to `commands/odoo-gsd/` and frontmatter prefix update |
-| FORK-02 | All workflow files reference `odoo-gsd` commands | 12+ workflow files in `get-shit-done/workflows/` with `gsd-tools` and `/gsd:` references |
-| FORK-03 | All agent files reference `odoo-gsd` paths and commands | 12 agent files in `agents/` all prefixed `gsd-` with internal path references |
+| FORK-01 | All 32 command files renamed from `/amil:` to `/amil:` prefix | 32 files in `commands/gsd/` directory need directory rename to `commands/amil/` and frontmatter prefix update |
+| FORK-02 | All workflow files reference `amil` commands | 12+ workflow files in `get-shit-done/workflows/` with `gsd-tools` and `/amil:` references |
+| FORK-03 | All agent files reference `amil` paths and commands | 12 agent files in `agents/` all prefixed `gsd-` with internal path references |
 | FORK-04 | 233+ hardcoded path references renamed | 98 files identified containing old references across 6 layers |
 | FORK-05 | `bin/install.js` rewritten for Claude Code only | 2464-line file currently supports 4 runtimes; strip to Claude Code only |
-| FORK-06 | Install checks for odoo-gen at `~/.claude/odoo-gen/` | Add path existence check in install.js |
+| FORK-06 | Install checks for amil at `~/.claude/amil/` | Add path existence check in install.js |
 | FORK-07 | Install checks for Python 3.8+ | Add `python3 --version` check in install.js |
 | FORK-08 | CLAUDE.md rewritten as Odoo ERP orchestrator context | New file; depends on knowing final command names |
-| FORK-09 | package.json renamed to odoo-gsd | Update name, description, repository, strip multi-runtime keywords |
+| FORK-09 | package.json renamed to amil | Update name, description, repository, strip multi-runtime keywords |
 | FORK-10 | Verification grep confirms zero remaining old references | Build verification script using `grep -r` for all old patterns |
 | CONF-01 | Config extended with `odoo` config block schema | Extend `config.cjs` `cmdConfigEnsureSection` with odoo sub-object |
 | CONF-02 | Odoo config validation rules enforced | Add validation functions for version (17.0/18.0), scope_levels array, belt path |
@@ -49,7 +49,7 @@ The three new modules (registry.cjs ~400-600 LOC, module-status.cjs ~150-200 LOC
 | DEPG-05 | Generation blocked on dependency status | Check all depends modules are >= "generated" before allowing generation |
 | TEST-01 | Registry tests | CRUD, atomic updates, rollback, cross-module validation, duplicate detection |
 | TEST-02 | Module status tests | Status transitions, invalid transitions, tier completion |
-| TEST-05 | Existing GSD tests updated | Update test helpers to use new tool path; fix assertions for renamed config |
+| TEST-05 | Existing Amil tests updated | Update test helpers to use new tool path; fix assertions for renamed config |
 </phase_requirements>
 
 ## Standard Stack
@@ -57,8 +57,8 @@ The three new modules (registry.cjs ~400-600 LOC, module-status.cjs ~150-200 LOC
 ### Core
 | Library | Version | Purpose | Why Standard |
 |---------|---------|---------|--------------|
-| Node.js | 25.5.0 | Runtime | Installed on system, GSD's native runtime |
-| CJS (require/exports) | N/A | Module format | GSD's format throughout; no ESM conversion |
+| Node.js | 25.5.0 | Runtime | Installed on system, Amil's native runtime |
+| CJS (require/exports) | N/A | Module format | Amil's format throughout; no ESM conversion |
 | fs (built-in) | N/A | File I/O, JSON state | All state is JSON files in `.planning/` |
 | path (built-in) | N/A | Path resolution | Cross-platform path handling |
 | node:test | 25.5.0 | Test framework | Built-in, zero dependencies, used by existing 16 tests |
@@ -81,7 +81,7 @@ The three new modules (registry.cjs ~400-600 LOC, module-status.cjs ~150-200 LOC
 **Installation:**
 ```bash
 # No npm install needed for runtime
-git clone <repo> ~/.claude/odoo-gsd
+git clone <repo> ~/.claude/amil
 # Dev only (tests with coverage):
 npm install  # installs c8 + esbuild devDependencies
 ```
@@ -90,11 +90,11 @@ npm install  # installs c8 + esbuild devDependencies
 
 ### Recommended Project Structure
 ```
-odoo-gsd/                        # renamed from get-shit-done/
+amil/                        # renamed from get-shit-done/
   bin/
-    odoo-gsd-tools.cjs           # renamed from gsd-tools.cjs (592 LOC + new registry/status/depgraph dispatch)
+    amil-tools.cjs           # renamed from gsd-tools.cjs (592 LOC + new registry/status/depgraph dispatch)
     lib/
-      core.cjs                   # MODEL_PROFILES keys renamed (gsd-* -> odoo-gsd-*)
+      core.cjs                   # MODEL_PROFILES keys renamed (gsd-* -> amil-*)
       config.cjs                 # Extended with odoo config block (CONF-01, CONF-02)
       registry.cjs               # NEW: Model registry CRUD (~400-600 LOC)
       module-status.cjs          # NEW: Module lifecycle state machine (~150-200 LOC)
@@ -103,13 +103,13 @@ odoo-gsd/                        # renamed from get-shit-done/
       state.cjs                  # Existing, minor path updates
       phase.cjs                  # Existing, minor path updates
       ... (other existing modules)
-    install.js                   # Rewritten: Claude Code only + odoo-gen + Python checks
+    install.js                   # Rewritten: Claude Code only + amil + Python checks
   workflows/                     # Renamed references within files
   references/                    # Renamed references within files
   templates/                     # Renamed references within files
-commands/odoo-gsd/               # renamed from commands/gsd/ (32 files)
-agents/                          # Renamed gsd-* -> odoo-gsd-* (12 files)
-hooks/                           # Renamed gsd-* -> odoo-gsd-* (3 files)
+commands/amil/               # renamed from commands/gsd/ (32 files)
+agents/                          # Renamed gsd-* -> amil-* (12 files)
+hooks/                           # Renamed gsd-* -> amil-* (3 files)
 tests/
   helpers.cjs                   # Updated TOOLS_PATH
   registry.test.cjs             # NEW (TEST-01)
@@ -134,7 +134,7 @@ tests/
 **When to use:** Every new registry/status/depgraph CLI subcommand.
 **Example:**
 ```javascript
-// In odoo-gsd-tools.cjs (extended dispatch table)
+// In amil-tools.cjs (extended dispatch table)
 case 'registry':
   const registrySub = args[1];
   switch (registrySub) {
@@ -154,7 +154,7 @@ case 'registry':
 **When to use:** Every write to model_registry.json, module_status.json.
 **Example:**
 ```javascript
-// Source: ARCHITECTURE.md research + GSD codebase patterns
+// Source: ARCHITECTURE.md research + Amil codebase patterns
 function atomicWriteJSON(filePath, data) {
   const backupPath = filePath + '.bak';
   if (fs.existsSync(filePath)) {
@@ -275,14 +275,14 @@ const EMPTY_REGISTRY = {
 
 ### Pitfall 1: Incomplete Fork Rename (233+ References)
 **What goes wrong:** Renaming most references but missing edge cases -- MODEL_PROFILES keys in core.cjs, branch templates in config.cjs defaults, `.gsd/` home directory references, `gsd-` prefixed tmp file names in output() function, test helper TOOLS_PATH.
-**Why it happens:** 6 distinct reference pattern categories across 98 files. Simple find-replace produces false positives (e.g., `gsd` inside words like `odoo-gsd` creates double-rename).
-**How to avoid:** Build a rename manifest listing every pattern category. Rename in layers. Verify each layer with `grep -r` before proceeding. Final verification script must check ALL old patterns: `get-shit-done`, `gsd-tools`, `/gsd:`, `gsd-planner`, `gsd-executor`, `gsd/phase-`, `.gsd/`.
+**Why it happens:** 6 distinct reference pattern categories across 98 files. Simple find-replace produces false positives (e.g., `gsd` inside words like `amil` creates double-rename).
+**How to avoid:** Build a rename manifest listing every pattern category. Rename in layers. Verify each layer with `grep -r` before proceeding. Final verification script must check ALL old patterns: `get-shit-done`, `gsd-tools`, `/amil:`, `gsd-planner`, `gsd-executor`, `gsd/phase-`, `.gsd/`.
 **Warning signs:** Commands work in isolation but fail when workflows invoke sub-tools. Agent spawn with wrong role name. Branch names use old prefix.
 
 ### Pitfall 2: install.js Rewrite Scope Creep
 **What goes wrong:** The 2464-line install.js supports 4 runtimes (Claude Code, OpenCode, Gemini CLI, Codex CLI) with detection, configuration, and settings management for each. Attempting to "simplify" it while preserving backward compatibility leads to a messy hybrid.
 **Why it happens:** Fear of breaking existing installs. Desire to keep code "just in case."
-**How to avoid:** Hard delete all non-Claude-Code runtime support. The requirement (FORK-05) is explicit: "rewritten for Claude Code only." Start from the Claude Code path and add odoo-gen + Python checks. Do not preserve OpenCode/Gemini/Codex paths.
+**How to avoid:** Hard delete all non-Claude-Code runtime support. The requirement (FORK-05) is explicit: "rewritten for Claude Code only." Start from the Claude Code path and add amil + Python checks. Do not preserve OpenCode/Gemini/Codex paths.
 **Warning signs:** Conditional runtime detection branches still present after rewrite. File still over 1000 lines.
 
 ### Pitfall 3: Registry Version vs Module Version Confusion
@@ -304,7 +304,7 @@ const EMPTY_REGISTRY = {
 
 ### Registry CRUD - Full Read
 ```javascript
-// Source: GSD config.cjs pattern + ARCHITECTURE.md
+// Source: Amil config.cjs pattern + ARCHITECTURE.md
 function cmdRegistryRead(cwd, raw) {
   const registryPath = path.join(cwd, '.planning', 'model_registry.json');
   if (!fs.existsSync(registryPath)) {
@@ -393,7 +393,7 @@ function computeTiers(modules) {
 }
 ```
 
-### Test Pattern (matches existing GSD tests)
+### Test Pattern (matches existing Amil tests)
 ```javascript
 // Source: tests/config.test.cjs pattern
 const { test, describe, beforeEach, afterEach } = require('node:test');
@@ -442,17 +442,17 @@ describe('registry read command', () => {
 
 | Old Approach | Current Approach | When Changed | Impact |
 |--------------|------------------|--------------|--------|
-| GSD multi-runtime (Claude/OpenCode/Gemini/Codex) | Claude Code only | This fork | Simplifies install.js from 2464 LOC to ~300 LOC |
+| Amil multi-runtime (Claude/OpenCode/Gemini/Codex) | Claude Code only | This fork | Simplifies install.js from 2464 LOC to ~300 LOC |
 | Generic project orchestration | Odoo ERP module orchestration | This fork | All new state files, domain-specific validation |
 | No model registry | Centralized model_registry.json | This fork | Enables cross-module coherence checking |
 | No dependency ordering | Topological sort with tier grouping | This fork | Enforces correct generation order |
 | Direct fs.writeFileSync | Atomic write-rename with .bak | This fork | Prevents state corruption on crash |
 
 **Deprecated/outdated:**
-- `get-shit-done` path: Replaced by `odoo-gsd`
-- `/gsd:` command prefix: Replaced by `/odoo-gsd:`
+- `get-shit-done` path: Replaced by `amil`
+- `/amil:` command prefix: Replaced by `/amil:`
 - Multi-runtime install: Stripped to Claude Code only
-- `gsd-*` agent names: Renamed to `odoo-gsd-*`
+- `gsd-*` agent names: Renamed to `amil-*`
 - `.gsd/` home directory references: Changed to project-local `.planning/`
 
 ## Validation Architecture
@@ -484,7 +484,7 @@ describe('registry read command', () => {
 | DEPG-03 | Circular dependency detection | unit | `node --test tests/dependency-graph.test.cjs` | No - Wave 0 |
 | DEPG-04 | Tier grouping | unit | `node --test tests/dependency-graph.test.cjs` | No - Wave 0 |
 | DEPG-05 | Generation blocking on dependency status | integration | `node --test tests/dependency-graph.test.cjs` | No - Wave 0 |
-| FORK-10 | Zero remaining old references | smoke | `grep -r "get-shit-done\|/gsd:" --include="*.cjs" --include="*.md" --include="*.js" \| grep -v node_modules` | No - Wave 0 |
+| FORK-10 | Zero remaining old references | smoke | `grep -r "get-shit-done\|/amil:" --include="*.cjs" --include="*.md" --include="*.js" \| grep -v node_modules` | No - Wave 0 |
 | CONF-01 | Odoo config block schema | unit | `node --test tests/config.test.cjs` | Yes (extend) |
 | CONF-02 | Odoo config validation | unit | `node --test tests/config.test.cjs` | Yes (extend) |
 | TEST-05 | Existing tests pass with renamed prefix | smoke | `npm test` | Yes (update) |
@@ -498,17 +498,17 @@ describe('registry read command', () => {
 - [ ] `tests/registry.test.cjs` -- covers REG-01 through REG-07
 - [ ] `tests/module-status.test.cjs` -- covers STAT-01 through STAT-04
 - [ ] `tests/dependency-graph.test.cjs` -- covers DEPG-01 through DEPG-05
-- [ ] Update `tests/helpers.cjs` -- TOOLS_PATH must point to renamed `odoo-gsd/bin/odoo-gsd-tools.cjs`
+- [ ] Update `tests/helpers.cjs` -- TOOLS_PATH must point to renamed `amil/bin/amil-tools.cjs`
 
 ## Open Questions
 
 1. **Directory rename strategy: nested rename vs. flat copy**
-   - What we know: The `get-shit-done/` directory contains `bin/`, `workflows/`, `references/`, `templates/`. It must become `odoo-gsd/`.
-   - What's unclear: Should we `git mv get-shit-done odoo-gsd` (preserves history but may cause merge issues) or restructure incrementally?
+   - What we know: The `get-shit-done/` directory contains `bin/`, `workflows/`, `references/`, `templates/`. It must become `amil/`.
+   - What's unclear: Should we `git mv get-shit-done amil` (preserves history but may cause merge issues) or restructure incrementally?
    - Recommendation: Use `git mv` for the directory rename in a single commit, then update all internal references in subsequent commits. This preserves git blame history.
 
 2. **Agent file rename: prefix vs. full rename**
-   - What we know: 12 agent files are named `gsd-*.md` in `agents/`. They need to become `odoo-gsd-*.md`.
+   - What we know: 12 agent files are named `gsd-*.md` in `agents/`. They need to become `amil-*.md`.
    - What's unclear: MODEL_PROFILES in core.cjs uses agent names as keys. Renaming agents means updating the key table AND every workflow that references agents by name.
    - Recommendation: Rename all agent files and update MODEL_PROFILES keys in the same commit. Add new Odoo-specific agents (from Phase 2+) later.
 
@@ -520,7 +520,7 @@ describe('registry read command', () => {
 ## Sources
 
 ### Primary (HIGH confidence)
-- GSD codebase direct inspection: `bin/lib/*.cjs` (6013 LOC total), 11 lib modules, 32 command files, 12 agent files, 16 test files
+- Amil codebase direct inspection: `bin/lib/*.cjs` (6013 LOC total), 11 lib modules, 32 command files, 12 agent files, 16 test files
 - `tests/helpers.cjs` -- test infrastructure pattern (TOOLS_PATH, createTempProject, runGsdTools)
 - `package.json` -- current name, scripts, devDependencies confirmed
 - `config.cjs` -- current config schema and defaults confirmed
@@ -538,10 +538,10 @@ describe('registry read command', () => {
 ## Metadata
 
 **Confidence breakdown:**
-- Standard stack: HIGH -- directly inherited from GSD, confirmed by codebase inspection
-- Architecture: HIGH -- extends proven GSD patterns, new modules follow established conventions
+- Standard stack: HIGH -- directly inherited from Amil, confirmed by codebase inspection
+- Architecture: HIGH -- extends proven Amil patterns, new modules follow established conventions
 - Pitfalls: HIGH -- based on actual reference counts (98 files, 233+ occurrences) from codebase grep
-- Code examples: HIGH -- derived from existing GSD patterns and verified research documents
+- Code examples: HIGH -- derived from existing Amil patterns and verified research documents
 
 **Research date:** 2026-03-05
 **Valid until:** 2026-04-05 (stable domain, no external API changes expected)

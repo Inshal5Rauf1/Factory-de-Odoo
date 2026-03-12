@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.validation.semantic import (
+from amil_utils.validation.semantic import (
     SemanticValidationResult,
     ValidationIssue,
     print_validation_report,
@@ -648,7 +648,7 @@ class TestE2ECliIntegration:
         """--skip-validation flag is accepted by the render-module CLI command."""
         from click.testing import CliRunner
 
-        from odoo_gen_utils.cli import main
+        from amil_utils.cli import main
 
         runner = CliRunner()
         # Invoke with --help to verify the flag is listed (no spec needed)
@@ -823,7 +823,7 @@ class TestE8NoTargetSet:
         assert e8 == []
 
     def test_sidecar_read(self, tmp_path: Path) -> None:
-        """E8 reads .odoo-gen-stubs.json sidecar for target_fields."""
+        """E8 reads .amil-stubs.json sidecar for target_fields."""
         source = """\
 from odoo import api, fields, models
 
@@ -851,7 +851,7 @@ class FeeInvoice(models.Model):
                 }
             ]
         }
-        (mod / ".odoo-gen-stubs.json").write_text(
+        (mod / ".amil-stubs.json").write_text(
             json.dumps(sidecar), encoding="utf-8"
         )
         result = semantic_validate(mod)
@@ -1377,7 +1377,7 @@ class TestE16ExclusionZoneViolation:
 
         # Setup: module dir + skeleton dir
         mod = tmp_path / "test_module"
-        skeleton_dir = tmp_path / ".odoo-gen-skeleton" / "test_module"
+        skeleton_dir = tmp_path / ".amil-skeleton" / "test_module"
 
         _write(mod / "__manifest__.py", """\
             {
@@ -1406,7 +1406,7 @@ class TestE16ExclusionZoneViolation:
         )
 
         mod = tmp_path / "test_module"
-        skeleton_dir = tmp_path / ".odoo-gen-skeleton" / "test_module"
+        skeleton_dir = tmp_path / ".amil-skeleton" / "test_module"
 
         _write(mod / "__manifest__.py", """\
             {
@@ -1427,7 +1427,7 @@ class TestE16ExclusionZoneViolation:
         assert e16 == []
 
     def test_no_skeleton_dir_returns_empty(self, tmp_path: Path) -> None:
-        """E16 silently returns empty list when .odoo-gen-skeleton/ does not exist."""
+        """E16 silently returns empty list when .amil-skeleton/ does not exist."""
         mod = _make_valid_module(tmp_path)
         # No skeleton directory created
         result = semantic_validate(mod)
@@ -1566,7 +1566,7 @@ class TestE17ExtensionXpathValidation:
 
     def test_e17_registry_tier2(self, tmp_path: Path) -> None:
         """E17 error when xpath references field not in registry model (Tier 2)."""
-        from odoo_gen_utils.registry import ModelRegistry
+        from amil_utils.registry import ModelRegistry
 
         # Create a registry with uni.student model via register_module
         reg = ModelRegistry(tmp_path / "registry.json")
@@ -1702,7 +1702,7 @@ class TestE17ExtensionXpathValidation:
 
         data_path = (
             Path(__file__).resolve().parent.parent
-            / "src" / "odoo_gen_utils" / "data" / "known_odoo_models.json"
+            / "src" / "amil_utils" / "data" / "known_odoo_models.json"
         )
         data = json.loads(data_path.read_text(encoding="utf-8"))
         models = data["models"]

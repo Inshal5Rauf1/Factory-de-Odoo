@@ -1,24 +1,24 @@
 <purpose>
-Research how to implement a phase. Spawns odoo-gsd-phase-researcher with phase context.
+Research how to implement a phase. Spawns amil-phase-researcher with phase context.
 
-Standalone research command. For most workflows, use `/odoo-gsd:plan-phase` which integrates research automatically.
+Standalone research command. For most workflows, use `/amil:plan-phase` which integrates research automatically.
 </purpose>
 
 <process>
 
 ## Step 0: Resolve Model Profile
 
-@~/.claude/odoo-gsd/references/model-profile-resolution.md
+@~/.claude/amil/references/model-profile-resolution.md
 
 Resolve model for:
-- `odoo-gsd-phase-researcher`
+- `amil-phase-researcher`
 
 ## Step 1: Normalize and Validate Phase
 
-@~/.claude/odoo-gsd/references/phase-argument-parsing.md
+@~/.claude/amil/references/phase-argument-parsing.md
 
 ```bash
-PHASE_INFO=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" roadmap get-phase "${PHASE}")
+PHASE_INFO=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap get-phase "${PHASE}")
 ```
 
 If `found` is false: Error and exit.
@@ -34,7 +34,7 @@ If exists: Offer update/view/skip options.
 ## Step 3: Gather Phase Context
 
 ```bash
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" init phase-op "${PHASE}")
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init phase-op "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # Extract: phase_dir, padded_phase, phase_number, state_path, requirements_path, context_path
 ```
@@ -48,7 +48,7 @@ Research implementation approach for Phase {phase}: {name}
 </objective>
 
 <files_to_read>
-- {context_path} (USER DECISIONS from /odoo-gsd:discuss-phase)
+- {context_path} (USER DECISIONS from /amil:discuss-phase)
 - {requirements_path} (Project requirements)
 - {state_path} (Project decisions and history)
 </files_to_read>
@@ -60,7 +60,7 @@ Phase description: {description}
 <output>
 Write to: .planning/phases/${PHASE}-{slug}/${PHASE}-RESEARCH.md
 </output>",
-  subagent_type="odoo-gsd-phase-researcher",
+  subagent_type="amil-phase-researcher",
   model="{researcher_model}"
 )
 ```

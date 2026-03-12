@@ -20,13 +20,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from odoo_gen_utils.logic_writer.stub_detector import _find_stub_zones
-from odoo_gen_utils.manifest import compute_file_sha256
+from amil_utils.logic_writer.stub_detector import _find_stub_zones
+from amil_utils.manifest import compute_file_sha256
 
 if TYPE_CHECKING:
-    from odoo_gen_utils.manifest import GenerationManifest
+    from amil_utils.manifest import GenerationManifest
 
-logger = logging.getLogger("odoo-gen.iterative.conflict")
+logger = logging.getLogger("amil.iterative.conflict")
 
 
 @dataclass(frozen=True)

@@ -20,8 +20,8 @@ from typing import Any
 
 from pathlib import Path
 
-from odoo_gen_utils.logic_writer.stub_detector import StubInfo, _find_stub_zones
-from odoo_gen_utils.registry import ModelEntry, ModelRegistry
+from amil_utils.logic_writer.stub_detector import StubInfo, _find_stub_zones
+from amil_utils.registry import ModelEntry, ModelRegistry
 
 logger = logging.getLogger(__name__)
 

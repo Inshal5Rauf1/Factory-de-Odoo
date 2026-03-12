@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-from odoo_gen_utils.validation.docker_runner import get_compose_file
+from amil_utils.validation.docker_runner import get_compose_file
 
 
 class TestGetComposeFileDefault:
@@ -30,14 +30,14 @@ class TestGetComposeFileDefault:
 
 
 class TestGetComposeFileEnvOverride:
-    """ODOO_GEN_COMPOSE_FILE env var overrides default path."""
+    """AMIL_COMPOSE_FILE env var overrides default path."""
 
     def test_env_var_overrides_default(self, tmp_path: Path) -> None:
-        """When ODOO_GEN_COMPOSE_FILE is set, get_compose_file returns that path."""
+        """When AMIL_COMPOSE_FILE is set, get_compose_file returns that path."""
         custom_compose = tmp_path / "custom-compose.yml"
         custom_compose.write_text("version: '3'\n", encoding="utf-8")
 
-        with patch.dict(os.environ, {"ODOO_GEN_COMPOSE_FILE": str(custom_compose)}):
+        with patch.dict(os.environ, {"AMIL_COMPOSE_FILE": str(custom_compose)}):
             result = get_compose_file()
 
         assert result == custom_compose
@@ -47,7 +47,7 @@ class TestGetComposeFileEnvOverride:
         custom_path = tmp_path / "my-compose.yml"
         custom_path.write_text("version: '3'\n", encoding="utf-8")
 
-        with patch.dict(os.environ, {"ODOO_GEN_COMPOSE_FILE": str(custom_path)}):
+        with patch.dict(os.environ, {"AMIL_COMPOSE_FILE": str(custom_path)}):
             result = get_compose_file()
 
         assert str(result) == str(custom_path)
@@ -61,7 +61,7 @@ class TestGetComposeFileNoParentTraversal:
         source_path = (
             Path(__file__).parent.parent
             / "src"
-            / "odoo_gen_utils"
+            / "amil_utils"
             / "validation"
             / "docker_runner.py"
         )
@@ -77,7 +77,7 @@ class TestGetComposeFileNoParentTraversal:
         source_path = (
             Path(__file__).parent.parent
             / "src"
-            / "odoo_gen_utils"
+            / "amil_utils"
             / "validation"
             / "docker_runner.py"
         )

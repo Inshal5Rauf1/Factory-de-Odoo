@@ -1,6 +1,6 @@
 # Planner Subagent Prompt Template
 
-Template for spawning odoo-gsd-planner agent. The agent contains all planning expertise - this template provides planning context only.
+Template for spawning amil-planner agent. The agent contains all planning expertise - this template provides planning context only.
 
 ---
 
@@ -34,7 +34,7 @@ Template for spawning odoo-gsd-planner agent. The agent contains all planning ex
 </planning_context>
 
 <downstream_consumer>
-Output consumed by /odoo-gsd:execute-phase
+Output consumed by /amil:execute-phase
 Plans must be executable prompts with:
 - Frontmatter (wave, depends_on, files_modified, autonomous)
 - Tasks in XML format
@@ -68,20 +68,20 @@ Before returning PLANNING COMPLETE:
 
 ## Usage
 
-**From /odoo-gsd:plan-phase (standard mode):**
+**From /amil:plan-phase (standard mode):**
 ```python
 Task(
   prompt=filled_template,
-  subagent_type="odoo-gsd-planner",
+  subagent_type="amil-planner",
   description="Plan Phase {phase}"
 )
 ```
 
-**From /odoo-gsd:plan-phase --gaps (gap closure mode):**
+**From /amil:plan-phase --gaps (gap closure mode):**
 ```python
 Task(
   prompt=filled_template,  # with mode: gap_closure
-  subagent_type="odoo-gsd-planner",
+  subagent_type="amil-planner",
   description="Plan gaps for Phase {phase}"
 )
 ```
@@ -114,4 +114,4 @@ Continue: {standard | gap_closure}
 
 ---
 
-**Note:** Planning methodology, task breakdown, dependency analysis, wave assignment, TDD detection, and goal-backward derivation are baked into the odoo-gsd-planner agent. This template only passes context.
+**Note:** Planning methodology, task breakdown, dependency analysis, wave assignment, TDD detection, and goal-backward derivation are baked into the amil-planner agent. This template only passes context.

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from odoo_gen_utils.renderer_utils import (
+from amil_utils.renderer_utils import (
     _is_monetary_field,
     _to_class,
     _to_python_var,
@@ -401,7 +401,7 @@ def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[st
         "document_verification_actions": document_verification_actions,
         "has_document_versioning": has_document_versioning,
         "document_version_action": document_version_action,
-        # Integration keys (odoo-gsd schema alignment)
+        # Integration keys (amil schema alignment)
         "model_workflow": next(
             (w for w in spec.get("workflow", [])
              if isinstance(w, dict) and w.get("model") == model["name"]),
@@ -725,7 +725,7 @@ def _build_module_context(spec: dict[str, Any], module_name: str) -> dict[str, A
         "has_portal": has_portal,
         # Phase 63: bulk operation keys
         "has_bulk_operations": has_bulk_operations,
-        # Integration keys (odoo-gsd schema alignment)
+        # Integration keys (amil schema alignment)
         "workflows": spec.get("workflow", []),
         "business_rules": spec.get("business_rules", []),
         "view_hints": spec.get("view_hints", []),

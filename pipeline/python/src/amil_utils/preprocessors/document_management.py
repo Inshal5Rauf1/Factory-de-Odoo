@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from odoo_gen_utils.preprocessors._registry import register_preprocessor
+from amil_utils.preprocessors._registry import register_preprocessor
 
 
 # -- String constants for constraint check_body --------------------------------

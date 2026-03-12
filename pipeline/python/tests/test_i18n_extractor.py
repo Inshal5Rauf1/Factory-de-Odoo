@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.i18n_extractor import (
+from amil_utils.i18n_extractor import (
     extract_python_strings,
     extract_translatable_strings,
     extract_xml_strings,

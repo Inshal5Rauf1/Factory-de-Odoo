@@ -24,14 +24,14 @@ Each iteration selects ONE action based on this priority table:
 
 | Priority | Condition | Action |
 |----------|-----------|--------|
-| 0 | No modules exist | `/odoo-gsd:new-erp` with PRD |
+| 0 | No modules exist | `/amil:new-erp` with PRD |
 | 0.5 | Modules exist but no provisional registry | Build provisional registry from decomposition |
-| 1 | Any module at `generated` | `/odoo-gsd:verify-work` (unblock belt) |
+| 1 | Any module at `generated` | `/amil:verify-work` (unblock belt) |
 | 2 | Any module at `checked` | Transition to `shipped`, install to Docker |
-| 3 | Belt is free AND any `spec_approved` with deps met | `/odoo-gsd:generate-module` (dep order) |
+| 3 | Belt is free AND any `spec_approved` with deps met | `/amil:generate-module` (dep order) |
 | 3.5 | Belt free AND spec_approved but deps NOT met | Log blocked, skip to next ready module |
-| 4 | Any `planned` with score < 70 | `/odoo-gsd:batch-discuss` (wave of 5) |
-| 4b | Any `planned` with score >= 70 | `/odoo-gsd:plan-module` |
+| 4 | Any `planned` with score < 70 | `/amil:batch-discuss` (wave of 5) |
+| 4b | Any `planned` with score >= 70 | `/amil:plan-module` |
 | 5 | ALL modules `shipped` or `blocked` | Finalize cycle log, output completion |
 | 5.5 | Blocked modules remain with retries available | Retry blocked (max 2 retries each) |
 
@@ -40,7 +40,7 @@ Each iteration selects ONE action based on this priority table:
 ### Step 1: Read State
 
 ```bash
-node odoo-gsd-tools.cjs module-status read --raw
+node amil-tools.cjs module-status read --raw
 # Read ONLY the compact summary (first 15 lines) for context efficiency
 head -15 .planning/ERP_CYCLE_LOG.md
 ```
@@ -57,7 +57,7 @@ Apply priority table top-to-bottom. First match wins.
 
 Run the selected slash command. Log result to cycle log:
 ```bash
-node odoo-gsd-tools.cjs cycle-log append '{
+node amil-tools.cjs cycle-log append '{
   "iteration": N,
   "module": "uni_fee",
   "action": "generate-module",
@@ -72,7 +72,7 @@ node odoo-gsd-tools.cjs cycle-log append '{
 
 After every module generation, run coherence validation:
 ```bash
-node odoo-gsd-tools.cjs coherence check --registry .planning/model_registry.json
+node amil-tools.cjs coherence check --registry .planning/model_registry.json
 ```
 
 If coherence warnings found:
@@ -90,7 +90,7 @@ On failure:
 5. Continue to next module
 
 ```bash
-node odoo-gsd-tools.cjs cycle-log blocked "uni_fee" "Docker install failed: missing depends"
+node amil-tools.cjs cycle-log blocked "uni_fee" "Docker install failed: missing depends"
 ```
 
 ### Step 6: Completion Check
@@ -142,20 +142,20 @@ the loop pauses until the human responds.
 
 Before starting the generation loop:
 ```bash
-odoo-gen-utils factory-docker --action start
+amil-utils factory-docker --action start
 ```
 
 After each module ships:
 ```bash
-odoo-gen-utils factory-docker --install /path/to/module
+amil-utils factory-docker --install /path/to/module
 ```
 
 After every 10 modules shipped — cross-module integration test:
 ```bash
-odoo-gen-utils factory-docker --cross-test mod1 mod2 mod3 ... mod10
+amil-utils factory-docker --cross-test mod1 mod2 mod3 ... mod10
 ```
 
 Docker stays alive until human runs:
 ```bash
-odoo-gen-utils factory-docker --action stop
+amil-utils factory-docker --action stop
 ```

@@ -6,9 +6,9 @@ import logging
 import re
 from typing import Any
 
-from odoo_gen_utils.preprocessors._registry import register_preprocessor
-from odoo_gen_utils.renderer_utils import INDEXABLE_TYPES, NON_INDEXABLE_TYPES
-from odoo_gen_utils.utils.validate import validate_identifier
+from amil_utils.preprocessors._registry import register_preprocessor
+from amil_utils.renderer_utils import INDEXABLE_TYPES, NON_INDEXABLE_TYPES
+from amil_utils.utils.validate import validate_identifier
 
 logger = logging.getLogger(__name__)
 

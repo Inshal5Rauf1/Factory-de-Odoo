@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import pytest
 
-from odoo_gen_utils.mcp.odoo_client import OdooClient, OdooConfig
-from odoo_gen_utils.verifier import EnvironmentVerifier, VerificationWarning
+from amil_utils.mcp.odoo_client import OdooClient, OdooConfig
+from amil_utils.verifier import EnvironmentVerifier, VerificationWarning
 
 
 pytestmark = pytest.mark.docker

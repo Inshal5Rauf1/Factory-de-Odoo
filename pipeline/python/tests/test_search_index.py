@@ -8,8 +8,8 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from odoo_gen_utils.search.types import IndexEntry, IndexStatus
-from odoo_gen_utils.search.index import (
+from amil_utils.search.types import IndexEntry, IndexStatus
+from amil_utils.search.index import (
     DEFAULT_DB_PATH,
     _build_document_text,
     _check_rate_limit,
@@ -141,7 +141,7 @@ class TestBuildDocumentText:
 class TestGetIndexStatus:
     """get_index_status returns IndexStatus reflecting current index state."""
 
-    @patch("odoo_gen_utils.search.index.chromadb")
+    @patch("amil_utils.search.index.chromadb")
     def test_no_index_returns_zero_count(self, mock_chromadb: MagicMock, tmp_path) -> None:
         db_path = str(tmp_path / "nonexistent_chromadb")
         status = get_index_status(db_path)
@@ -149,7 +149,7 @@ class TestGetIndexStatus:
         assert status.module_count == 0
         assert status.exists is False
 
-    @patch("odoo_gen_utils.search.index.chromadb")
+    @patch("amil_utils.search.index.chromadb")
     def test_existing_index_returns_correct_count(self, mock_chromadb: MagicMock, tmp_path) -> None:
         db_path = str(tmp_path / "chromadb_test")
         # Create directory so exists check passes
@@ -181,7 +181,7 @@ class TestGetGithubToken:
         assert token == "test-token-123"
 
     @patch.dict("os.environ", {}, clear=True)
-    @patch("odoo_gen_utils.search.index.subprocess.run")
+    @patch("amil_utils.search.index.subprocess.run")
     def test_returns_gh_cli_token(self, mock_run: MagicMock) -> None:
         mock_run.return_value = MagicMock(returncode=0, stdout="gh-token-456\n")
         # Clear GITHUB_TOKEN from env to avoid interference
@@ -191,7 +191,7 @@ class TestGetGithubToken:
         assert token == "gh-token-456"
 
     @patch.dict("os.environ", {}, clear=True)
-    @patch("odoo_gen_utils.search.index.subprocess.run")
+    @patch("amil_utils.search.index.subprocess.run")
     def test_returns_none_when_no_token(self, mock_run: MagicMock) -> None:
         mock_run.return_value = MagicMock(returncode=1, stdout="")
         import os
@@ -278,8 +278,8 @@ def _make_get_contents_side_effect(
 class TestBuildOcaIndex:
     """build_oca_index crawls OCA repos via mocked PyGithub and upserts to mocked ChromaDB."""
 
-    @patch("odoo_gen_utils.search.index.chromadb")
-    @patch("odoo_gen_utils.search.index.Github")
+    @patch("amil_utils.search.index.chromadb")
+    @patch("amil_utils.search.index.Github")
     def test_indexes_correct_module_count(self, mock_github_cls: MagicMock, mock_chromadb: MagicMock) -> None:
         manifest = """{
     'name': 'Sale Order Type',
@@ -306,8 +306,8 @@ class TestBuildOcaIndex:
         assert count == 1
         mock_collection.upsert.assert_called_once()
 
-    @patch("odoo_gen_utils.search.index.chromadb")
-    @patch("odoo_gen_utils.search.index.Github")
+    @patch("amil_utils.search.index.chromadb")
+    @patch("amil_utils.search.index.Github")
     def test_skips_repos_without_17_branch(self, mock_github_cls: MagicMock, mock_chromadb: MagicMock) -> None:
         repo_no_branch = _make_mock_repo("old-repo", has_17_branch=False)
         repo_with_branch = _make_mock_repo("sale-workflow", modules={})
@@ -326,8 +326,8 @@ class TestBuildOcaIndex:
         count = build_oca_index("fake-token", "/tmp/test_db")
         assert count == 0  # no modules indexed since second repo has no modules
 
-    @patch("odoo_gen_utils.search.index.chromadb")
-    @patch("odoo_gen_utils.search.index.Github")
+    @patch("amil_utils.search.index.chromadb")
+    @patch("amil_utils.search.index.Github")
     def test_skips_non_installable_modules(self, mock_github_cls: MagicMock, mock_chromadb: MagicMock) -> None:
         manifest = """{
     'name': 'Disabled Module',
@@ -367,7 +367,7 @@ class TestBuildOcaIndex:
 class TestCheckRateLimit:
     """_check_rate_limit sleeps when rate.remaining is low."""
 
-    @patch("odoo_gen_utils.search.index.time")
+    @patch("amil_utils.search.index.time")
     def test_sleeps_when_remaining_low(self, mock_time: MagicMock) -> None:
         """_check_rate_limit sleeps when rate.remaining < min_remaining."""
         mock_time.time.return_value = 1000.0
@@ -391,7 +391,7 @@ class TestCheckRateLimit:
         sleep_seconds = mock_time.sleep.call_args[0][0]
         assert sleep_seconds > 0
 
-    @patch("odoo_gen_utils.search.index.time")
+    @patch("amil_utils.search.index.time")
     def test_does_nothing_when_remaining_sufficient(self, mock_time: MagicMock) -> None:
         """_check_rate_limit does nothing when rate.remaining >= min_remaining."""
         mock_rate = MagicMock()
@@ -417,7 +417,7 @@ class TestCheckRateLimit:
 class TestRetryOnRateLimit:
     """_retry_on_rate_limit retries with exponential backoff on RateLimitExceededException."""
 
-    @patch("odoo_gen_utils.search.index.time")
+    @patch("amil_utils.search.index.time")
     def test_retries_with_exponential_backoff(self, mock_time: MagicMock) -> None:
         """Retries on RateLimitExceededException with 1s, 2s delays."""
         pytest.importorskip("github", reason="PyGithub not installed")
@@ -440,7 +440,7 @@ class TestRetryOnRateLimit:
         assert sleep_calls[0] == call(1)
         assert sleep_calls[1] == call(2)
 
-    @patch("odoo_gen_utils.search.index.time")
+    @patch("amil_utils.search.index.time")
     def test_reraises_after_max_retries(self, mock_time: MagicMock) -> None:
         """Re-raises RateLimitExceededException after max_retries exhausted."""
         pytest.importorskip("github", reason="PyGithub not installed")
@@ -454,7 +454,7 @@ class TestRetryOnRateLimit:
 
         assert mock_func.call_count == 4  # initial + 3 retries
 
-    @patch("odoo_gen_utils.search.index.time")
+    @patch("amil_utils.search.index.time")
     def test_returns_result_on_success(self, mock_time: MagicMock) -> None:
         """Returns result immediately on success (no exception)."""
         mock_func = MagicMock(return_value="immediate_result")
@@ -474,9 +474,9 @@ class TestRetryOnRateLimit:
 class TestBuildOcaIndexRateLimit:
     """build_oca_index calls _check_rate_limit periodically during crawl."""
 
-    @patch("odoo_gen_utils.search.index._check_rate_limit")
-    @patch("odoo_gen_utils.search.index.chromadb")
-    @patch("odoo_gen_utils.search.index.Github")
+    @patch("amil_utils.search.index._check_rate_limit")
+    @patch("amil_utils.search.index.chromadb")
+    @patch("amil_utils.search.index.Github")
     def test_calls_check_rate_limit_every_10_repos(
         self,
         mock_github_cls: MagicMock,
@@ -511,9 +511,9 @@ class TestBuildOcaIndexRateLimit:
         # _check_rate_limit should have been called at idx=10 (at least once)
         assert mock_check_rl.call_count >= 1
 
-    @patch("odoo_gen_utils.search.index._check_rate_limit")
-    @patch("odoo_gen_utils.search.index.chromadb")
-    @patch("odoo_gen_utils.search.index.Github")
+    @patch("amil_utils.search.index._check_rate_limit")
+    @patch("amil_utils.search.index.chromadb")
+    @patch("amil_utils.search.index.Github")
     def test_retries_get_branch_on_rate_limit(
         self,
         mock_github_cls: MagicMock,

@@ -1,16 +1,16 @@
 # Odoo Logic Writer Agent
 
-You fill TODO method stubs in generated Odoo modules using the `.odoo-gen-stubs.json` report.
+You fill TODO method stubs in generated Odoo modules using the `.amil-stubs.json` report.
 
 ## Workflow
 
-1. **Read the report:** Open `.odoo-gen-stubs.json` in the module directory.
+1. **Read the report:** Open `.amil-stubs.json` in the module directory.
 2. **For each stub** (ordered by file, then line):
    a. Open the file specified in `stub.file`.
    b. Find the method by `stub.class` + `stub.method` (do NOT rely on line numbers -- they drift after edits).
    c. Read `stub.context` for field types, related models, and business rules.
    d. Replace the stub body with a real Odoo implementation.
-3. **Validate:** Run `odoo-gen validate <module_path>` after all stubs are filled.
+3. **Validate:** Run `amil validate <module_path>` after all stubs are filled.
 4. **Fix errors:** If validation reports issues, fix them and re-validate. Iterate until clean.
 
 ## Complexity Routing
@@ -126,7 +126,7 @@ Each stub in the report includes:
 
 After filling all stubs:
 
-1. Run `odoo-gen validate <module_path>`.
+1. Run `amil validate <module_path>`.
 2. Fix any semantic validation errors (missing imports, wrong field references, type mismatches).
 3. Re-validate until clean.
 4. Check that no `pass` or `TODO` stubs remain.

@@ -1,5 +1,5 @@
 ---
-name: odoo-search
+name: amil-search
 description: Search OCA/GitHub for existing Odoo 17.0/18.0/19.0 modules, perform gap analysis, and refine specifications
 tools: Read, Write, Bash, Glob, Grep
 color: cyan
@@ -17,13 +17,13 @@ Accept the user's search query (from `$ARGUMENTS`) or extract keywords from an e
 Run the search CLI command:
 
 ```bash
-$HOME/.claude/odoo-gen/bin/odoo-gen-utils search-modules "<query>"
+$HOME/.claude/amil/bin/amil-utils search-modules "<query>"
 ```
 
 If no OCA results are returned, automatically retry with the GitHub fallback flag:
 
 ```bash
-$HOME/.claude/odoo-gen/bin/odoo-gen-utils search-modules "<query>" --github
+$HOME/.claude/amil/bin/amil-utils search-modules "<query>" --github
 ```
 
 Present results in the Decision A format:
@@ -52,7 +52,7 @@ After presenting results, wait for user input:
 
 - **User picks a result number:** Proceed to Phase 3 (Gap Analysis) for that module.
 - **User types a follow-up query:** Re-run `search-modules` with the new query. Each follow-up independently re-queries ChromaDB -- there is no session state. Present new results and wait again.
-- **User types "build from scratch":** Skip the fork flow entirely. Suggest using `/odoo-gen:new` or `/odoo-gen:plan` instead.
+- **User types "build from scratch":** Skip the fork flow entirely. Suggest using `/amil:new` or `/amil:plan` instead.
 
 ## Phase 3: Gap Analysis (SRCH-04, REFN-02)
 
@@ -170,8 +170,8 @@ The refined spec:
 
 Present the final decision to the user:
 
-1. **"Fork and extend"** -- Triggers `/odoo-gen:extend` with the refined spec. The extension module will be generated as a companion to the base module.
-2. **"Build from scratch"** -- Triggers `/odoo-gen:new` or `/odoo-gen:plan` with the original (unrefined) spec. Ignores the base module entirely.
+1. **"Fork and extend"** -- Triggers `/amil:extend` with the refined spec. The extension module will be generated as a companion to the base module.
+2. **"Build from scratch"** -- Triggers `/amil:new` or `/amil:plan` with the original (unrefined) spec. Ignores the base module entirely.
 
 Wait for user choice before proceeding.
 
@@ -187,17 +187,17 @@ rm -rf /tmp/oca_{module}
 
 Load the following knowledge base files for comprehensive Odoo 17.0 rules and patterns, especially for accurate gap analysis of model structures, view patterns, and security configurations.
 
-@~/.claude/odoo-gen/knowledge/MASTER.md
-@~/.claude/odoo-gen/knowledge/models.md
-@~/.claude/odoo-gen/knowledge/inheritance.md
-@~/.claude/odoo-gen/knowledge/security.md
-@~/.claude/odoo-gen/knowledge/views.md
+@~/.claude/amil/knowledge/MASTER.md
+@~/.claude/amil/knowledge/models.md
+@~/.claude/amil/knowledge/inheritance.md
+@~/.claude/amil/knowledge/security.md
+@~/.claude/amil/knowledge/views.md
 
 ## CLI Reference
 
 Search command:
 ```bash
-$HOME/.claude/odoo-gen/bin/odoo-gen-utils search-modules "<query>" [--limit N] [--json] [--github]
+$HOME/.claude/amil/bin/amil-utils search-modules "<query>" [--limit N] [--json] [--github]
 ```
 
 Options:
@@ -210,6 +210,6 @@ The search command auto-builds the index on first use if no index exists (~3-5 m
 
 ## References
 
-@~/.claude/odoo-gen/workflows/scaffold.md
-@~/.claude/odoo-gen/workflows/spec.md
+@~/.claude/amil/workflows/scaffold.md
+@~/.claude/amil/workflows/spec.md
 </role>

@@ -13,14 +13,14 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from odoo_gen_utils.iterative.resolve import (
+from amil_utils.iterative.resolve import (
     PENDING_DIR_NAME,
     resolve_accept_all,
     resolve_accept_new,
     resolve_keep_mine,
     resolve_status,
 )
-from odoo_gen_utils.manifest import (
+from amil_utils.manifest import (
     ArtifactEntry,
     ArtifactInfo,
     GenerationManifest,
@@ -100,13 +100,13 @@ class TestResolveStatus:
         assert "views/fee_invoice_views.xml" in result
 
     def test_empty_when_no_pending(self, tmp_path: Path) -> None:
-        """Returns empty list when no .odoo-gen-pending/ exists."""
+        """Returns empty list when no .amil-pending/ exists."""
         module_dir = _create_module_with_pending(tmp_path)
         result = resolve_status(module_dir)
         assert result == []
 
     def test_empty_when_pending_dir_empty(self, tmp_path: Path) -> None:
-        """Returns empty list when .odoo-gen-pending/ exists but is empty."""
+        """Returns empty list when .amil-pending/ exists but is empty."""
         module_dir = _create_module_with_pending(tmp_path)
         (module_dir / PENDING_DIR_NAME).mkdir(parents=True, exist_ok=True)
         result = resolve_status(module_dir)
@@ -162,7 +162,7 @@ class TestAcceptNew:
         resolve_accept_new(module_dir, "models/fee_invoice.py")
 
         # Load manifest and check updated hash
-        from odoo_gen_utils.manifest import load_manifest
+        from amil_utils.manifest import load_manifest
         updated_manifest = load_manifest(module_dir)
         assert updated_manifest is not None
         new_hash = compute_file_sha256(module_dir / "models/fee_invoice.py")
@@ -256,7 +256,7 @@ class TestCleanup:
     """Pending directory cleaned up when empty after resolution."""
 
     def test_pending_removed_when_empty(self, tmp_path: Path) -> None:
-        """.odoo-gen-pending/ removed when empty after resolution."""
+        """.amil-pending/ removed when empty after resolution."""
         module_dir = _create_module_with_pending(
             tmp_path,
             pending_files={"models/fee_invoice.py": "# new version"},
@@ -319,7 +319,7 @@ class TestCLIResolveStatus:
 
     def test_status_output(self, tmp_path: Path) -> None:
         """resolve status shows pending files."""
-        from odoo_gen_utils.cli import main
+        from amil_utils.cli import main
 
         module_dir = _create_module_with_pending(
             tmp_path,
@@ -333,7 +333,7 @@ class TestCLIResolveStatus:
 
     def test_status_no_pending(self, tmp_path: Path) -> None:
         """resolve status shows 'No pending conflicts' when empty."""
-        from odoo_gen_utils.cli import main
+        from amil_utils.cli import main
 
         module_dir = _create_module_with_pending(tmp_path)
 
@@ -353,7 +353,7 @@ class TestCLIResolveAcceptAll:
 
     def test_accept_all_via_cli(self, tmp_path: Path) -> None:
         """resolve accept-all resolves all pending files."""
-        from odoo_gen_utils.cli import main
+        from amil_utils.cli import main
 
         module_dir = _create_module_with_pending(
             tmp_path,

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.iterative.diff import (
+from amil_utils.iterative.diff import (
     SPEC_STASH_FILENAME,
     compute_spec_diff,
     load_spec_stash,

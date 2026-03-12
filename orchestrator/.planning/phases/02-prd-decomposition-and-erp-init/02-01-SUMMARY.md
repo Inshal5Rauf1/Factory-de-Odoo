@@ -22,8 +22,8 @@ key-files:
   created:
     - tests/tiered-registry.test.cjs
   modified:
-    - odoo-gsd/bin/lib/registry.cjs
-    - odoo-gsd/bin/lib/config.cjs
+    - amil/bin/lib/registry.cjs
+    - amil/bin/lib/config.cjs
     - tests/config.test.cjs
 
 key-decisions:
@@ -69,8 +69,8 @@ Each task was committed atomically:
 _Both tasks followed TDD: RED (failing tests) -> GREEN (implementation) -> verify full suite_
 
 ## Files Created/Modified
-- `odoo-gsd/bin/lib/registry.cjs` - Added tieredRegistryInjection() with BFS transitive dep computation
-- `odoo-gsd/bin/lib/config.cjs` - Added VALID_LOCALIZATIONS, VALID_LMS_INTEGRATIONS, VALID_DEPLOYMENT_TARGETS; whatsapp to VALID_NOTIFICATION_CHANNELS; 5 new validation cases
+- `amil/bin/lib/registry.cjs` - Added tieredRegistryInjection() with BFS transitive dep computation
+- `amil/bin/lib/config.cjs` - Added VALID_LOCALIZATIONS, VALID_LMS_INTEGRATIONS, VALID_DEPLOYMENT_TARGETS; whatsapp to VALID_NOTIFICATION_CHANNELS; 5 new validation cases
 - `tests/tiered-registry.test.cjs` - 9 tests covering all 3 tiers, recursive traversal, edge cases
 - `tests/config.test.cjs` - 21 new tests for CONF-03 validation rules
 

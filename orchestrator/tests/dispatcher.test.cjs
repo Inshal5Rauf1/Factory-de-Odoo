@@ -1,7 +1,7 @@
 /**
- * GSD Tools Tests - Dispatcher
+ * Amil Tools Tests - Dispatcher
  *
- * Tests for odoo-gsd-tools.cjs dispatch routing and error paths.
+ * Tests for amil-tools.cjs dispatch routing and error paths.
  * Covers: no-command, unknown command, unknown subcommands for every command group,
  * --cwd parsing, and previously untouched routing branches.
  *

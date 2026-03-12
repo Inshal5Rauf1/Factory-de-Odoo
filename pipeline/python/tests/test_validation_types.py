@@ -9,7 +9,7 @@ import dataclasses
 
 import pytest
 
-from odoo_gen_utils.validation.types import (
+from amil_utils.validation.types import (
     InstallResult,
     TestResult,
     ValidationReport,
@@ -185,7 +185,7 @@ class TestResult_:
 
     def test_result_ok_creates_success(self) -> None:
         """Result.ok(data) creates Result with success=True, data=data, errors=()."""
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.validation.types import Result
 
         r = Result.ok("hello")
         assert r.success is True
@@ -194,7 +194,7 @@ class TestResult_:
 
     def test_result_fail_creates_failure(self) -> None:
         """Result.fail('msg') creates Result with success=False, data=None, errors=('msg',)."""
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.validation.types import Result
 
         r = Result.fail("something went wrong")
         assert r.success is False
@@ -203,7 +203,7 @@ class TestResult_:
 
     def test_result_fail_multiple_errors(self) -> None:
         """Result.fail('a', 'b') stores multiple errors as tuple."""
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.validation.types import Result
 
         r = Result.fail("a", "b")
         assert r.errors == ("a", "b")
@@ -211,7 +211,7 @@ class TestResult_:
 
     def test_result_is_frozen(self) -> None:
         """Result is frozen -- assigning to .success raises FrozenInstanceError."""
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.validation.types import Result
 
         r = Result.ok(42)
         with pytest.raises(dataclasses.FrozenInstanceError):
@@ -219,7 +219,7 @@ class TestResult_:
 
     def test_result_generic_type_annotation(self) -> None:
         """Result[tuple[Violation, ...]] type annotation works."""
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.validation.types import Result
 
         v = Violation(
             file="m.py", line=1, column=0, rule_code="C0001",
@@ -231,7 +231,7 @@ class TestResult_:
 
     def test_result_errors_default_empty_tuple(self) -> None:
         """Result with no errors has empty tuple (not None)."""
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.validation.types import Result
 
         r = Result.ok("data")
         assert r.errors == ()
@@ -239,7 +239,7 @@ class TestResult_:
 
     def test_result_ok_none_is_valid(self) -> None:
         """Result.ok(None) is valid (success=True, data=None)."""
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.validation.types import Result
 
         r = Result.ok(None)
         assert r.success is True

@@ -16,21 +16,21 @@ dependencies are exact. Follow this guide sequentially — each gap builds on th
 | Component | Path |
 |-----------|------|
 | Orchestrator root | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/` |
-| Orchestrator lib | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/bin/lib/` |
+| Orchestrator lib | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/bin/lib/` |
 | Orchestrator tests | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/tests/` |
-| Orchestrator commands | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/commands/odoo-gsd/` |
-| Orchestrator workflows | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/workflows/` |
+| Orchestrator commands | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/commands/amil/` |
+| Orchestrator workflows | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/workflows/` |
 | Pipeline root | `/home/inshal-rauf/Factory-de-Odoo/pipeline/` |
-| Pipeline Python src | `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/` |
+| Pipeline Python src | `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/` |
 | Pipeline tests | `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/tests/` |
-| Pipeline templates 17.0 | `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/templates/17.0/` |
-| Pipeline templates shared | `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/templates/shared/` |
-| Existing coherence checker | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/bin/lib/coherence.cjs` |
-| Existing registry | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/bin/lib/registry.cjs` |
-| Existing dep graph | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/bin/lib/dependency-graph.cjs` |
-| Existing module status | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/bin/lib/module-status.cjs` |
-| Renderer context | `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/renderer_context.py` |
-| Docker runner | `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/validation/docker_runner.py` |
+| Pipeline templates 17.0 | `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/templates/17.0/` |
+| Pipeline templates shared | `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/templates/shared/` |
+| Existing coherence checker | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/bin/lib/coherence.cjs` |
+| Existing registry | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/bin/lib/registry.cjs` |
+| Existing dep graph | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/bin/lib/dependency-graph.cjs` |
+| Existing module status | `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/bin/lib/module-status.cjs` |
+| Renderer context | `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/renderer_context.py` |
+| Docker runner | `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/validation/docker_runner.py` |
 
 ---
 
@@ -65,7 +65,7 @@ State is scattered across `STATE.md`, `module_status.json`, `model_registry.json
 
 Create `ERP_CYCLE_LOG.md` in `.planning/` that aggregates every action taken during the PRD-to-ERP cycle. At 90+ modules, this log may reach 2000+ lines — include a **compact summary header** that updates after each iteration so Claude can read just the top to resume.
 
-### File 1: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/bin/lib/cycle-log.cjs`
+### File 1: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/bin/lib/cycle-log.cjs`
 
 ```javascript
 /**
@@ -229,7 +229,7 @@ module.exports = {
 
 ### File 2: CLI subcommand registration
 
-Add to `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/bin/odoo-gsd-tools.cjs` in the command dispatch:
+Add to `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/bin/amil-tools.cjs` in the command dispatch:
 
 ```javascript
 // In the switch/if chain for subcommands:
@@ -283,7 +283,7 @@ Currently `docker_runner.py` spins up ephemeral containers per validation (30-60
 
 Add a **persistent Docker mode** that keeps a single Odoo+PostgreSQL instance running and installs modules incrementally. At 90+ modules, this instance becomes the **live UAT environment** where users verify functionality (see [Gap 6](#gap-6-live-uat-flow)).
 
-### File 1: `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/validation/persistent_docker.py`
+### File 1: `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/validation/persistent_docker.py`
 
 ```python
 """Persistent Docker instance for incremental module installation.
@@ -544,7 +544,7 @@ class PersistentDockerManager:
             self._running = state.get("running", False)
 ```
 
-### File 2: `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/data/docker/persistent-compose.yml`
+### File 2: `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/data/docker/persistent-compose.yml`
 
 ```yaml
 version: "3.8"
@@ -605,7 +605,7 @@ volumes:
 
 ### Modifications
 
-**`/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/cli.py`** — Add CLI command:
+**`/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/cli.py`** — Add CLI command:
 
 ```python
 @cli.command()
@@ -617,12 +617,12 @@ volumes:
 @click.option("--history", is_flag=True, help="Print install history")
 def factory_docker(action, install, test, cross_test, url, history):
     """Manage the persistent Docker factory instance."""
-    from odoo_gen_utils.validation.persistent_docker import PersistentDockerManager
+    from amil_utils.validation.persistent_docker import PersistentDockerManager
     manager = PersistentDockerManager()
     # ... dispatch based on action/install/test/cross_test/url/history
 ```
 
-**`/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/workflows/generate-module.md`** — Add step 10.5:
+**`/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/workflows/generate-module.md`** — Add step 10.5:
 
 After status transition to "generated", if persistent Docker is running, auto-install:
 ```markdown
@@ -658,7 +658,7 @@ If the factory Docker instance is running (check via `factory-docker --action st
 
 ### Problem
 
-`/odoo-gsd:discuss-module` is manual — requires the user to pick which module to discuss. For 90+ modules, manually triggering discussion for each is impossible. Need auto-detection of underspecified modules and batch questioning.
+`/amil:discuss-module` is manual — requires the user to pick which module to discuss. For 90+ modules, manually triggering discussion for each is impossible. Need auto-detection of underspecified modules and batch questioning.
 
 At 90+ modules, **most modules will be underspecified** after initial PRD decomposition. A university ERP might have 90 modules where only 10-15 are described in detail in the PRD. The rest are inferred by the decomposer and need human input.
 
@@ -666,7 +666,7 @@ At 90+ modules, **most modules will be underspecified** after initial PRD decomp
 
 Add a **spec completeness scorer** that analyzes each module's decomposition data and identifies gaps. Then batch discussion by wave (related modules together). At 90 modules, expect ~15-20 discussion batches of 5 modules each.
 
-### File 1: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/bin/lib/spec-completeness.cjs`
+### File 1: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/bin/lib/spec-completeness.cjs`
 
 ```javascript
 /**
@@ -895,7 +895,7 @@ module.exports = {
 };
 ```
 
-### File 2: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/commands/odoo-gsd/batch-discuss.md`
+### File 2: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/commands/amil/batch-discuss.md`
 
 New slash command that auto-detects underspecified modules and batches discussion:
 
@@ -923,7 +923,7 @@ Process:
 
 ### Modification
 
-**`/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/workflows/discuss-module.md`** — Add batch mode:
+**`/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/workflows/discuss-module.md`** — Add batch mode:
 
 Add a `--batch` flag that:
 1. Scores all `planned` modules
@@ -941,13 +941,13 @@ Add a `--batch` flag that:
 
 ### Problem
 
-No single command chains the full PRD-to-ERP lifecycle. User must manually invoke `/odoo-gsd:new-erp` → `discuss-module` × N → `plan-module` × N → `generate-module` × N → `verify-work` × N. At 90+ modules, this is hundreds of manual invocations.
+No single command chains the full PRD-to-ERP lifecycle. User must manually invoke `/amil:new-erp` → `discuss-module` × N → `plan-module` × N → `generate-module` × N → `verify-work` × N. At 90+ modules, this is hundreds of manual invocations.
 
 ### Solution
 
-Create `/odoo-gsd:run-prd` that drives the full cycle. This is the **outer loop** that Ralph Loop will power.
+Create `/amil:run-prd` that drives the full cycle. This is the **outer loop** that Ralph Loop will power.
 
-### File 1: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/commands/odoo-gsd/run-prd.md`
+### File 1: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/commands/amil/run-prd.md`
 
 ```yaml
 ---
@@ -967,7 +967,7 @@ allowed-tools:
 ---
 ```
 
-### File 2: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/workflows/run-prd.md`
+### File 2: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/workflows/run-prd.md`
 
 ```markdown
 # run-prd — Full PRD-to-ERP Cycle
@@ -996,14 +996,14 @@ Each iteration selects ONE action based on this priority table:
 
 | Priority | Condition | Action |
 |----------|-----------|--------|
-| 0 | No modules exist | `/odoo-gsd:new-erp` with PRD |
+| 0 | No modules exist | `/amil:new-erp` with PRD |
 | 0.5 | Modules exist but no provisional registry | Build provisional registry from decomposition |
-| 1 | Any module at `generated` | `/odoo-gsd:verify-work` (unblock belt) |
+| 1 | Any module at `generated` | `/amil:verify-work` (unblock belt) |
 | 2 | Any module at `checked` | Transition to `shipped`, install to Docker |
-| 3 | Belt is free AND any `spec_approved` with deps met | `/odoo-gsd:generate-module` (dep order) |
+| 3 | Belt is free AND any `spec_approved` with deps met | `/amil:generate-module` (dep order) |
 | 3.5 | Belt free AND spec_approved but deps NOT met | Log blocked, skip to next ready module |
-| 4 | Any `planned` with score < 70 | `/odoo-gsd:batch-discuss` (wave of 5) |
-| 4b | Any `planned` with score >= 70 | `/odoo-gsd:plan-module` |
+| 4 | Any `planned` with score < 70 | `/amil:batch-discuss` (wave of 5) |
+| 4b | Any `planned` with score >= 70 | `/amil:plan-module` |
 | 5 | ALL modules `shipped` or `blocked` | Finalize cycle log, output completion |
 | 5.5 | Blocked modules remain with retries available | Retry blocked (max 2 retries each) |
 
@@ -1012,7 +1012,7 @@ Each iteration selects ONE action based on this priority table:
 ### Step 1: Read State
 
 ```bash
-node odoo-gsd-tools.cjs module-status read --raw
+node amil-tools.cjs module-status read --raw
 # Read ONLY the compact summary (first 15 lines) for context efficiency
 head -15 .planning/ERP_CYCLE_LOG.md
 ```
@@ -1029,7 +1029,7 @@ Apply priority table top-to-bottom. First match wins.
 
 Run the selected slash command. Log result to cycle log:
 ```bash
-node odoo-gsd-tools.cjs cycle-log append '{
+node amil-tools.cjs cycle-log append '{
   "iteration": N,
   "module": "uni_fee",
   "action": "generate-module",
@@ -1044,7 +1044,7 @@ node odoo-gsd-tools.cjs cycle-log append '{
 
 After every module generation, run coherence validation:
 ```bash
-node odoo-gsd-tools.cjs coherence check --registry .planning/model_registry.json
+node amil-tools.cjs coherence check --registry .planning/model_registry.json
 ```
 
 If coherence warnings found:
@@ -1062,7 +1062,7 @@ On failure:
 5. Continue to next module
 
 ```bash
-node odoo-gsd-tools.cjs cycle-log blocked "uni_fee" "Docker install failed: missing depends"
+node amil-tools.cjs cycle-log blocked "uni_fee" "Docker install failed: missing depends"
 ```
 
 ### Step 6: Completion Check
@@ -1118,22 +1118,22 @@ the loop pauses until the human responds.
 
 Before starting the generation loop:
 ```bash
-odoo-gen-utils factory-docker --action start
+amil-utils factory-docker --action start
 ```
 
 After each module ships:
 ```bash
-odoo-gen-utils factory-docker --install /path/to/module
+amil-utils factory-docker --install /path/to/module
 ```
 
 After every 10 modules shipped — cross-module integration test:
 ```bash
-odoo-gen-utils factory-docker --cross-test mod1 mod2 mod3 ... mod10
+amil-utils factory-docker --cross-test mod1 mod2 mod3 ... mod10
 ```
 
 Docker stays alive until human runs:
 ```bash
-odoo-gen-utils factory-docker --action stop
+amil-utils factory-docker --action stop
 ```
 ```
 
@@ -1168,7 +1168,7 @@ The Provisional Registry holds **promised models** — models that are declared 
 
 As modules are built, their models move from provisional → real.
 
-### File 1: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/bin/lib/provisional-registry.cjs`
+### File 1: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/bin/lib/provisional-registry.cjs`
 
 ```javascript
 /**
@@ -1539,7 +1539,7 @@ module.exports = {
 };
 ```
 
-### File 2: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/bin/lib/circular-dep-breaker.cjs`
+### File 2: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/bin/lib/circular-dep-breaker.cjs`
 
 ```javascript
 /**
@@ -1666,7 +1666,7 @@ module.exports = {
 };
 ```
 
-### File 3: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/commands/odoo-gsd/coherence-report.md`
+### File 3: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/commands/amil/coherence-report.md`
 
 New slash command for on-demand coherence analysis:
 
@@ -1691,7 +1691,7 @@ Process:
 
 ### Modifications
 
-**`/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/bin/lib/coherence.cjs`** — Integrate provisional registry:
+**`/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/bin/lib/coherence.cjs`** — Integrate provisional registry:
 
 Add a `checkWithProvisional(module, realRegistry, provRegistry)` function that:
 1. For each Many2one in the module, check real registry first
@@ -1699,11 +1699,11 @@ Add a `checkWithProvisional(module, realRegistry, provRegistry)` function that:
 3. If found in provisional: WARNING (valid forward reference, but target not built yet)
 4. If found nowhere: ERROR (invalid reference)
 
-**`/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/workflows/plan-module.md`** — After generating spec.json:
+**`/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/workflows/plan-module.md`** — After generating spec.json:
 
 Add step to update provisional registry:
 ```bash
-node odoo-gsd-tools.cjs provisional-registry update-from-spec --spec .planning/modules/{name}/spec.json
+node amil-tools.cjs provisional-registry update-from-spec --spec .planning/modules/{name}/spec.json
 ```
 
 ### Tests
@@ -1747,7 +1747,7 @@ Add a **Live UAT Flow** that:
 4. Routes failed modules back through the generation pipeline
 5. Runs cross-module interaction tests automatically
 
-### File 1: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/workflows/live-uat.md`
+### File 1: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/workflows/live-uat.md`
 
 ```markdown
 # Live UAT Flow — Interactive Module Verification
@@ -1853,7 +1853,7 @@ For MINOR results:
 After collecting per-module feedback, run automated cross-module tests:
 
 ```bash
-odoo-gen-utils factory-docker --cross-test mod1 mod2 mod3 ... mod10
+amil-utils factory-docker --cross-test mod1 mod2 mod3 ... mod10
 ```
 
 Report results to user. If integration tests fail, identify which
@@ -1885,7 +1885,7 @@ After all 90+ modules are installed and per-wave UAT is complete:
 4. On final approval: transition all remaining `checked` → `shipped`
 ```
 
-### File 2: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/bin/lib/uat-checkpoint.cjs`
+### File 2: `/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/bin/lib/uat-checkpoint.cjs`
 
 ```javascript
 /**
@@ -2057,7 +2057,7 @@ module.exports = {
 
 ### Modification
 
-**`/home/inshal-rauf/Factory-de-Odoo/orchestrator/odoo-gsd/workflows/verify-work.md`** — Add live UAT option:
+**`/home/inshal-rauf/Factory-de-Odoo/orchestrator/amil/workflows/verify-work.md`** — Add live UAT option:
 
 After the existing conversational UAT, add:
 
@@ -2101,7 +2101,7 @@ Add `/home/inshal-rauf/Factory-de-Odoo/orchestrator/tests/uat-checkpoint.test.cj
 
 ### Problem
 
-The MCP server at `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/mcp/server.py` exposes 6 tools. At 90+ modules, the coherence engine and generators need answers to 3 questions the existing tools cannot answer:
+The MCP server at `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/mcp/server.py` exposes 6 tools. At 90+ modules, the coherence engine and generators need answers to 3 questions the existing tools cannot answer:
 
 1. **View inheritance chain** — Which views inherit from which? When generating module #45, the view generator needs to know the full inheritance chain for `res.partner` form view to avoid conflicting XPATHs.
 2. **Model relations** — What models point to this model, and what does this model point to? The coherence checker needs this to validate Many2one targets without scanning every module's Python files.
@@ -2125,7 +2125,7 @@ def tool_name(param: str) -> str:
 
 ### Implementation
 
-Add 3 new tools to `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/mcp/server.py`, inserting after the `get_view_arch` function (after line 293, before the `# Entry point` comment at line 296):
+Add 3 new tools to `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/mcp/server.py`, inserting after the `get_view_arch` function (after line 293, before the `# Entry point` comment at line 296):
 
 #### Tool 1: `get_view_inheritance_chain`
 
@@ -2282,9 +2282,9 @@ def find_field_conflicts(model_name: str, field_name: str) -> str:
 
 | Tool | Used By | When |
 |------|---------|------|
-| `get_view_inheritance_chain` | `odoo-view-gen` agent | Before generating inherited views, to check existing XPATH targets |
+| `get_view_inheritance_chain` | `amil-view-gen` agent | Before generating inherited views, to check existing XPATH targets |
 | `get_model_relations` | Coherence engine (`coherence.cjs`) | During cross-module coherence check, replaces Python file scanning |
-| `find_field_conflicts` | `odoo-model-gen` agent | Before adding fields to existing models, prevents duplicates |
+| `find_field_conflicts` | `amil-model-gen` agent | Before adding fields to existing models, prevents duplicates |
 
 The coherence engine calls these tools via the MCP client when the persistent Docker instance (Gap 2) is running. If Docker is not running, the engine falls back to registry-only checks (existing behavior).
 
@@ -2311,7 +2311,7 @@ Follow the existing test pattern in `/home/inshal-rauf/Factory-de-Odoo/pipeline/
 
 ### Problem
 
-The auto-fix loop at `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/auto_fix.py` has a 5-iteration cap (`DEFAULT_MAX_FIX_ITERATIONS = 5`). Currently, if a fix for pattern X fails on iteration 1, the loop will re-identify pattern X and retry the same fix on iteration 2, 3, 4, and 5 — wasting 4 iterations.
+The auto-fix loop at `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/auto_fix.py` has a 5-iteration cap (`DEFAULT_MAX_FIX_ITERATIONS = 5`). Currently, if a fix for pattern X fails on iteration 1, the loop will re-identify pattern X and retry the same fix on iteration 2, 3, 4, and 5 — wasting 4 iterations.
 
 At 90+ modules (90+ Docker validation passes), this waste compounds. A module with 2 fixable errors and 1 unfixable error currently wastes 3 iterations retrying the unfixable one.
 
@@ -2335,7 +2335,7 @@ Iteration 3: no more fixable patterns → break early
 
 ### Implementation
 
-Modify `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/auto_fix.py`:
+Modify `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/auto_fix.py`:
 
 #### Step 1: Update `_dispatch_docker_fix` signature
 
@@ -2478,7 +2478,7 @@ Ralph Loop (`/ralph-loop`) feeds the SAME prompt to Claude repeatedly. Each iter
 
 ```
 /ralph-loop "
-You are the Factory de Odoo orchestrator. Run /odoo-gsd:run-prd to
+You are the Factory de Odoo orchestrator. Run /amil:run-prd to
 execute the next iteration of the ERP generation cycle.
 
 BEFORE EACH ITERATION:
@@ -2561,8 +2561,8 @@ before running 90+ module generation.
 
 ### Fix 1: Chatter Template Mismatch (CRITICAL)
 
-**File 1:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/templates/17.0/view_form.xml.j2` line 188
-**File 2:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/templates/18.0/view_form.xml.j2` (same line)
+**File 1:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/templates/17.0/view_form.xml.j2` line 188
+**File 2:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/templates/18.0/view_form.xml.j2` (same line)
 
 **Current (buggy):**
 ```jinja2
@@ -2574,13 +2574,13 @@ before running 90+ module generation.
 {% if chatter %}
 ```
 
-**Context:** The `chatter` variable is computed in `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/renderer_context.py` lines 110-122. It is `False` for line-item models (models with required Many2one `_id` to another in-module model). The template ignores this and checks module-level `depends` instead, adding chatter XML to ALL models. This causes Docker install failures because `message_follower_ids` doesn't exist on models without `mail.thread` inheritance.
+**Context:** The `chatter` variable is computed in `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/renderer_context.py` lines 110-122. It is `False` for line-item models (models with required Many2one `_id` to another in-module model). The template ignores this and checks module-level `depends` instead, adding chatter XML to ALL models. This causes Docker install failures because `message_follower_ids` doesn't exist on models without `mail.thread` inheritance.
 
 **Impact at 90+ modules:** Estimated **60+ of 90 modules** affected — every module with a line-item model.
 
 ### Fix 2: Cron model vs model_name Mismatch
 
-**File:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/templates/shared/cron_data.xml.j2` line 18
+**File:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/templates/shared/cron_data.xml.j2` line 18
 
 The template uses `cron.model_name` but the Pydantic `CronJobSpec` schema outputs
 `model` after `model_dump()`. User-supplied crons use the `model` key.
@@ -2596,7 +2596,7 @@ Option B is simpler:
 
 ### Fix 3: Portal Empty Class Body
 
-**File:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/templates/shared/portal_controller.py.j2`
+**File:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/templates/shared/portal_controller.py.j2`
 
 When `portal: {}` (empty dict) is passed, the template generates an empty class body
 which is a Python syntax error. Add a `pass` statement:
@@ -2613,7 +2613,7 @@ class CustomerPortal(portal.CustomerPortal):
 ### Fix 4: Manifest Load Order — Wizard Views After Model Views (CRITICAL)
 
 **Discovered:** 2026-03-10, employee_training module generation session.
-**File:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/renderer_context.py` lines 586-587
+**File:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/renderer_context.py` lines 586-587
 
 **Current (buggy):**
 ```python
@@ -2669,10 +2669,10 @@ manifest_files.append("views/menu.xml")                           # Menu LAST (r
 
 **Discovered:** 2026-03-10, employee_training module generation session (22 pylint violations from W8113/W8161).
 **Files affected:**
-- `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/templates/17.0/model.py.j2` (lines 9-11, ~8 usages)
-- `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/templates/18.0/model.py.j2` (~8 usages)
-- `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/templates/shared/bulk_wizard_model.py.j2` (1 usage)
-- `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/templates/shared/import_wizard.py.j2` (2 usages, also missing `_()` wrapping entirely)
+- `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/templates/17.0/model.py.j2` (lines 9-11, ~8 usages)
+- `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/templates/18.0/model.py.j2` (~8 usages)
+- `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/templates/shared/bulk_wizard_model.py.j2` (1 usage)
+- `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/templates/shared/import_wizard.py.j2` (2 usages, also missing `_()` wrapping entirely)
 
 **Current (buggy) in 17.0/model.py.j2:**
 ```jinja2
@@ -2744,7 +2744,7 @@ Also add W8161 to the pylint-odoo rules table (currently only W8160 is documente
 ### Fix 7: W8161 Not in Auto-Fix `FIXABLE_PYLINT_CODES` — Auto-Fix Can't Repair Template Output
 
 **Discovered:** 2026-03-10, employee_training module required 3 manual fix rounds to clear W8161.
-**File:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/auto_fix.py` lines 33-39
+**File:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/auto_fix.py` lines 33-39
 
 **Current:**
 ```python
@@ -2785,7 +2785,7 @@ def _fix_env_translate(file_path: Path, violations: list[Violation]) -> bool:
 ### Fix 8: `_MANIFEST_KEY_DEFAULTS` Contains `installable` — Contradicts C8116
 
 **Discovered:** 2026-03-10, reviewing auto_fix.py after C8116 violation experience.
-**File:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/odoo_gen_utils/auto_fix.py` line 67
+**File:** `/home/inshal-rauf/Factory-de-Odoo/pipeline/python/src/amil_utils/auto_fix.py` line 67
 
 **Current (contradictory):**
 ```python
@@ -3007,24 +3007,24 @@ Everything else (persistent Docker, live UAT, auto-question, circular dep breake
 
 | Command | Phase | Role in Pipeline |
 |---------|-------|-----------------|
-| `/odoo-gsd:new-erp` | Decomposition | PRD → modules + dependency graph |
-| `/odoo-gsd:discuss-module` | Specification | Per-module Q&A with domain templates |
-| `/odoo-gsd:plan-module` | Specification | CONTEXT.md → spec.json + coherence check |
-| `/odoo-gsd:generate-module` | Generation | spec.json → Odoo module via pipeline belt |
-| `/odoo-gsd:verify-work` | Verification | Conversational UAT per module |
-| `/odoo-gsd:progress` | Monitoring | Status dashboard with routing |
-| `/odoo-gsd:health` | Monitoring | Planning directory diagnostics |
-| `/odoo-gen:validate` | Validation | pylint-odoo + Docker + auto-fix |
-| `/odoo-gen:search` | Research | OCA semantic search |
+| `/amil:new-erp` | Decomposition | PRD → modules + dependency graph |
+| `/amil:discuss-module` | Specification | Per-module Q&A with domain templates |
+| `/amil:plan-module` | Specification | CONTEXT.md → spec.json + coherence check |
+| `/amil:generate-module` | Generation | spec.json → Odoo module via pipeline belt |
+| `/amil:verify-work` | Verification | Conversational UAT per module |
+| `/amil:progress` | Monitoring | Status dashboard with routing |
+| `/amil:health` | Monitoring | Planning directory diagnostics |
+| `/amil:validate` | Validation | pylint-odoo + Docker + auto-fix |
+| `/amil:search` | Research | OCA semantic search |
 
 ### New Commands to Build
 
 | Command | Phase | Role in Pipeline |
 |---------|-------|-----------------|
-| `/odoo-gsd:run-prd` | **Full cycle** | Big red button — chains everything |
-| `/odoo-gsd:batch-discuss` | Specification | Auto-detect gaps, discuss in waves |
-| `/odoo-gsd:coherence-report` | Monitoring | Full cross-module coherence analysis |
-| `/odoo-gsd:live-uat` | Verification | Interactive browser-based UAT |
+| `/amil:run-prd` | **Full cycle** | Big red button — chains everything |
+| `/amil:batch-discuss` | Specification | Auto-detect gaps, discuss in waves |
+| `/amil:coherence-report` | Monitoring | Full cross-module coherence analysis |
+| `/amil:live-uat` | Verification | Interactive browser-based UAT |
 | `/ralph-loop` | **Outer loop** | Drives run-prd repeatedly until complete |
 | `/cancel-ralph` | Control | Emergency stop for the loop |
 
@@ -3035,42 +3035,42 @@ User provides PRD.md (describing 90+ module ERP)
         |
 /ralph-loop (outer loop — repeats until <promise>ERP COMPLETE</promise>)
         |
-   /odoo-gsd:run-prd (inner orchestrator — picks next action)
+   /amil:run-prd (inner orchestrator — picks next action)
         |
-   +--> /odoo-gsd:new-erp (once — decompose PRD into 90+ modules)
+   +--> /amil:new-erp (once — decompose PRD into 90+ modules)
    |        |
    |        +--> Build provisional registry from decomposition
    |        +--> Detect circular dependencies, plan resolution
    |        +--> Identify critical chains, flag risks
    |
-   +--> /odoo-gsd:batch-discuss (waves — specify modules)
+   +--> /amil:batch-discuss (waves — specify modules)
    |        |
    |        +--> spec-completeness scoring with cross-module checks
    |        +--> batch 5 related modules (full depth)
    |        +--> batch 8 related modules (brief depth)
    |        +--> human answers questions
    |
-   +--> /odoo-gsd:plan-module (per module — generate spec.json)
+   +--> /amil:plan-module (per module — generate spec.json)
    |        |
    |        +--> coherence check against BOTH real + provisional registry
    |        +--> update provisional registry with spec details
    |        +--> human approves spec
    |
-   +--> /odoo-gsd:generate-module (per module — belt invocation)
+   +--> /amil:generate-module (per module — belt invocation)
    |        |
    |        +--> inject filtered registry (2-hop neighbors only)
-   |        +--> /odoo-gen:validate (pylint + Docker)
+   |        +--> /amil:validate (pylint + Docker)
    |        +--> auto-fix loop (5 iterations max)
    |        +--> update real registry, mark provisional as built
    |        +--> persistent Docker install
    |        +--> coherence check (forward refs may now resolve)
    |
-   +--> /odoo-gsd:verify-work (per module — conversational UAT)
+   +--> /amil:verify-work (per module — conversational UAT)
    |        |
    |        +--> human verifies behavior
    |        +--> transition: checked → shipped
    |
-   +--> /odoo-gsd:live-uat (every 10 modules — browser UAT)
+   +--> /amil:live-uat (every 10 modules — browser UAT)
    |        |
    |        +--> present verification checklist
    |        +--> user tests at http://localhost:8069
@@ -3080,7 +3080,7 @@ User provides PRD.md (describing 90+ module ERP)
    |
    +--> cycle-log append (every iteration)
    |
-   +--> /odoo-gsd:coherence-report (on demand — full analysis)
+   +--> /amil:coherence-report (on demand — full analysis)
    |
    +--> <promise>ERP COMPLETE</promise> (when all shipped)
 ```

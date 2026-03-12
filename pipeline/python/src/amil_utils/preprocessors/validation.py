@@ -9,7 +9,7 @@ from __future__ import annotations
 from graphlib import CycleError, TopologicalSorter
 from typing import Any
 
-from odoo_gen_utils.preprocessors.relationships import _resolve_comodel
+from amil_utils.preprocessors.relationships import _resolve_comodel
 
 
 def _validate_no_cycles(spec: dict[str, Any]) -> None:

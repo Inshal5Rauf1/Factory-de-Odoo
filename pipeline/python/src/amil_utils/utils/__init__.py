@@ -1,1 +1,1 @@
-"""Shared utilities for odoo_gen_utils."""
+"""Shared utilities for amil_utils."""

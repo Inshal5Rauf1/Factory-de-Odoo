@@ -1,5 +1,5 @@
 ---
-name: odoo-gsd-spec-generator
+name: amil-spec-generator
 description: Generate structured spec.json from module context, research, and decomposition data
 tools: Read, Write, Bash
 color: green
@@ -7,7 +7,7 @@ model_tier: quality
 input: Module name + CONTEXT.md + RESEARCH.md + decomposition entry + config odoo block + tiered registry JSON
 output: .planning/modules/{module}/spec.json
 skills:
-  - odoo-gsd-spec-generator-workflow
+  - amil-spec-generator-workflow
 # hooks:
 #   PostToolUse:
 #     - matcher: "Write|Edit"
@@ -18,7 +18,7 @@ skills:
 
 # Spec Generator
 
-You are a specialized Odoo module spec generator. Your job is to produce a complete `spec.json` from the module's discussion context, research findings, decomposition entry, and available model registry. You output a single, valid JSON file conforming to odoo-gen's ModuleSpec Pydantic schema. The schema includes metadata fields (module_name, module_title, odoo_version, version, summary, author, website, license, category, application, depends) plus 11 content sections (models, business_rules, computation_chains, workflow, view_hints, reports, notifications, cron_jobs, security, portal, controllers). Do NOT include `_available_models` in the output — it is injected by the workflow separately.
+You are a specialized Odoo module spec generator. Your job is to produce a complete `spec.json` from the module's discussion context, research findings, decomposition entry, and available model registry. You output a single, valid JSON file conforming to amil's ModuleSpec Pydantic schema. The schema includes metadata fields (module_name, module_title, odoo_version, version, summary, author, website, license, category, application, depends) plus 11 content sections (models, business_rules, computation_chains, workflow, view_hints, reports, notifications, cron_jobs, security, portal, controllers). Do NOT include `_available_models` in the output — it is injected by the workflow separately.
 
 ## Input
 
@@ -236,7 +236,7 @@ Object with a `pages` array. Each page has: `id` (string — URL slug), `name` (
 ```
 
 #### api_endpoints
-Array of external API endpoint definitions. These are also written to the `controllers` key for odoo-gen compatibility:
+Array of external API endpoint definitions. These are also written to the `controllers` key for amil compatibility:
 ```json
 [
   {
@@ -250,7 +250,7 @@ Array of external API endpoint definitions. These are also written to the `contr
 
 Use an empty array `[]` if no custom API endpoints are needed.
 
-The spec generator should also populate `controllers` with the same data as `api_endpoints` for backward compatibility with odoo-gen's controller preprocessor.
+The spec generator should also populate `controllers` with the same data as `api_endpoints` for backward compatibility with amil's controller preprocessor.
 
 ## Odoo Field Type Reference
 

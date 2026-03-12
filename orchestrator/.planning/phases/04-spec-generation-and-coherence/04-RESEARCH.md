@@ -6,7 +6,7 @@
 
 ## Summary
 
-Phase 4 builds the `/odoo-gsd:plan-module` command and its supporting infrastructure: a researcher agent (already exists, reused), a spec generator agent (new), a pure CJS coherence checker library (new), and a reviewer agent (new). The workflow is a 10-step sequential pipeline that loads module context, spawns two agents in sequence, runs deterministic validation, and presents results for human approval.
+Phase 4 builds the `/amil:plan-module` command and its supporting infrastructure: a researcher agent (already exists, reused), a spec generator agent (new), a pure CJS coherence checker library (new), and a reviewer agent (new). The workflow is a 10-step sequential pipeline that loads module context, spawns two agents in sequence, runs deterministic validation, and presents results for human approval.
 
 The implementation is constrained by locked decisions from the CONTEXT.md: spec.json has 12+1 sections with specific formats for computation_chains, view_hints, and security; the coherence checker is pure CJS with 4 structural checks (no LLM); the reviewer agent formats coherence output for humans. All infrastructure patterns are established from Phases 1-3 (CJS modules, atomic writes, Task() subagent spawning, CLI subcommands).
 
@@ -28,7 +28,7 @@ The implementation is constrained by locked decisions from the CONTEXT.md: spec.
 - `_available_models` written INTO spec.json (belt reads from same file)
 - Human approval flow: coherence report first, then spec summary, then approval
 - Reviewer agent IS the coherence presentation layer (not a separate command)
-- Spec generator agent: `agents/odoo-gsd-spec-generator.md` -- single-shot, all 12 sections
+- Spec generator agent: `agents/amil-spec-generator.md` -- single-shot, all 12 sections
 - plan-module command: 10-step flow (validate, check existing, load context, load decomposition, spawn researcher, build tiered registry, spawn spec generator, run coherence, spawn reviewer, human approval)
 
 ### Claude's Discretion
@@ -52,8 +52,8 @@ The implementation is constrained by locked decisions from the CONTEXT.md: spec.
 
 | ID | Description | Research Support |
 |----|-------------|-----------------|
-| SPEC-01 | `/odoo-gsd:plan-module` command and workflow created | Command file + workflow file following discuss-module pattern |
-| SPEC-02 | `odoo-spec-generator` agent created that produces spec.json | New agent file at `agents/odoo-gsd-spec-generator.md` |
+| SPEC-01 | `/amil:plan-module` command and workflow created | Command file + workflow file following discuss-module pattern |
+| SPEC-02 | `odoo-spec-generator` agent created that produces spec.json | New agent file at `agents/amil-spec-generator.md` |
 | SPEC-03 | spec.json includes 12 sections + _available_models | Schema fully defined in CONTEXT.md specifics section |
 | SPEC-04 | `_available_models` injected from registry into spec.json | Uses existing `tieredRegistryInjection()` from registry.cjs |
 | SPEC-05 | `odoo-coherence-checker` agent created (actually CJS, not agent) | Pure CJS at `bin/lib/coherence.cjs` with 4 structural checks |
@@ -95,16 +95,16 @@ The implementation is constrained by locked decisions from the CONTEXT.md: spec.
 
 ### Recommended Project Structure
 ```
-odoo-gsd/
+amil/
   bin/lib/
     coherence.cjs          # NEW: Pure CJS coherence checker (4 checks)
   workflows/
     plan-module.md         # NEW: 10-step plan-module workflow
-commands/odoo-gsd/
+commands/amil/
   plan-module.md           # NEW: Slash command entry point
 agents/
-  odoo-gsd-spec-generator.md  # NEW: Spec generation agent
-  odoo-gsd-spec-reviewer.md   # NEW: Coherence presentation agent
+  amil-spec-generator.md  # NEW: Spec generation agent
+  amil-spec-reviewer.md   # NEW: Coherence presentation agent
 tests/
   coherence.test.cjs       # NEW: Coherence checker tests
 ```
@@ -180,13 +180,13 @@ module.exports = {
 ```
 
 ### Pattern 2: Command + Workflow (plan-module)
-**What:** Slash command file at `commands/odoo-gsd/plan-module.md` delegates to workflow at `odoo-gsd/workflows/plan-module.md`
+**What:** Slash command file at `commands/amil/plan-module.md` delegates to workflow at `amil/workflows/plan-module.md`
 **When to use:** For all user-facing commands
 **Example:**
 ```markdown
-<!-- commands/odoo-gsd/plan-module.md -->
+<!-- commands/amil/plan-module.md -->
 ---
-name: odoo-gsd:plan-module
+name: amil:plan-module
 description: Generate spec.json for an Odoo module from its CONTEXT.md
 argument-hint: "{module_name}"
 allowed-tools:
@@ -200,7 +200,7 @@ allowed-tools:
 Generates a complete spec.json for the specified module...
 </context>
 <execution_context>
-@~/.claude/odoo-gsd/workflows/plan-module.md
+@~/.claude/amil/workflows/plan-module.md
 </execution_context>
 ```
 
@@ -225,7 +225,7 @@ Task(
   ${TIERED_REGISTRY_JSON}
   ---
   Follow your agent instructions...",
-  subagent_type="odoo-gsd-spec-generator",
+  subagent_type="amil-spec-generator",
   description="Spec generation: ${MODULE_NAME}"
 )
 ```
@@ -281,9 +281,9 @@ Task(
 **Warning signs:** spec.json missing later sections (security, portal, api_endpoints)
 
 ### Pitfall 5: Forgetting to Register CLI Subcommand
-**What goes wrong:** `coherence check` command is implemented in coherence.cjs but never registered in odoo-gsd-tools.cjs
+**What goes wrong:** `coherence check` command is implemented in coherence.cjs but never registered in amil-tools.cjs
 **Why it happens:** New CJS modules need both the library code AND the CLI dispatch registration
-**How to avoid:** After creating coherence.cjs, add `case 'coherence':` block in odoo-gsd-tools.cjs main switch, require the module, and dispatch to cmdCoherenceCheck
+**How to avoid:** After creating coherence.cjs, add `case 'coherence':` block in amil-tools.cjs main switch, require the module, and dispatch to cmdCoherenceCheck
 **Warning signs:** Tests pass (direct require) but workflow fails (CLI invocation)
 
 ## Code Examples
@@ -365,8 +365,8 @@ function checkComputedDepends(spec, registry) {
 
 ### CLI Registration Pattern
 ```javascript
-// Source: odoo-gsd-tools.cjs existing pattern
-// Add to the main switch in odoo-gsd-tools.cjs:
+// Source: amil-tools.cjs existing pattern
+// Add to the main switch in amil-tools.cjs:
 case 'coherence': {
   const coherenceSub = args[1];
   switch (coherenceSub) {
@@ -398,7 +398,7 @@ Use AskUserQuestion: "Approve this spec for ${MODULE}?"
 Options: "approve", "revise", "abort"
 
 If "approve":
-  node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" module-status transition "${MODULE}" spec_approved --raw --cwd "$(pwd)"
+  node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status transition "${MODULE}" spec_approved --raw --cwd "$(pwd)"
 
 If "revise":
   Go back to Step 5 (researcher) or Step 7 (spec generator) based on user choice.
@@ -411,7 +411,7 @@ If "abort":
 
 | Old Approach | Current Approach | When Changed | Impact |
 |--------------|------------------|--------------|--------|
-| GSD planner agent | Odoo-specific spec generator agent | Phase 4 | Agent produces spec.json not PLAN.md |
+| Amil planner agent | Odoo-specific spec generator agent | Phase 4 | Agent produces spec.json not PLAN.md |
 | LLM-based validation | Pure CJS coherence checks | Phase 4 decision | Deterministic, testable, no latency |
 | Manual cross-module checking | Automated registry-based coherence | Phase 4 | Catches broken references before generation |
 
@@ -465,7 +465,7 @@ If "abort":
 ### Sampling Rate
 - **Per task commit:** `node --test tests/coherence.test.cjs`
 - **Per wave merge:** `npm test`
-- **Phase gate:** Full suite green before `/odoo-gsd:verify-work`
+- **Phase gate:** Full suite green before `/amil:verify-work`
 
 ### Wave 0 Gaps
 - [ ] `tests/coherence.test.cjs` -- covers SPEC-05, SPEC-06, TEST-03
@@ -475,12 +475,12 @@ If "abort":
 ## Sources
 
 ### Primary (HIGH confidence)
-- Codebase analysis: `odoo-gsd/bin/lib/registry.cjs` -- tieredRegistryInjection(), readRegistryFile() APIs
-- Codebase analysis: `odoo-gsd/bin/lib/module-status.cjs` -- transition API, VALID_TRANSITIONS map
-- Codebase analysis: `odoo-gsd/bin/odoo-gsd-tools.cjs` -- CLI dispatch pattern, command registration
-- Codebase analysis: `commands/odoo-gsd/discuss-module.md` -- command file format
-- Codebase analysis: `odoo-gsd/workflows/discuss-module.md` -- workflow structure, Task() spawning pattern
-- Codebase analysis: `agents/odoo-gsd-module-researcher.md` -- agent file format, subagent_type usage
+- Codebase analysis: `amil/bin/lib/registry.cjs` -- tieredRegistryInjection(), readRegistryFile() APIs
+- Codebase analysis: `amil/bin/lib/module-status.cjs` -- transition API, VALID_TRANSITIONS map
+- Codebase analysis: `amil/bin/amil-tools.cjs` -- CLI dispatch pattern, command registration
+- Codebase analysis: `commands/amil/discuss-module.md` -- command file format
+- Codebase analysis: `amil/workflows/discuss-module.md` -- workflow structure, Task() spawning pattern
+- Codebase analysis: `agents/amil-module-researcher.md` -- agent file format, subagent_type usage
 - Codebase analysis: `tests/registry.test.cjs` -- test patterns, helpers usage
 - Codebase analysis: `tests/helpers.cjs` -- createTempProject(), cleanup(), runGsdTools()
 - CONTEXT.md: All locked formats for spec.json, coherence output, workflow steps

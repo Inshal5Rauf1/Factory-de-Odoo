@@ -1,4 +1,4 @@
-"""Tests for preprocessor functions in odoo_gen_utils.preprocessors.
+"""Tests for preprocessor functions in amil_utils.preprocessors.
 
 Phase 38: Unit tests for _process_audit_patterns.
 """
@@ -10,17 +10,17 @@ from typing import Any
 
 import pytest
 
-from odoo_gen_utils.preprocessors import (
+from amil_utils.preprocessors import (
     _process_audit_patterns,
     _process_approval_patterns,
     _process_notification_patterns,
     _process_webhook_patterns,
 )
-from odoo_gen_utils.preprocessors.relationships import (
+from amil_utils.preprocessors.relationships import (
     _enrich_delegation,
     _enrich_hierarchical,
 )
-from odoo_gen_utils.preprocessors.webhooks import (
+from amil_utils.preprocessors.webhooks import (
     _build_webhook_endpoint_model,
 )
 

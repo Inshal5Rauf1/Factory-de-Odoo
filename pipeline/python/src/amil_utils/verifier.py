@@ -16,12 +16,12 @@ import os
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from odoo_gen_utils.validation.types import Result
+from amil_utils.validation.types import Result
 
 if TYPE_CHECKING:
-    from odoo_gen_utils.mcp.odoo_client import OdooClient
+    from amil_utils.mcp.odoo_client import OdooClient
 
-logger = logging.getLogger("odoo-gen.verifier")
+logger = logging.getLogger("amil.verifier")
 
 # Standard Odoo mixins always present when 'mail' module is installed.
 # Skip inheritance checks for these to avoid spurious warnings on base-only instances.
@@ -317,7 +317,7 @@ def build_verifier_from_env() -> EnvironmentVerifier:
     if not url:
         return EnvironmentVerifier(client=None)
 
-    from odoo_gen_utils.mcp.odoo_client import OdooClient, OdooConfig
+    from amil_utils.mcp.odoo_client import OdooClient, OdooConfig
 
     config = OdooConfig(
         url=url,

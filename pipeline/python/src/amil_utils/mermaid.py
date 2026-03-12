@@ -18,7 +18,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from odoo_gen_utils.registry import ModelEntry, ModelRegistry
+from amil_utils.registry import ModelEntry, ModelRegistry
 
 # ---------------------------------------------------------------------------
 # Constants

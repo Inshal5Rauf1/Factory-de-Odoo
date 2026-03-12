@@ -1,15 +1,15 @@
 /**
- * GSD Tools Test Helpers
+ * Amil Tools Test Helpers
  */
 
 const { execSync, execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const TOOLS_PATH = path.join(__dirname, '..', 'odoo-gsd', 'bin', 'odoo-gsd-tools.cjs');
+const TOOLS_PATH = path.join(__dirname, '..', 'amil', 'bin', 'amil-tools.cjs');
 
 /**
- * Run odoo-gsd-tools command.
+ * Run amil-tools command.
  *
  * @param {string|string[]} args - Command string (shell-interpreted) or array
  *   of arguments (shell-bypassed via execFileSync, safe for JSON and dollar signs).
@@ -43,14 +43,14 @@ function runGsdTools(args, cwd = process.cwd()) {
 
 // Create temp directory structure
 function createTempProject() {
-  const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'odoo-gsd-test-'));
+  const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'amil-test-'));
   fs.mkdirSync(path.join(tmpDir, '.planning', 'phases'), { recursive: true });
   return tmpDir;
 }
 
 // Create temp directory with initialized git repo and at least one commit
 function createTempGitProject() {
-  const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'odoo-gsd-test-'));
+  const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'amil-test-'));
   fs.mkdirSync(path.join(tmpDir, '.planning', 'phases'), { recursive: true });
 
   execSync('git init', { cwd: tmpDir, stdio: 'pipe' });

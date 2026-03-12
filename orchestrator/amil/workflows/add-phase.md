@@ -11,15 +11,15 @@ Read all files referenced by the invoking prompt's execution_context before star
 <step name="parse_arguments">
 Parse the command arguments:
 - All arguments become the phase description
-- Example: `/odoo-gsd:add-phase Add authentication` → description = "Add authentication"
-- Example: `/odoo-gsd:add-phase Fix critical performance issues` → description = "Fix critical performance issues"
+- Example: `/amil:add-phase Add authentication` → description = "Add authentication"
+- Example: `/amil:add-phase Fix critical performance issues` → description = "Fix critical performance issues"
 
 If no arguments provided:
 
 ```
 ERROR: Phase description required
-Usage: /odoo-gsd:add-phase <description>
-Example: /odoo-gsd:add-phase Add authentication system
+Usage: /amil:add-phase <description>
+Example: /amil:add-phase Add authentication system
 ```
 
 Exit.
@@ -29,23 +29,23 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" init phase-op "0")
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init phase-op "0")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Check `roadmap_exists` from init JSON. If false:
 ```
 ERROR: No roadmap found (.planning/ROADMAP.md)
-Run /odoo-gsd:new-project to initialize.
+Run /amil:new-project to initialize.
 ```
 Exit.
 </step>
 
 <step name="add_phase">
-**Delegate the phase addition to odoo-gsd-tools:**
+**Delegate the phase addition to amil-tools:**
 
 ```bash
-RESULT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" phase add "${description}")
+RESULT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" phase add "${description}")
 ```
 
 The CLI handles:
@@ -87,14 +87,14 @@ Roadmap updated: .planning/ROADMAP.md
 
 **Phase {N}: {description}**
 
-`/odoo-gsd:plan-phase {N}`
+`/amil:plan-phase {N}`
 
 <sub>`/clear` first → fresh context window</sub>
 
 ---
 
 **Also available:**
-- `/odoo-gsd:add-phase <description>` — add another phase
+- `/amil:add-phase <description>` — add another phase
 - Review roadmap
 
 ---
@@ -104,7 +104,7 @@ Roadmap updated: .planning/ROADMAP.md
 </process>
 
 <success_criteria>
-- [ ] `odoo-gsd-tools phase add` executed successfully
+- [ ] `amil-tools phase add` executed successfully
 - [ ] Phase directory created
 - [ ] Roadmap updated with new phase entry
 - [ ] STATE.md updated with roadmap evolution note

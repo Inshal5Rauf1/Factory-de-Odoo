@@ -1,5 +1,5 @@
 ---
-name: odoo-gsd:new-erp
+name: amil:new-erp
 description: Initialize an Odoo ERP project from a PRD document
 argument-hint: ""
 allowed-tools:
@@ -23,7 +23,7 @@ Initialize an Odoo ERP project by collecting config and decomposing a PRD into m
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gsd/workflows/new-erp.md
+@~/.claude/amil/workflows/new-erp.md
 </execution_context>
 
 <process>

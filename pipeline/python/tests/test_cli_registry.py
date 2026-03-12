@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 import click.testing
 import pytest
 
-from odoo_gen_utils.cli import main
+from amil_utils.cli import main
 
 
 @pytest.fixture()
@@ -86,20 +86,20 @@ def _make_spec(
 
 class TestRegistryList:
     def test_registry_list_empty(self, runner, tmp_registry):
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=tmp_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=tmp_registry):
             result = runner.invoke(main, ["registry", "list"])
         assert result.exit_code == 0
         assert "No modules registered" in result.output
 
     def test_registry_list_with_modules(self, runner, populated_registry):
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=populated_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=populated_registry):
             result = runner.invoke(main, ["registry", "list"])
         assert result.exit_code == 0
         assert "uni_fee" in result.output
         assert "2" in result.output  # 2 models
 
     def test_registry_list_json(self, runner, populated_registry):
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=populated_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=populated_registry):
             result = runner.invoke(main, ["registry", "list", "--json"])
         assert result.exit_code == 0
         data = json.loads(result.output)
@@ -112,7 +112,7 @@ class TestRegistryList:
 
 class TestRegistryShow:
     def test_registry_show_found(self, runner, populated_registry):
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=populated_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=populated_registry):
             result = runner.invoke(main, ["registry", "show", "uni.fee"])
         assert result.exit_code == 0
         assert "uni.fee" in result.output
@@ -120,7 +120,7 @@ class TestRegistryShow:
         assert "student_id" in result.output or "fields" in result.output.lower()
 
     def test_registry_show_not_found(self, runner, populated_registry):
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=populated_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=populated_registry):
             result = runner.invoke(main, ["registry", "show", "nonexistent.model"])
         assert result.exit_code == 0
         assert "not found" in result.output.lower()
@@ -131,7 +131,7 @@ class TestRegistryShow:
 
 class TestRegistryRemove:
     def test_registry_remove_module(self, runner, populated_registry):
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=populated_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=populated_registry):
             result = runner.invoke(main, ["registry", "remove", "uni_fee"])
         assert result.exit_code == 0
         assert "removed" in result.output.lower() or "Removed" in result.output
@@ -141,7 +141,7 @@ class TestRegistryRemove:
         assert "uni_fee" not in data["dependency_graph"]
 
     def test_registry_remove_nonexistent(self, runner, populated_registry):
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=populated_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=populated_registry):
             result = runner.invoke(main, ["registry", "remove", "nonexistent"])
         assert result.exit_code == 0
         assert "not found" in result.output.lower() or "warning" in result.output.lower()
@@ -152,7 +152,7 @@ class TestRegistryRemove:
 
 class TestRegistryValidate:
     def test_registry_validate_clean(self, runner, populated_registry):
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=populated_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=populated_registry):
             result = runner.invoke(main, ["registry", "validate"])
         assert result.exit_code == 0
 
@@ -174,7 +174,7 @@ class TestRegistryValidate:
             "dependency_graph": {"bad_mod": ["base"]},
         }
         tmp_registry.write_text(json.dumps(data), encoding="utf-8")
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=tmp_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=tmp_registry):
             result = runner.invoke(main, ["registry", "validate"])
         assert result.exit_code == 0
         assert "WARNING" in result.output or "warning" in result.output.lower()
@@ -187,7 +187,7 @@ class TestRegistryValidate:
             "dependency_graph": {"mod_a": ["mod_b"], "mod_b": ["mod_a"]},
         }
         tmp_registry.write_text(json.dumps(data), encoding="utf-8")
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=tmp_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=tmp_registry):
             result = runner.invoke(main, ["registry", "validate"])
         assert result.exit_code == 1
         assert "ERROR" in result.output or "error" in result.output.lower()
@@ -227,7 +227,7 @@ class TestRegistryImport:
             encoding="utf-8",
         )
 
-        with patch("odoo_gen_utils.cli._find_registry_path", return_value=tmp_registry):
+        with patch("amil_utils.cli._find_registry_path", return_value=tmp_registry):
             result = runner.invoke(main, ["registry", "import", "--from-manifest", str(manifest)])
         assert result.exit_code == 0
         assert "test_module" in result.output or "registered" in result.output.lower()
@@ -255,12 +255,12 @@ class TestPostRenderHook:
         registry_path = tmp_path / "model_registry.json"
 
         with (
-            patch("odoo_gen_utils.cli._find_registry_path", return_value=registry_path),
-            patch("odoo_gen_utils.renderer.render_module", return_value=(["file1.py"], [])),
-            patch("odoo_gen_utils.cli.build_verifier_from_env", return_value=None, create=True),
+            patch("amil_utils.cli._find_registry_path", return_value=registry_path),
+            patch("amil_utils.renderer.render_module", return_value=(["file1.py"], [])),
+            patch("amil_utils.cli.build_verifier_from_env", return_value=None, create=True),
         ):
             # Need to patch where render_module is looked up (inside the function)
-            with patch("odoo_gen_utils.renderer.get_template_dir", return_value=tmp_path):
+            with patch("amil_utils.renderer.get_template_dir", return_value=tmp_path):
                 result = runner.invoke(main, ["render-module", "--spec-file", str(spec_file), "--output-dir", str(output_dir)])
 
         # Registry should be updated if render succeeded
@@ -281,9 +281,9 @@ class TestPostRenderHook:
         registry_path = tmp_path / "model_registry.json"
 
         with (
-            patch("odoo_gen_utils.cli._find_registry_path", return_value=registry_path),
-            patch("odoo_gen_utils.renderer.render_module", side_effect=RuntimeError("render failed")),
-            patch("odoo_gen_utils.renderer.get_template_dir", return_value=tmp_path),
+            patch("amil_utils.cli._find_registry_path", return_value=registry_path),
+            patch("amil_utils.renderer.render_module", side_effect=RuntimeError("render failed")),
+            patch("amil_utils.renderer.get_template_dir", return_value=tmp_path),
         ):
             result = runner.invoke(main, ["render-module", "--spec-file", str(spec_file), "--output-dir", str(output_dir)])
 
@@ -300,7 +300,7 @@ class TestRegistryLazyImports:
         import ast
 
         cli_path = (
-            Path(__file__).parent.parent / "src" / "odoo_gen_utils" / "cli.py"
+            Path(__file__).parent.parent / "src" / "amil_utils" / "cli.py"
         )
         source = cli_path.read_text(encoding="utf-8")
         tree = ast.parse(source)

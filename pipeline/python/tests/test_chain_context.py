@@ -17,14 +17,14 @@ from typing import Any
 
 import pytest
 
-from odoo_gen_utils.logic_writer.context_builder import (
+from amil_utils.logic_writer.context_builder import (
     StubContext,
     _build_chain_context,
     build_stub_context,
 )
-from odoo_gen_utils.logic_writer.report import _stub_to_dict
-from odoo_gen_utils.logic_writer.stub_detector import StubInfo
-from odoo_gen_utils.preprocessors.computation_chains import _process_computation_chains
+from amil_utils.logic_writer.report import _stub_to_dict
+from amil_utils.logic_writer.stub_detector import StubInfo
+from amil_utils.preprocessors.computation_chains import _process_computation_chains
 
 
 # ---------------------------------------------------------------------------

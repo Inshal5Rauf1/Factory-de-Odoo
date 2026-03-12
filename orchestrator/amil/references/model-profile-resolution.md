@@ -12,14 +12,14 @@ Default: `balanced` if not set or config missing.
 
 ## Lookup Table
 
-@~/.claude/odoo-gsd/references/model-profiles.md
+@~/.claude/amil/references/model-profiles.md
 
 Look up the agent in the table for the resolved profile. Pass the model parameter to Task calls:
 
 ```
 Task(
   prompt="...",
-  subagent_type="odoo-gsd-planner",
+  subagent_type="amil-planner",
   model="{resolved_model}"  # "inherit", "sonnet", or "haiku"
 )
 ```

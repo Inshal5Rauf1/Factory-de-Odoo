@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * GSD Tools — CLI utility for GSD workflow operations
+ * Amil Tools — CLI utility for Amil workflow operations
  *
- * Replaces repetitive inline bash patterns across ~50 GSD command/workflow/agent files.
+ * Replaces repetitive inline bash patterns across ~50 Amil command/workflow/agent files.
  * Centralizes: config parsing, model resolution, phase lookup, git commits, summary verification.
  *
- * Usage: node odoo-gsd-tools.cjs <command> [args] [--raw]
+ * Usage: node amil-tools.cjs <command> [args] [--raw]
  *
  * Atomic Commands:
  *   state load                         Load project config + state
@@ -176,7 +176,7 @@ async function main() {
   const command = args[0];
 
   if (!command) {
-    error('Usage: odoo-gsd-tools <command> [args] [--raw] [--cwd <path>]\nCommands: state, resolve-model, find-phase, commit, verify-summary, verify, frontmatter, template, generate-slug, current-timestamp, list-todos, verify-path-exists, config-ensure-section, init');
+    error('Usage: amil-tools <command> [args] [--raw] [--cwd <path>]\nCommands: state, resolve-model, find-phase, commit, verify-summary, verify, frontmatter, template, generate-slug, current-timestamp, list-todos, verify-path-exists, config-ensure-section, init');
   }
 
   switch (command) {

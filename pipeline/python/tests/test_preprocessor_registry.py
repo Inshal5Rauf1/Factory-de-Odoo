@@ -9,7 +9,7 @@ from typing import Any
 
 import pytest
 
-from odoo_gen_utils.preprocessors._registry import (
+from amil_utils.preprocessors._registry import (
     PreprocessorFn,
     clear_registry,
     get_registered_preprocessors,
@@ -152,7 +152,7 @@ class TestRegistryIntegration:
         # Reload all preprocessor submodules so decorators fire again
         submodule_names = [
             name for name in sorted(sys.modules)
-            if name.startswith("odoo_gen_utils.preprocessors.")
+            if name.startswith("amil_utils.preprocessors.")
             and not name.endswith("._registry")
         ]
         for name in submodule_names:
@@ -180,7 +180,7 @@ class TestRegistryIntegration:
         import pkgutil
         from pathlib import Path
 
-        import odoo_gen_utils.preprocessors as pkg
+        import amil_utils.preprocessors as pkg
 
         pkg_path = str(Path(pkg.__file__).parent)
         discovered = [
@@ -194,7 +194,7 @@ class TestRegistryIntegration:
 
     def test_run_preprocessors_callable(self):
         """run_preprocessors is importable and callable."""
-        from odoo_gen_utils.preprocessors import run_preprocessors
+        from amil_utils.preprocessors import run_preprocessors
 
         assert callable(run_preprocessors)
         # Minimal smoke test: empty spec passes through

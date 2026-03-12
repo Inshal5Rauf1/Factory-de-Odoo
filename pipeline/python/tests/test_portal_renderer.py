@@ -15,8 +15,8 @@ from typing import Any
 import pytest
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
-from odoo_gen_utils.preprocessors.portal import _process_portal
-from odoo_gen_utils.renderer_utils import (
+from amil_utils.preprocessors.portal import _process_portal
+from amil_utils.renderer_utils import (
     _model_ref,
     _to_class,
     _to_python_var,
@@ -25,7 +25,7 @@ from odoo_gen_utils.renderer_utils import (
 
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
-TEMPLATES_DIR = Path(__file__).parent.parent / "src" / "odoo_gen_utils" / "templates" / "shared"
+TEMPLATES_DIR = Path(__file__).parent.parent / "src" / "amil_utils" / "templates" / "shared"
 
 
 def _load_fixture() -> dict[str, Any]:
@@ -507,7 +507,7 @@ class TestRenderPortalFunction:
 
     def test_render_portal_creates_controller_file(self, tmp_path):
         """render_portal creates controllers/portal.py."""
-        from odoo_gen_utils.renderer import render_portal
+        from amil_utils.renderer import render_portal
 
         spec = _load_fixture()
         env = _make_env()
@@ -521,7 +521,7 @@ class TestRenderPortalFunction:
 
     def test_render_portal_creates_controllers_init(self, tmp_path):
         """render_portal creates or updates controllers/__init__.py."""
-        from odoo_gen_utils.renderer import render_portal
+        from amil_utils.renderer import render_portal
 
         spec = _load_fixture()
         env = _make_env()
@@ -537,7 +537,7 @@ class TestRenderPortalFunction:
 
     def test_render_portal_creates_home_counter(self, tmp_path):
         """render_portal creates views/portal_home.xml."""
-        from odoo_gen_utils.renderer import render_portal
+        from amil_utils.renderer import render_portal
 
         spec = _load_fixture()
         env = _make_env()
@@ -551,7 +551,7 @@ class TestRenderPortalFunction:
 
     def test_render_portal_creates_list_pages(self, tmp_path):
         """render_portal creates per-page list QWeb XML."""
-        from odoo_gen_utils.renderer import render_portal
+        from amil_utils.renderer import render_portal
 
         spec = _load_fixture()
         env = _make_env()
@@ -567,7 +567,7 @@ class TestRenderPortalFunction:
 
     def test_render_portal_creates_detail_pages(self, tmp_path):
         """render_portal creates detail QWeb XML for list pages with detail_route."""
-        from odoo_gen_utils.renderer import render_portal
+        from amil_utils.renderer import render_portal
 
         spec = _load_fixture()
         env = _make_env()
@@ -582,7 +582,7 @@ class TestRenderPortalFunction:
 
     def test_render_portal_creates_editable_detail(self, tmp_path):
         """render_portal creates editable detail for profile page."""
-        from odoo_gen_utils.renderer import render_portal
+        from amil_utils.renderer import render_portal
 
         spec = _load_fixture()
         env = _make_env()
@@ -598,7 +598,7 @@ class TestRenderPortalFunction:
 
     def test_render_portal_creates_rules(self, tmp_path):
         """render_portal creates security/portal_rules.xml."""
-        from odoo_gen_utils.renderer import render_portal
+        from amil_utils.renderer import render_portal
 
         spec = _load_fixture()
         env = _make_env()
@@ -616,7 +616,7 @@ class TestRenderPortalFunction:
 
     def test_render_portal_noop_without_portal(self, tmp_path):
         """render_portal returns ok([]) when spec has no portal."""
-        from odoo_gen_utils.renderer import render_portal
+        from amil_utils.renderer import render_portal
 
         spec = {"module_name": "test_mod", "models": []}
         env = _make_env()
@@ -630,7 +630,7 @@ class TestRenderPortalFunction:
 
     def test_controller_content_has_customer_portal(self, tmp_path):
         """Generated controller inherits CustomerPortal."""
-        from odoo_gen_utils.renderer import render_portal
+        from amil_utils.renderer import render_portal
 
         spec = _load_fixture()
         env = _make_env()
@@ -645,7 +645,7 @@ class TestRenderPortalFunction:
 
     def test_controller_has_route_decorators(self, tmp_path):
         """Generated controller has @http.route decorators."""
-        from odoo_gen_utils.renderer import render_portal
+        from amil_utils.renderer import render_portal
 
         spec = _load_fixture()
         env = _make_env()
@@ -660,7 +660,7 @@ class TestRenderPortalFunction:
 
     def test_qweb_home_has_portal_my_home(self, tmp_path):
         """Generated home counter XML inherits portal.portal_my_home."""
-        from odoo_gen_utils.renderer import render_portal
+        from amil_utils.renderer import render_portal
 
         spec = _load_fixture()
         env = _make_env()
@@ -675,7 +675,7 @@ class TestRenderPortalFunction:
 
     def test_rules_has_correct_perms(self, tmp_path):
         """Generated rules have explicit perm fields."""
-        from odoo_gen_utils.renderer import render_portal
+        from amil_utils.renderer import render_portal
 
         spec = _load_fixture()
         env = _make_env()
@@ -690,7 +690,7 @@ class TestRenderPortalFunction:
 
     def test_render_portal_file_count(self, tmp_path):
         """render_portal creates expected number of files."""
-        from odoo_gen_utils.renderer import render_portal
+        from amil_utils.renderer import render_portal
 
         spec = _load_fixture()
         env = _make_env()
@@ -714,11 +714,11 @@ class TestStageNamesIncludesPortal:
     """Verify STAGE_NAMES includes portal after controllers (Phase 63: 14 stages with bulk after portal)."""
 
     def test_stage_count(self):
-        from odoo_gen_utils.renderer import STAGE_NAMES
+        from amil_utils.renderer import STAGE_NAMES
         assert len(STAGE_NAMES) == 14
 
     def test_portal_after_controllers(self):
-        from odoo_gen_utils.renderer import STAGE_NAMES
+        from amil_utils.renderer import STAGE_NAMES
         ctrl_idx = STAGE_NAMES.index("controllers")
         portal_idx = STAGE_NAMES.index("portal")
         assert portal_idx == ctrl_idx + 1

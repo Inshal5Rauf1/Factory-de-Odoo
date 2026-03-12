@@ -1,11 +1,11 @@
 ---
-name: odoo-gen:resume
+name: amil:resume
 description: Resume an interrupted Odoo module generation session
 ---
 <objective>
 Resume an interrupted Odoo module generation session from where it stopped.
 
-Uses GSD's session continuity mechanism to detect the last checkpoint and continue the generation workflow.
+Uses Amil's session continuity mechanism to detect the last checkpoint and continue the generation workflow.
 </objective>
 
 <process>
@@ -16,7 +16,7 @@ Uses GSD's session continuity mechanism to detect the last checkpoint and contin
 
 2. If no session to resume:
    - Inform the user that no interrupted session was found
-   - Suggest running `/odoo-gen:new` to start a new module generation
+   - Suggest running `/amil:new` to start a new module generation
 
 3. If a session exists:
    - Show what was in progress when the session was interrupted
@@ -26,7 +26,7 @@ Uses GSD's session continuity mechanism to detect the last checkpoint and contin
 4. On confirmation:
    - Load the resume file referenced in STATE.md
    - Continue execution from the last checkpoint
-   - Follow the same generation workflow as `/odoo-gen:new`
+   - Follow the same generation workflow as `/amil:new`
 
 5. Report progress as generation continues
 </process>

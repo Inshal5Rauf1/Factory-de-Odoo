@@ -16,16 +16,16 @@ HEAVY_MODULE_PREFIXES = [
 ]
 
 HEAVY_SUBMODULES = [
-    "odoo_gen_utils.auto_fix",
-    "odoo_gen_utils.search",
-    "odoo_gen_utils.validation",
-    "odoo_gen_utils.renderer",
-    "odoo_gen_utils.i18n_extractor",
-    "odoo_gen_utils.edition",
-    "odoo_gen_utils.kb_validator",
-    "odoo_gen_utils.verifier",
-    "odoo_gen_utils.registry",
-    "odoo_gen_utils.mermaid",
+    "amil_utils.auto_fix",
+    "amil_utils.search",
+    "amil_utils.validation",
+    "amil_utils.renderer",
+    "amil_utils.i18n_extractor",
+    "amil_utils.edition",
+    "amil_utils.kb_validator",
+    "amil_utils.verifier",
+    "amil_utils.registry",
+    "amil_utils.mermaid",
 ]
 
 
@@ -40,7 +40,7 @@ class TestCLILazyImportsInProcess:
         import ast
 
         cli_path = (
-            Path(__file__).parent.parent / "src" / "odoo_gen_utils" / "cli.py"
+            Path(__file__).parent.parent / "src" / "amil_utils" / "cli.py"
         )
         source = cli_path.read_text(encoding="utf-8")
         tree = ast.parse(source)
@@ -56,16 +56,16 @@ class TestCLILazyImportsInProcess:
 
         # These must NOT appear at module level
         forbidden_prefixes = [
-            "odoo_gen_utils.auto_fix",
-            "odoo_gen_utils.i18n_extractor",
-            "odoo_gen_utils.kb_validator",
-            "odoo_gen_utils.search",
-            "odoo_gen_utils.edition",
-            "odoo_gen_utils.renderer",
-            "odoo_gen_utils.verifier",
-            "odoo_gen_utils.validation",
-            "odoo_gen_utils.registry",
-            "odoo_gen_utils.mermaid",
+            "amil_utils.auto_fix",
+            "amil_utils.i18n_extractor",
+            "amil_utils.kb_validator",
+            "amil_utils.search",
+            "amil_utils.edition",
+            "amil_utils.renderer",
+            "amil_utils.verifier",
+            "amil_utils.validation",
+            "amil_utils.registry",
+            "amil_utils.mermaid",
             "chromadb",
             "github",
             "docker",
@@ -82,11 +82,11 @@ class TestCLILazyImportsInProcess:
         )
 
     def test_allowed_top_level_imports_only(self) -> None:
-        """Only click, json, sys, pathlib, __future__, and odoo_gen_utils.__version__ at top level."""
+        """Only click, json, sys, pathlib, __future__, and amil_utils.__version__ at top level."""
         import ast
 
         cli_path = (
-            Path(__file__).parent.parent / "src" / "odoo_gen_utils" / "cli.py"
+            Path(__file__).parent.parent / "src" / "amil_utils" / "cli.py"
         )
         source = cli_path.read_text(encoding="utf-8")
         tree = ast.parse(source)
@@ -97,7 +97,7 @@ class TestCLILazyImportsInProcess:
             "sys",
             "pathlib",
             "click",
-            "odoo_gen_utils",
+            "amil_utils",
         }
 
         top_level_imports: list[str] = []
@@ -127,7 +127,7 @@ class TestCLILazyImportsSubprocess:
     def test_clean_process_no_heavy_deps(self) -> None:
         """In a fresh Python process, importing cli.main must not load heavy deps."""
         code = (
-            "from odoo_gen_utils.cli import main; "
+            "from amil_utils.cli import main; "
             "import sys; "
             "heavy = [m for m in sys.modules "
             "if any(h in m for h in "
@@ -148,7 +148,7 @@ class TestCLILazyImportsSubprocess:
     def test_each_command_function_exists(self) -> None:
         """CLI module exposes the expected command group."""
         code = (
-            "from odoo_gen_utils.cli import main; "
+            "from amil_utils.cli import main; "
             "import click; "
             "assert isinstance(main, click.Group), 'main is not a click Group'; "
             "cmds = list(main.commands.keys()); "

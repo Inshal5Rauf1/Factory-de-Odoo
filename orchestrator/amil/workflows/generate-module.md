@@ -1,14 +1,14 @@
 # Workflow: generate-module
 
-Run the 10-step module generation pipeline to produce a complete Odoo module from an approved spec.json using the odoo-gen belt.
+Run the 10-step module generation pipeline to produce a complete Odoo module from an approved spec.json using the amil belt.
 
-**Rules:** CJS tooling, zero npm deps, atomic writes via `odoo-gsd-tools.cjs`.
+**Rules:** CJS tooling, zero npm deps, atomic writes via `amil-tools.cjs`.
 
 ---
 
 ## Prerequisites
 
-The module argument `{MODULE}` is provided by the user when invoking `/odoo-gsd:generate-module {module_name}`.
+The module argument `{MODULE}` is provided by the user when invoking `/amil:generate-module {module_name}`.
 
 ---
 
@@ -17,17 +17,17 @@ The module argument `{MODULE}` is provided by the user when invoking `/odoo-gsd:
 Check that the module is at `spec_approved` status.
 
 ```bash
-MODULE_STATUS=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" module-status get "${MODULE}" --raw --cwd "$(pwd)" 2>&1)
+MODULE_STATUS=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status get "${MODULE}" --raw --cwd "$(pwd)" 2>&1)
 ```
 
-- If command fails or returns empty: show error "Module '${MODULE}' not found. Run /odoo-gsd:plan-module first." and STOP.
+- If command fails or returns empty: show error "Module '${MODULE}' not found. Run /amil:plan-module first." and STOP.
 - Parse the JSON result.
 - If `.status` is "spec_approved": proceed normally.
 - If `.status` is "generated": use AskUserQuestion: "Module '${MODULE}' is already generated. Re-generate? (yes / abort)". If "abort": STOP. If "yes": transition back first:
   ```bash
-  node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" module-status transition "${MODULE}" spec_approved --raw --cwd "$(pwd)"
+  node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status transition "${MODULE}" spec_approved --raw --cwd "$(pwd)"
   ```
-- If `.status` is any other value: show error "Module '${MODULE}' is at status '${status}', expected 'spec_approved'. Run /odoo-gsd:plan-module first." and STOP.
+- If `.status` is any other value: show error "Module '${MODULE}' is at status '${status}', expected 'spec_approved'. Run /amil:plan-module first." and STOP.
 
 ## Step 2: Load Spec
 
@@ -37,7 +37,7 @@ Read the module's spec.json:
 Read .planning/modules/${MODULE}/spec.json
 ```
 
-- If missing: show error "spec.json not found for ${MODULE}. Run /odoo-gsd:plan-module ${MODULE} first." and STOP.
+- If missing: show error "spec.json not found for ${MODULE}. Run /amil:plan-module ${MODULE} first." and STOP.
 - Validate it's valid JSON with `module_name` key:
   ```bash
   node -e "
@@ -50,7 +50,7 @@ Read .planning/modules/${MODULE}/spec.json
 
 ## Step 3: Read Odoo Gen Config
 
-Determine the odoo-gen project path and output directory:
+Determine the amil project path and output directory:
 
 ```bash
 # Read gen_path from config
@@ -65,14 +65,14 @@ GEN_PATH=$(node -e "
 
 # Fallback to environment variable
 if [ -z "$GEN_PATH" ]; then
-  GEN_PATH="${ODOO_GEN_PATH:-}"
+  GEN_PATH="${AMIL_GEN_PATH:-}"
 fi
 
 # Final check
 if [ -z "$GEN_PATH" ] || [ ! -d "$GEN_PATH" ]; then
-  echo "ERROR: odoo-gen path not configured."
-  echo "Set odoo.gen_path in .planning/config.json or ODOO_GEN_PATH env var."
-  echo "Expected: path to odoo-gen Python project (e.g., /path/to/Odoo_module_automation/python)"
+  echo "ERROR: amil path not configured."
+  echo "Set odoo.gen_path in .planning/config.json or AMIL_GEN_PATH env var."
+  echo "Expected: path to amil Python project (e.g., /path/to/Odoo_module_automation/python)"
   # STOP
 fi
 ```
@@ -115,11 +115,11 @@ fi
 
 ## Step 5: Spawn Belt Executor Agent
 
-Spawn the belt executor to run odoo-gen:
+Spawn the belt executor to run amil:
 
 ```
 Task(
-  prompt="Generate Odoo module ${MODULE} using odoo-gen.
+  prompt="Generate Odoo module ${MODULE} using amil.
 
 SPEC_PATH: ${SPEC_PATH}
 OUTPUT_DIR: ${OUTPUT_DIR}
@@ -127,11 +127,11 @@ GEN_PATH: ${GEN_PATH}
 MODULE_NAME: ${MODULE}
 
 Follow your agent instructions to:
-1. Run the odoo-gen render-module CLI
+1. Run the amil render-module CLI
 2. Collect results
 3. Write generation report to:
    .planning/modules/${MODULE}/generation-report.json",
-  subagent_type="odoo-gsd-belt-executor",
+  subagent_type="amil-belt-executor",
   description="Belt execution: ${MODULE}"
 )
 ```
@@ -146,7 +146,7 @@ Read .planning/modules/${MODULE}/generation-report.json
 - If status is "failure":
   Use AskUserQuestion: "Belt execution failed. Error: ${ERROR_DETAIL}. Options:
   - **retry**: Re-run belt executor
-  - **revise**: Go back to /odoo-gsd:plan-module ${MODULE} to fix spec
+  - **revise**: Go back to /amil:plan-module ${MODULE} to fix spec
   - **abort**: Stop generation"
   - If "retry": go back to Step 5
   - If "revise" or "abort": STOP
@@ -172,7 +172,7 @@ Convert spec models to registry format and merge into model_registry.json:
 ```bash
 node -e "
   const path = require('path');
-  const { updateFromSpec } = require(path.join(process.env.HOME, '.claude/odoo-gsd/bin/lib/registry.cjs'));
+  const { updateFromSpec } = require(path.join(process.env.HOME, '.claude/amil/bin/lib/registry.cjs'));
   const fs = require('fs');
   const spec = JSON.parse(fs.readFileSync('.planning/modules/${MODULE}/spec.json', 'utf-8'));
   const result = updateFromSpec(process.cwd(), spec);
@@ -185,7 +185,7 @@ node -e "
 Run coherence checker to verify the newly registered models don't break existing cross-references:
 
 ```bash
-COHERENCE_POST=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" coherence check --spec ".planning/modules/${MODULE}/spec.json" --registry ".planning/model_registry.json" --raw --cwd "$(pwd)")
+COHERENCE_POST=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" coherence check --spec ".planning/modules/${MODULE}/spec.json" --registry ".planning/model_registry.json" --raw --cwd "$(pwd)")
 ```
 
 - If status is "fail": show warnings but do NOT stop — coherence violations at this stage are informational (they indicate cross-module work needed in future modules).
@@ -204,7 +204,7 @@ MODULE_NAME: ${MODULE}
 
 Follow your agent instructions to verify the generated module and write:
 .planning/modules/${MODULE}/verification-report.json",
-  subagent_type="odoo-gsd-belt-verifier",
+  subagent_type="amil-belt-verifier",
   description="Belt verification: ${MODULE}"
 )
 ```
@@ -224,25 +224,25 @@ Based on verification results, present options:
 - **If verification status is "pass" or "warnings":**
   Use AskUserQuestion: "Module ${MODULE} generated and verified. Options:
   - **approve**: Accept and transition to 'generated' status
-  - **revise**: Go back to /odoo-gsd:plan-module ${MODULE} to fix spec
+  - **revise**: Go back to /amil:plan-module ${MODULE} to fix spec
   - **abort**: Stop, no status change"
 
 - **If verification status is "fail":**
   Use AskUserQuestion: "Module ${MODULE} generated but verification found issues. Options:
   - **approve_anyway**: Accept despite issues
   - **retry**: Re-run generation
-  - **revise**: Go back to /odoo-gsd:plan-module ${MODULE}
+  - **revise**: Go back to /amil:plan-module ${MODULE}
   - **abort**: Stop, no status change"
 
 **On "approve" or "approve_anyway":**
 
 ```bash
 # Transition module status
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" module-status transition "${MODULE}" generated --raw --cwd "$(pwd)"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status transition "${MODULE}" generated --raw --cwd "$(pwd)"
 
 # Git commit the generated module + registry + reports
 git add "${MODULE_DIR}" ".planning/model_registry.json" ".planning/modules/${MODULE}/generation-report.json" ".planning/modules/${MODULE}/verification-report.json" ".planning/module_status.json"
-git commit -m "feat(${MODULE}): generate module from spec via odoo-gen belt"
+git commit -m "feat(${MODULE}): generate module from spec via amil belt"
 ```
 
 Report:

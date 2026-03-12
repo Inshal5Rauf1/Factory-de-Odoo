@@ -2,7 +2,7 @@
 
 Initialize an Odoo ERP project by collecting configuration and analyzing a PRD with parallel research agents.
 
-**Rules:** CJS tooling, zero npm deps, atomic writes via `odoo-gsd-tools.cjs`.
+**Rules:** CJS tooling, zero npm deps, atomic writes via `amil-tools.cjs`.
 
 ---
 
@@ -13,7 +13,7 @@ Collect 7 sequential configuration questions. Each answer is written to `config.
 ### Step A.1: Ensure config exists
 
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config ensure-section odoo --cwd "$(pwd)"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config ensure-section odoo --cwd "$(pwd)"
 ```
 
 ### Step A.2: Ask 7 config questions
@@ -26,7 +26,7 @@ Ask each question sequentially using `AskUserQuestion`. After each answer, write
 - Default: `17.0`
 - On answer:
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.version "${ANSWER}" --cwd "$(pwd)"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.version "${ANSWER}" --cwd "$(pwd)"
 ```
 
 **Q2: Multi-Company Setup**
@@ -36,7 +36,7 @@ node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.version "${
 - On answer (convert to boolean):
 ```bash
 # yes -> true, no -> false
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.multi_company ${BOOL_VALUE} --cwd "$(pwd)"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.multi_company ${BOOL_VALUE} --cwd "$(pwd)"
 ```
 
 **Q3: Localization**
@@ -45,7 +45,7 @@ node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.multi_compa
 - Default: `pk`
 - On answer:
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.localization "${ANSWER}" --cwd "$(pwd)"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.localization "${ANSWER}" --cwd "$(pwd)"
 ```
 
 **Q4: Existing Modules**
@@ -54,7 +54,7 @@ node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.localizatio
 - Default: `none`
 - On answer:
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.existing_modules "${ANSWER}" --cwd "$(pwd)"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.existing_modules "${ANSWER}" --cwd "$(pwd)"
 ```
 - **Important:** Store this answer in a variable `EXISTING_MODULES` for passing to research agents in Stage B.
 
@@ -64,7 +64,7 @@ node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.existing_mo
 - Default: `canvas`
 - On answer:
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.canvas_integration "${ANSWER}" --cwd "$(pwd)"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.canvas_integration "${ANSWER}" --cwd "$(pwd)"
 ```
 
 **Q6: Notification Channels**
@@ -73,7 +73,7 @@ node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.canvas_inte
 - Multi-select (user picks one or more)
 - On answer (write as JSON array):
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.notification_channels '["email","whatsapp"]' --cwd "$(pwd)"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.notification_channels '["email","whatsapp"]' --cwd "$(pwd)"
 ```
 
 **Q7: Deployment Target**
@@ -82,7 +82,7 @@ node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.notificatio
 - Default: `single`
 - On answer:
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-set odoo.deployment_target "${ANSWER}" --cwd "$(pwd)"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.deployment_target "${ANSWER}" --cwd "$(pwd)"
 ```
 
 ---
@@ -102,7 +102,7 @@ Check if `.planning/PRD.md` exists. If it does not exist:
 
 ```bash
 PRD_TEXT=$(cat .planning/PRD.md)
-EXISTING_MODULES=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-get odoo.existing_modules --cwd "$(pwd)")
+EXISTING_MODULES=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" config-get odoo.existing_modules --cwd "$(pwd)")
 ```
 
 ### Step B.3: Create research directory
@@ -128,7 +128,7 @@ ${PRD_TEXT}
 Existing modules: ${EXISTING_MODULES}
 
 Write your output to .planning/research/module-boundaries.json following the schema in your agent instructions.",
-  subagent_type="odoo-gsd-erp-decomposer",
+  subagent_type="amil-erp-decomposer",
   description="Module boundary analysis"
 )
 ```
@@ -146,7 +146,7 @@ ${PRD_TEXT}
 Existing modules: ${EXISTING_MODULES}
 
 Write your output to .planning/research/oca-analysis.json following the schema in your agent instructions.",
-  subagent_type="odoo-gsd-module-researcher",
+  subagent_type="amil-module-researcher",
   description="OCA registry check"
 )
 ```
@@ -256,7 +256,7 @@ If any file is missing or contains invalid JSON, report which agent failed and o
 
 Merge the 4 agent outputs into a unified decomposition, present it for human approval, initialize modules, and generate ROADMAP.md.
 
-**Library:** `$HOME/.claude/odoo-gsd/bin/lib/decomposition.cjs` provides `mergeDecomposition`, `formatDecompositionTable`, `generateRoadmapMarkdown`.
+**Library:** `$HOME/.claude/amil/bin/lib/decomposition.cjs` provides `mergeDecomposition`, `formatDecompositionTable`, `generateRoadmapMarkdown`.
 
 ### Step C.1: Merge agent outputs
 
@@ -264,7 +264,7 @@ Run the 5-step merge to combine all 4 agent JSON files into `decomposition.json`
 
 ```bash
 node -e "
-  const { mergeDecomposition } = require('$HOME/.claude/odoo-gsd/bin/lib/decomposition.cjs');
+  const { mergeDecomposition } = require('$HOME/.claude/amil/bin/lib/decomposition.cjs');
   const path = require('path');
   const researchDir = path.join(process.cwd(), '.planning/research');
   const result = mergeDecomposition(researchDir, process.cwd());
@@ -287,7 +287,7 @@ Format the decomposition using the locked structured text format:
 
 ```bash
 node -e "
-  const { formatDecompositionTable } = require('$HOME/.claude/odoo-gsd/bin/lib/decomposition.cjs');
+  const { formatDecompositionTable } = require('$HOME/.claude/amil/bin/lib/decomposition.cjs');
   const decomp = JSON.parse(require('fs').readFileSync('.planning/research/decomposition.json', 'utf8'));
   console.log(formatDecompositionTable(decomp));
 "
@@ -342,7 +342,7 @@ node -e "
 Then for each module:
 
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" module-status init {module_name} {tier} '{depends_json}' --cwd "$(pwd)"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status init {module_name} {tier} '{depends_json}' --cwd "$(pwd)"
 ```
 
 This creates `module_status.json` entries and artifact directories in the TARGET project.
@@ -353,7 +353,7 @@ Generate the flat ROADMAP.md in the TARGET project's `.planning/` directory:
 
 ```bash
 node -e "
-  const { generateRoadmapMarkdown } = require('$HOME/.claude/odoo-gsd/bin/lib/decomposition.cjs');
+  const { generateRoadmapMarkdown } = require('$HOME/.claude/amil/bin/lib/decomposition.cjs');
   const fs = require('fs');
   const decomp = JSON.parse(fs.readFileSync('.planning/research/decomposition.json', 'utf8'));
   const md = generateRoadmapMarkdown(decomp);
@@ -363,7 +363,7 @@ node -e "
 "
 ```
 
-**IMPORTANT:** This writes to the TARGET project's `.planning/ROADMAP.md`, NOT the odoo-gsd tool repo.
+**IMPORTANT:** This writes to the TARGET project's `.planning/ROADMAP.md`, NOT the amil tool repo.
 
 The ROADMAP.md uses the flat format:
 ```markdown
@@ -381,7 +381,7 @@ Print completion summary:
 
 ```
 ERP project initialized with {N} modules across {M} tiers.
-Next: Run `/odoo-gsd:discuss-module {first_module}` to start module design.
+Next: Run `/amil:discuss-module {first_module}` to start module design.
 ```
 
 Where `{first_module}` is `generation_order[0]` from the decomposition.

@@ -44,7 +44,7 @@ Standard format for presenting next steps after completing a command or workflow
 
 **02-03: Refresh Token Rotation** — Add /api/auth/refresh with sliding expiry
 
-`/odoo-gsd:execute-phase 2`
+`/amil:execute-phase 2`
 
 <sub>`/clear` first → fresh context window</sub>
 
@@ -52,7 +52,7 @@ Standard format for presenting next steps after completing a command or workflow
 
 **Also available:**
 - Review plan before executing
-- `/odoo-gsd:list-phase-assumptions 2` — check assumptions
+- `/amil:list-phase-assumptions 2` — check assumptions
 
 ---
 ```
@@ -69,7 +69,7 @@ Add note that this is the last plan and what comes after:
 **02-03: Refresh Token Rotation** — Add /api/auth/refresh with sliding expiry
 <sub>Final plan in Phase 2</sub>
 
-`/odoo-gsd:execute-phase 2`
+`/amil:execute-phase 2`
 
 <sub>`/clear` first → fresh context window</sub>
 
@@ -91,15 +91,15 @@ Add note that this is the last plan and what comes after:
 
 **Phase 2: Authentication** — JWT login flow with refresh tokens
 
-`/odoo-gsd:plan-phase 2`
+`/amil:plan-phase 2`
 
 <sub>`/clear` first → fresh context window</sub>
 
 ---
 
 **Also available:**
-- `/odoo-gsd:discuss-phase 2` — gather context first
-- `/odoo-gsd:research-phase 2` — investigate unknowns
+- `/amil:discuss-phase 2` — gather context first
+- `/amil:research-phase 2` — investigate unknowns
 - Review roadmap
 
 ---
@@ -120,15 +120,15 @@ Show completion status before next action:
 
 **Phase 3: Core Features** — User dashboard, settings, and data export
 
-`/odoo-gsd:plan-phase 3`
+`/amil:plan-phase 3`
 
 <sub>`/clear` first → fresh context window</sub>
 
 ---
 
 **Also available:**
-- `/odoo-gsd:discuss-phase 3` — gather context first
-- `/odoo-gsd:research-phase 3` — investigate unknowns
+- `/amil:discuss-phase 3` — gather context first
+- `/amil:research-phase 3` — investigate unknowns
 - Review what Phase 2 built
 
 ---
@@ -145,11 +145,11 @@ When there's no clear primary action:
 
 **Phase 3: Core Features** — User dashboard, settings, and data export
 
-**To plan directly:** `/odoo-gsd:plan-phase 3`
+**To plan directly:** `/amil:plan-phase 3`
 
-**To discuss context first:** `/odoo-gsd:discuss-phase 3`
+**To discuss context first:** `/amil:discuss-phase 3`
 
-**To research unknowns:** `/odoo-gsd:research-phase 3`
+**To research unknowns:** `/amil:research-phase 3`
 
 <sub>`/clear` first → fresh context window</sub>
 
@@ -169,7 +169,7 @@ All 4 phases shipped
 
 **Start v1.1** — questioning → research → requirements → roadmap
 
-`/odoo-gsd:new-milestone`
+`/amil:new-milestone`
 
 <sub>`/clear` first → fresh context window</sub>
 
@@ -214,7 +214,7 @@ Extract: `**02-03: Refresh Token Rotation** — Add /api/auth/refresh with slidi
 ## To Continue
 
 Run `/clear`, then paste:
-/odoo-gsd:execute-phase 2
+/amil:execute-phase 2
 ```
 
 User has no idea what 02-03 is about.
@@ -222,7 +222,7 @@ User has no idea what 02-03 is about.
 ### Don't: Missing /clear explanation
 
 ```
-`/odoo-gsd:plan-phase 3`
+`/amil:plan-phase 3`
 
 Run /clear first.
 ```
@@ -242,7 +242,7 @@ Sounds like an afterthought. Use "Also available:" instead.
 
 ```
 ```
-/odoo-gsd:plan-phase 3
+/amil:plan-phase 3
 ```
 ```
 

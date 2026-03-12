@@ -12,7 +12,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 Load todo context:
 
 ```bash
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" init todos)
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init todos)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -22,14 +22,14 @@ If `todo_count` is 0:
 ```
 No pending todos.
 
-Todos are captured during work sessions with /odoo-gsd:add-todo.
+Todos are captured during work sessions with /amil:add-todo.
 
 ---
 
 Would you like to:
 
-1. Continue with current phase (/odoo-gsd:progress)
-2. Add a todo now (/odoo-gsd:add-todo)
+1. Continue with current phase (/amil:progress)
+2. Add a todo now (/amil:add-todo)
 ```
 
 Exit.
@@ -37,8 +37,8 @@ Exit.
 
 <step name="parse_filter">
 Check for area filter in arguments:
-- `/odoo-gsd:check-todos` → show all
-- `/odoo-gsd:check-todos api` → filter to area:api only
+- `/amil:check-todos` → show all
+- `/amil:check-todos api` → filter to area:api only
 </step>
 
 <step name="list_todos">
@@ -56,7 +56,7 @@ Pending Todos:
 ---
 
 Reply with a number to view details, or:
-- `/odoo-gsd:check-todos [area]` to filter by area
+- `/amil:check-todos [area]` to filter by area
 - `q` to exit
 ```
 
@@ -118,7 +118,7 @@ Use AskUserQuestion:
 - question: "What would you like to do with this todo?"
 - options:
   - "Work on it now" — move to done, start working
-  - "Create a phase" — /odoo-gsd:add-phase with this scope
+  - "Create a phase" — /amil:add-phase with this scope
   - "Brainstorm approach" — think through before deciding
   - "Put it back" — return to list
 </step>
@@ -134,7 +134,7 @@ Update STATE.md todo count. Present problem/solution context. Begin work or ask 
 Note todo reference in phase planning notes. Keep in pending. Return to list or exit.
 
 **Create a phase:**
-Display: `/odoo-gsd:add-phase [description from todo]`
+Display: `/amil:add-phase [description from todo]`
 Keep in pending. User runs command in fresh context.
 
 **Brainstorm approach:**
@@ -155,7 +155,7 @@ If todo was moved to done/, commit the change:
 
 ```bash
 git rm --cached .planning/todos/pending/[filename] 2>/dev/null || true
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" commit "docs: start work on todo - [title]" --files .planning/todos/done/[filename] .planning/STATE.md
+node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs: start work on todo - [title]" --files .planning/todos/done/[filename] .planning/STATE.md
 ```
 
 Tool respects `commit_docs` config and gitignore automatically.

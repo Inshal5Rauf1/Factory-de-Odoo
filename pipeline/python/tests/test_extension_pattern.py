@@ -67,7 +67,7 @@ class TestExtensionSpecSchema:
 
     def test_extension_spec_schema(self, extension_spec: dict[str, Any]) -> None:
         """ModuleSpec validates a spec dict containing 'extends' array."""
-        from odoo_gen_utils.spec_schema import validate_spec
+        from amil_utils.spec_schema import validate_spec
 
         result = validate_spec(extension_spec)
         assert len(result.extends) == 1
@@ -85,7 +85,7 @@ class TestExtensionSpecSchema:
 
     def test_extension_spec_schema_mixed(self, extension_spec: dict[str, Any]) -> None:
         """Mixed spec (extends + models) validates without error."""
-        from odoo_gen_utils.spec_schema import validate_spec
+        from amil_utils.spec_schema import validate_spec
 
         result = validate_spec(extension_spec)
         assert result.extends  # has extensions
@@ -93,7 +93,7 @@ class TestExtensionSpecSchema:
 
     def test_extension_spec_schema_rejects_missing_base_model(self) -> None:
         """Missing base_model in extension raises ValidationError."""
-        from odoo_gen_utils.spec_schema import ModuleSpec
+        from amil_utils.spec_schema import ModuleSpec
 
         spec = {
             "module_name": "test_bad",
@@ -109,7 +109,7 @@ class TestExtensionSpecSchema:
 
     def test_extension_spec_schema_rejects_missing_base_module(self) -> None:
         """Missing base_module in extension raises ValidationError."""
-        from odoo_gen_utils.spec_schema import ModuleSpec
+        from amil_utils.spec_schema import ModuleSpec
 
         spec = {
             "module_name": "test_bad",
@@ -125,7 +125,7 @@ class TestExtensionSpecSchema:
 
     def test_extension_spec_duplicate_base_model_rejected(self) -> None:
         """Duplicate base_model in extends list raises ValidationError."""
-        from odoo_gen_utils.spec_schema import ModuleSpec
+        from amil_utils.spec_schema import ModuleSpec
 
         spec = {
             "module_name": "test_dup",
@@ -147,7 +147,7 @@ class TestExtensionSpecSchema:
 
     def test_extension_field_spec_types(self) -> None:
         """ExtensionFieldSpec accepts various field types."""
-        from odoo_gen_utils.spec_schema import ExtensionFieldSpec
+        from amil_utils.spec_schema import ExtensionFieldSpec
 
         char = ExtensionFieldSpec(name="test", type="Char")
         assert char.name == "test"
@@ -174,7 +174,7 @@ class TestExtensionPreprocessor:
 
     def test_extension_preprocessor(self, extension_spec: dict[str, Any]) -> None:
         """Preprocessor sets has_extensions=True and normalizes entries."""
-        from odoo_gen_utils.preprocessors.extensions import _process_extensions
+        from amil_utils.preprocessors.extensions import _process_extensions
 
         result = _process_extensions(extension_spec)
         assert result.get("has_extensions") is True
@@ -182,7 +182,7 @@ class TestExtensionPreprocessor:
 
     def test_depends_injection(self, extension_spec: dict[str, Any]) -> None:
         """base_module auto-injected into depends list."""
-        from odoo_gen_utils.preprocessors.extensions import _process_extensions
+        from amil_utils.preprocessors.extensions import _process_extensions
 
         # "hr" is not in the original depends (only "uni_core")
         assert "hr" not in extension_spec["depends"]
@@ -191,7 +191,7 @@ class TestExtensionPreprocessor:
 
     def test_depends_no_duplicate(self) -> None:
         """If base_module already in depends, not duplicated."""
-        from odoo_gen_utils.preprocessors.extensions import _process_extensions
+        from amil_utils.preprocessors.extensions import _process_extensions
 
         spec = {
             "module_name": "test_mod",
@@ -213,7 +213,7 @@ class TestExtensionPreprocessor:
 
     def test_selection_values_normalized(self) -> None:
         """Preprocessor normalizes 'values' key to 'selection' for Selection fields."""
-        from odoo_gen_utils.preprocessors.extensions import _process_extensions
+        from amil_utils.preprocessors.extensions import _process_extensions
 
         spec = {
             "module_name": "test_norm",
@@ -244,14 +244,14 @@ class TestExtensionPreprocessor:
 
     def test_extension_model_files(self, extension_spec: dict[str, Any]) -> None:
         """Preprocessor builds extension_model_files list for init_models."""
-        from odoo_gen_utils.preprocessors.extensions import _process_extensions
+        from amil_utils.preprocessors.extensions import _process_extensions
 
         result = _process_extensions(extension_spec)
         assert "hr_employee" in result["extension_model_files"]
 
     def test_no_extends_passthrough(self) -> None:
         """Spec without 'extends' key passes through unchanged."""
-        from odoo_gen_utils.preprocessors.extensions import _process_extensions
+        from amil_utils.preprocessors.extensions import _process_extensions
 
         spec = {"module_name": "test", "depends": ["base"], "models": []}
         result = _process_extensions(spec)
@@ -269,13 +269,13 @@ class TestExtensionContextBuilder:
 
     def _get_preprocessed_spec(self, extension_spec: dict[str, Any]) -> dict[str, Any]:
         """Helper: run preprocessor on spec and return first extension."""
-        from odoo_gen_utils.preprocessors.extensions import _process_extensions
+        from amil_utils.preprocessors.extensions import _process_extensions
 
         return _process_extensions(extension_spec)
 
     def test_extension_context_builder(self, extension_spec: dict[str, Any]) -> None:
         """_build_extension_context() returns correct dict."""
-        from odoo_gen_utils.renderer_context import _build_extension_context
+        from amil_utils.renderer_context import _build_extension_context
 
         spec = self._get_preprocessed_spec(extension_spec)
         ext = spec["extends"][0]
@@ -293,7 +293,7 @@ class TestExtensionContextBuilder:
 
     def test_extension_view_context(self, extension_spec: dict[str, Any]) -> None:
         """_build_extension_view_context() returns correct dict for form view."""
-        from odoo_gen_utils.renderer_context import _build_extension_view_context
+        from amil_utils.renderer_context import _build_extension_view_context
 
         spec = self._get_preprocessed_spec(extension_spec)
         ext = spec["extends"][0]
@@ -312,7 +312,7 @@ class TestExtensionContextBuilder:
 
     def test_extension_view_context_tree(self, extension_spec: dict[str, Any]) -> None:
         """_build_extension_view_context() returns correct dict for tree view."""
-        from odoo_gen_utils.renderer_context import _build_extension_view_context
+        from amil_utils.renderer_context import _build_extension_view_context
 
         spec = self._get_preprocessed_spec(extension_spec)
         ext = spec["extends"][0]
@@ -324,7 +324,7 @@ class TestExtensionContextBuilder:
 
     def test_mixed_module_context(self, extension_spec: dict[str, Any]) -> None:
         """_build_module_context() includes extension_model_files alongside models."""
-        from odoo_gen_utils.renderer_context import _build_module_context
+        from amil_utils.renderer_context import _build_module_context
 
         spec = self._get_preprocessed_spec(extension_spec)
         ctx = _build_module_context(spec, spec["module_name"])
@@ -346,9 +346,9 @@ class TestExtensionModelRender:
 
     def _render_extension_model(self, extension_spec: dict[str, Any]) -> str:
         """Helper: preprocess, build context, render extension model template."""
-        from odoo_gen_utils.preprocessors.extensions import _process_extensions
-        from odoo_gen_utils.renderer import create_versioned_renderer
-        from odoo_gen_utils.renderer_context import _build_extension_context
+        from amil_utils.preprocessors.extensions import _process_extensions
+        from amil_utils.renderer import create_versioned_renderer
+        from amil_utils.renderer_context import _build_extension_context
 
         spec = _process_extensions(extension_spec)
         ext = spec["extends"][0]
@@ -391,9 +391,9 @@ class TestExtensionModelRender:
 
     def test_extension_model_no_api_when_not_needed(self) -> None:
         """Extension model omits api import when no computed/methods."""
-        from odoo_gen_utils.preprocessors.extensions import _process_extensions
-        from odoo_gen_utils.renderer import create_versioned_renderer
-        from odoo_gen_utils.renderer_context import _build_extension_context
+        from amil_utils.preprocessors.extensions import _process_extensions
+        from amil_utils.renderer import create_versioned_renderer
+        from amil_utils.renderer_context import _build_extension_context
 
         spec = {
             "module_name": "simple_ext",
@@ -426,9 +426,9 @@ class TestExtensionViewRender:
         self, extension_spec: dict[str, Any], view_index: int = 0
     ) -> str:
         """Helper: preprocess, build context, render extension view template."""
-        from odoo_gen_utils.preprocessors.extensions import _process_extensions
-        from odoo_gen_utils.renderer import create_versioned_renderer
-        from odoo_gen_utils.renderer_context import _build_extension_view_context
+        from amil_utils.preprocessors.extensions import _process_extensions
+        from amil_utils.renderer import create_versioned_renderer
+        from amil_utils.renderer_context import _build_extension_view_context
 
         spec = _process_extensions(extension_spec)
         ext = spec["extends"][0]
@@ -459,9 +459,9 @@ class TestExtensionViewRender:
 
     def test_xpath_pattern_c(self) -> None:
         """Pattern C: inside existing group."""
-        from odoo_gen_utils.preprocessors.extensions import _process_extensions
-        from odoo_gen_utils.renderer import create_versioned_renderer
-        from odoo_gen_utils.renderer_context import _build_extension_view_context
+        from amil_utils.preprocessors.extensions import _process_extensions
+        from amil_utils.renderer import create_versioned_renderer
+        from amil_utils.renderer_context import _build_extension_view_context
 
         spec = {
             "module_name": "test_c",
@@ -513,9 +513,9 @@ class TestInitModelsImports:
 
     def test_init_models_imports(self, extension_spec: dict[str, Any]) -> None:
         """init_models.py.j2 generates imports for both greenfield and extension models."""
-        from odoo_gen_utils.preprocessors.extensions import _process_extensions
-        from odoo_gen_utils.renderer import create_versioned_renderer
-        from odoo_gen_utils.renderer_context import _build_module_context
+        from amil_utils.preprocessors.extensions import _process_extensions
+        from amil_utils.renderer import create_versioned_renderer
+        from amil_utils.renderer_context import _build_module_context
 
         spec = _process_extensions(extension_spec)
         ctx = _build_module_context(spec, spec["module_name"])
@@ -535,9 +535,9 @@ class TestRendererIntegration:
 
     def test_render_extensions_function(self, extension_spec: dict[str, Any]) -> None:
         """render_extensions() creates extension model and view files."""
-        from odoo_gen_utils.preprocessors.extensions import _process_extensions
-        from odoo_gen_utils.renderer import create_versioned_renderer, render_extensions
-        from odoo_gen_utils.renderer_context import _build_module_context
+        from amil_utils.preprocessors.extensions import _process_extensions
+        from amil_utils.renderer import create_versioned_renderer, render_extensions
+        from amil_utils.renderer_context import _build_module_context
 
         spec = _process_extensions(extension_spec)
         env = create_versioned_renderer("17.0")
@@ -566,7 +566,7 @@ class TestRendererIntegration:
 
     def test_full_extension_render(self, extension_spec: dict[str, Any]) -> None:
         """Full render_module() produces extension + greenfield files."""
-        from odoo_gen_utils.renderer import get_template_dir, render_module
+        from amil_utils.renderer import get_template_dir, render_module
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
@@ -604,7 +604,7 @@ class TestRendererIntegration:
 
     def test_mixed_spec(self, extension_spec: dict[str, Any]) -> None:
         """render_module() with both extends and models produces all files."""
-        from odoo_gen_utils.renderer import get_template_dir, render_module
+        from amil_utils.renderer import get_template_dir, render_module
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
@@ -625,7 +625,7 @@ class TestRendererIntegration:
 
     def test_extensions_stage_in_pipeline(self) -> None:
         """'extensions' is in STAGE_NAMES."""
-        from odoo_gen_utils.renderer import STAGE_NAMES
+        from amil_utils.renderer import STAGE_NAMES
 
         assert "extensions" in STAGE_NAMES
 
@@ -639,8 +639,8 @@ class TestExtensionSemanticValidation:
         Proves that E1-E17 and W1-W6 produce no false positives on properly
         generated extension output.
         """
-        from odoo_gen_utils.renderer import get_template_dir, render_module
-        from odoo_gen_utils.validation.semantic import semantic_validate
+        from amil_utils.renderer import get_template_dir, render_module
+        from amil_utils.validation.semantic import semantic_validate
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)

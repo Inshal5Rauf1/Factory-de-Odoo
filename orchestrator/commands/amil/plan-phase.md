@@ -1,8 +1,8 @@
 ---
-name: gsd:plan-phase
+name: amil:plan-phase
 description: Create detailed phase plan (PLAN.md) with verification loop
 argument-hint: "[phase] [--auto] [--research] [--skip-research] [--gaps] [--skip-verify] [--prd <file>]"
-agent: odoo-gsd-planner
+agent: amil-planner
 allowed-tools:
   - Read
   - Write
@@ -18,12 +18,12 @@ Create executable phase prompts (PLAN.md files) for a roadmap phase with integra
 
 **Default flow:** Research (if needed) → Plan → Verify → Done
 
-**Orchestrator role:** Parse arguments, validate phase, research domain (unless skipped), spawn odoo-gsd-planner, verify with odoo-gsd-plan-checker, iterate until pass or max iterations, present results.
+**Orchestrator role:** Parse arguments, validate phase, research domain (unless skipped), spawn amil-planner, verify with amil-plan-checker, iterate until pass or max iterations, present results.
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gsd/workflows/plan-phase.md
-@~/.claude/odoo-gsd/references/ui-brand.md
+@~/.claude/amil/workflows/plan-phase.md
+@~/.claude/amil/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -40,6 +40,6 @@ Normalize phase input in step 2 before any directory lookups.
 </context>
 
 <process>
-Execute the plan-phase workflow from @~/.claude/odoo-gsd/workflows/plan-phase.md end-to-end.
+Execute the plan-phase workflow from @~/.claude/amil/workflows/plan-phase.md end-to-end.
 Preserve all workflow gates (validation, research, planning, verification loop, routing).
 </process>

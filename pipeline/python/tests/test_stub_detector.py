@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.logic_writer.stub_detector import (
+from amil_utils.logic_writer.stub_detector import (
     StubInfo,
     _extract_decorator_string,
     _extract_model_name,

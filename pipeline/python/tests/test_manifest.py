@@ -1,4 +1,4 @@
-"""Unit tests for odoo_gen_utils.manifest module.
+"""Unit tests for amil_utils.manifest module.
 
 Tests cover: Pydantic models (StageResult, ArtifactEntry, GenerationManifest),
 SHA256 helpers, manifest persistence (save/load), and GenerationSession.
@@ -24,7 +24,7 @@ class TestStageResult:
 
     def test_round_trip_complete(self):
         """StageResult with status='complete' round-trips through dump/validate."""
-        from odoo_gen_utils.manifest import StageResult
+        from amil_utils.manifest import StageResult
 
         original = StageResult(status="complete", duration_ms=42)
         data = original.model_dump()
@@ -34,7 +34,7 @@ class TestStageResult:
 
     def test_default_status_pending(self):
         """Default status is 'pending'."""
-        from odoo_gen_utils.manifest import StageResult
+        from amil_utils.manifest import StageResult
 
         result = StageResult()
         assert result.status == "pending"
@@ -42,14 +42,14 @@ class TestStageResult:
 
     def test_invalid_status_rejected(self):
         """Literal validation rejects invalid status like 'bogus'."""
-        from odoo_gen_utils.manifest import StageResult
+        from amil_utils.manifest import StageResult
 
         with pytest.raises(ValidationError):
             StageResult(status="bogus")
 
     def test_optional_fields(self):
         """Reason and error are optional (None by default)."""
-        from odoo_gen_utils.manifest import StageResult
+        from amil_utils.manifest import StageResult
 
         result = StageResult(status="failed", error="Something broke")
         assert result.error == "Something broke"
@@ -57,14 +57,14 @@ class TestStageResult:
 
     def test_artifacts_default_empty(self):
         """Artifacts list defaults to empty."""
-        from odoo_gen_utils.manifest import StageResult
+        from amil_utils.manifest import StageResult
 
         result = StageResult()
         assert result.artifacts == []
 
     def test_artifacts_stores_paths(self):
         """Artifacts list stores relative paths."""
-        from odoo_gen_utils.manifest import StageResult
+        from amil_utils.manifest import StageResult
 
         result = StageResult(status="complete", artifacts=["models/foo.py", "views/bar.xml"])
         assert len(result.artifacts) == 2
@@ -81,7 +81,7 @@ class TestArtifactEntry:
 
     def test_round_trip(self):
         """ArtifactEntry round-trips through dump/validate."""
-        from odoo_gen_utils.manifest import ArtifactEntry
+        from amil_utils.manifest import ArtifactEntry
 
         entry = ArtifactEntry(path="models/foo.py", sha256="abc123")
         data = entry.model_dump()
@@ -91,7 +91,7 @@ class TestArtifactEntry:
 
     def test_both_fields_required(self):
         """Both path and sha256 are required -- ValidationError on missing."""
-        from odoo_gen_utils.manifest import ArtifactEntry
+        from amil_utils.manifest import ArtifactEntry
 
         with pytest.raises(ValidationError):
             ArtifactEntry(path="models/foo.py")
@@ -113,7 +113,7 @@ class TestGenerationManifest:
 
     def test_full_manifest_round_trip(self):
         """Full manifest with nested models round-trips through dump/validate."""
-        from odoo_gen_utils.manifest import (
+        from amil_utils.manifest import (
             ArtifactEntry,
             ArtifactInfo,
             GenerationManifest,
@@ -154,7 +154,7 @@ class TestGenerationManifest:
 
     def test_exclude_none_omits_none_fields(self):
         """exclude_none=True omits None fields from dump."""
-        from odoo_gen_utils.manifest import GenerationManifest
+        from amil_utils.manifest import GenerationManifest
 
         manifest = GenerationManifest(
             module="test",
@@ -167,7 +167,7 @@ class TestGenerationManifest:
 
     def test_protected_namespaces_set(self):
         """All models use ConfigDict(protected_namespaces=())."""
-        from odoo_gen_utils.manifest import (
+        from amil_utils.manifest import (
             ArtifactEntry,
             ArtifactInfo,
             GenerationManifest,
@@ -200,7 +200,7 @@ class TestSHA256:
 
     def test_compute_file_sha256(self, tmp_path: Path):
         """compute_file_sha256 returns expected hex digest for known content."""
-        from odoo_gen_utils.manifest import compute_file_sha256
+        from amil_utils.manifest import compute_file_sha256
 
         test_file = tmp_path / "test.txt"
         test_file.write_bytes(b"hello world")
@@ -210,7 +210,7 @@ class TestSHA256:
 
     def test_compute_spec_sha256_canonical(self):
         """compute_spec_sha256 returns same hash regardless of key order or whitespace."""
-        from odoo_gen_utils.manifest import compute_spec_sha256
+        from amil_utils.manifest import compute_spec_sha256
 
         spec_a = {"module": "test", "version": "1.0", "models": []}
         spec_b = {"version": "1.0", "models": [], "module": "test"}
@@ -222,7 +222,7 @@ class TestSHA256:
 
     def test_compute_spec_sha256_deterministic(self):
         """Same spec dict produces same hash on repeated calls."""
-        from odoo_gen_utils.manifest import compute_spec_sha256
+        from amil_utils.manifest import compute_spec_sha256
 
         spec = {"module": "my_module", "models": [{"name": "res.partner"}]}
         assert compute_spec_sha256(spec) == compute_spec_sha256(spec)
@@ -238,7 +238,7 @@ class TestManifestPersistence:
 
     def test_save_and_load_round_trip(self, tmp_path: Path):
         """save_manifest writes file; load_manifest reads back identical manifest."""
-        from odoo_gen_utils.manifest import (
+        from amil_utils.manifest import (
             GenerationManifest,
             MANIFEST_FILENAME,
             load_manifest,
@@ -265,18 +265,18 @@ class TestManifestPersistence:
 
     def test_load_manifest_missing_file(self, tmp_path: Path):
         """load_manifest returns None for missing file."""
-        from odoo_gen_utils.manifest import load_manifest
+        from amil_utils.manifest import load_manifest
 
         assert load_manifest(tmp_path) is None
 
     def test_load_manifest_corrupt_json(self, tmp_path: Path, caplog):
         """load_manifest returns None for corrupt JSON (logs warning)."""
-        from odoo_gen_utils.manifest import MANIFEST_FILENAME, load_manifest
+        from amil_utils.manifest import MANIFEST_FILENAME, load_manifest
 
         corrupt_file = tmp_path / MANIFEST_FILENAME
         corrupt_file.write_text("{not valid json", encoding="utf-8")
 
-        with caplog.at_level(logging.WARNING, logger="odoo-gen.manifest"):
+        with caplog.at_level(logging.WARNING, logger="amil.manifest"):
             result = load_manifest(tmp_path)
 
         assert result is None
@@ -284,7 +284,7 @@ class TestManifestPersistence:
 
     def test_save_manifest_excludes_none(self, tmp_path: Path):
         """save_manifest uses exclude_none=True so None fields are omitted."""
-        from odoo_gen_utils.manifest import (
+        from amil_utils.manifest import (
             GenerationManifest,
             MANIFEST_FILENAME,
             save_manifest,
@@ -311,7 +311,7 @@ class TestGenerationSession:
 
     def test_record_stage_stores_result(self):
         """record_stage stores StageResult accessible via to_manifest."""
-        from odoo_gen_utils.manifest import GenerationSession, StageResult
+        from amil_utils.manifest import GenerationSession, StageResult
 
         session = GenerationSession(module_name="test", spec_sha256="abc")
         session.record_stage("models", StageResult(status="complete", duration_ms=100))
@@ -322,7 +322,7 @@ class TestGenerationSession:
 
     def test_is_stage_complete_true_only_for_complete(self):
         """is_stage_complete returns True only for status='complete'."""
-        from odoo_gen_utils.manifest import GenerationSession, StageResult
+        from amil_utils.manifest import GenerationSession, StageResult
 
         session = GenerationSession(module_name="test", spec_sha256="abc")
         session.record_stage("models", StageResult(status="complete"))
@@ -336,7 +336,7 @@ class TestGenerationSession:
 
     def test_to_manifest_produces_valid_manifest(self):
         """to_manifest() produces valid GenerationManifest with all recorded stages."""
-        from odoo_gen_utils.manifest import (
+        from amil_utils.manifest import (
             ArtifactInfo,
             GenerationManifest,
             GenerationSession,
@@ -369,7 +369,7 @@ class TestGenerationSession:
 
     def test_duplicate_record_stage_overwrites(self):
         """Duplicate record_stage for same stage overwrites previous."""
-        from odoo_gen_utils.manifest import GenerationSession, StageResult
+        from amil_utils.manifest import GenerationSession, StageResult
 
         session = GenerationSession(module_name="test", spec_sha256="abc")
         session.record_stage("models", StageResult(status="pending"))
@@ -381,7 +381,7 @@ class TestGenerationSession:
 
     def test_to_manifest_default_generated_at(self):
         """to_manifest() generates ISO 8601 UTC timestamp if not provided."""
-        from odoo_gen_utils.manifest import GenerationSession
+        from amil_utils.manifest import GenerationSession
 
         session = GenerationSession(module_name="test", spec_sha256="abc")
         manifest = session.to_manifest()
@@ -396,34 +396,34 @@ class TestGenerationSession:
 
 
 class TestRenderModuleManifest:
-    """render_module() with ManifestHook produces .odoo-gen-manifest.json."""
+    """render_module() with ManifestHook produces .amil-manifest.json."""
 
     def test_render_module_with_manifest_hook_produces_manifest(self, tmp_path, monkeypatch):
-        """render_module() with ManifestHook writes .odoo-gen-manifest.json."""
+        """render_module() with ManifestHook writes .amil-manifest.json."""
         from unittest.mock import MagicMock
 
-        from odoo_gen_utils.hooks import ManifestHook
-        from odoo_gen_utils.manifest import MANIFEST_FILENAME, load_manifest
-        from odoo_gen_utils.renderer import STAGE_NAMES, render_module
+        from amil_utils.hooks import ManifestHook
+        from amil_utils.manifest import MANIFEST_FILENAME, load_manifest
+        from amil_utils.renderer import STAGE_NAMES, render_module
 
         module_name = "test_mod"
         spec = {"module_name": module_name, "models": [], "odoo_version": "17.0"}
         module_dir = tmp_path / module_name
 
         # Mock all stage renderers to return Result.ok([])
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.validation.types import Result
 
         for stage in STAGE_NAMES:
             fn_name = f"render_{stage}"
             mock_fn = MagicMock(return_value=Result(success=True, data=[]))
-            monkeypatch.setattr(f"odoo_gen_utils.renderer.{fn_name}", mock_fn)
+            monkeypatch.setattr(f"amil_utils.renderer.{fn_name}", mock_fn)
 
         # Mock validate_spec, _validate_no_cycles, run_preprocessors, context7
-        monkeypatch.setattr("odoo_gen_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
-        monkeypatch.setattr("odoo_gen_utils.renderer._validate_no_cycles", lambda s: None)
-        monkeypatch.setattr("odoo_gen_utils.renderer.run_preprocessors", lambda s: s)
-        monkeypatch.setattr("odoo_gen_utils.renderer.build_context7_from_env", lambda: MagicMock())
-        monkeypatch.setattr("odoo_gen_utils.renderer.context7_enrich", lambda *a, **kw: {})
+        monkeypatch.setattr("amil_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
+        monkeypatch.setattr("amil_utils.renderer._validate_no_cycles", lambda s: None)
+        monkeypatch.setattr("amil_utils.renderer.run_preprocessors", lambda s: s)
+        monkeypatch.setattr("amil_utils.renderer.build_context7_from_env", lambda: MagicMock())
+        monkeypatch.setattr("amil_utils.renderer.context7_enrich", lambda *a, **kw: {})
 
         module_dir.mkdir(parents=True, exist_ok=True)
         hooks = [ManifestHook(module_path=module_dir)]
@@ -443,7 +443,7 @@ class TestRenderModuleManifest:
 
     def test_stage_names_constant_has_all_14_stages(self):
         """STAGE_NAMES constant lists all 14 stages (Phase 63: +bulk)."""
-        from odoo_gen_utils.renderer import STAGE_NAMES
+        from amil_utils.renderer import STAGE_NAMES
 
         assert len(STAGE_NAMES) == 14
         expected = [
@@ -466,15 +466,15 @@ class TestResumeFromStage:
         """Resume skips stages marked complete with intact artifacts."""
         from unittest.mock import MagicMock, call
 
-        from odoo_gen_utils.manifest import (
+        from amil_utils.manifest import (
             ArtifactEntry,
             ArtifactInfo,
             GenerationManifest,
             StageResult,
             compute_spec_sha256,
         )
-        from odoo_gen_utils.renderer import STAGE_NAMES, render_module
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.renderer import STAGE_NAMES, render_module
+        from amil_utils.validation.types import Result
 
         module_name = "test_mod"
         spec = {"module_name": module_name, "models": [], "odoo_version": "17.0"}
@@ -486,7 +486,7 @@ class TestResumeFromStage:
         (module_dir / "manifest_file.py").write_text("# manifest", encoding="utf-8")
         (module_dir / "models_file.py").write_text("# models", encoding="utf-8")
 
-        from odoo_gen_utils.manifest import compute_file_sha256
+        from amil_utils.manifest import compute_file_sha256
 
         manifest_sha = compute_file_sha256(module_dir / "manifest_file.py")
         models_sha = compute_file_sha256(module_dir / "models_file.py")
@@ -520,14 +520,14 @@ class TestResumeFromStage:
                     called_stages.append(s)
                     return Result(success=True, data=[])
                 return _mock
-            monkeypatch.setattr(f"odoo_gen_utils.renderer.{fn_name}", make_mock())
+            monkeypatch.setattr(f"amil_utils.renderer.{fn_name}", make_mock())
 
         # Mock infrastructure
-        monkeypatch.setattr("odoo_gen_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
-        monkeypatch.setattr("odoo_gen_utils.renderer._validate_no_cycles", lambda s: None)
-        monkeypatch.setattr("odoo_gen_utils.renderer.run_preprocessors", lambda s: s)
-        monkeypatch.setattr("odoo_gen_utils.renderer.build_context7_from_env", lambda: MagicMock())
-        monkeypatch.setattr("odoo_gen_utils.renderer.context7_enrich", lambda *a, **kw: {})
+        monkeypatch.setattr("amil_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
+        monkeypatch.setattr("amil_utils.renderer._validate_no_cycles", lambda s: None)
+        monkeypatch.setattr("amil_utils.renderer.run_preprocessors", lambda s: s)
+        monkeypatch.setattr("amil_utils.renderer.build_context7_from_env", lambda: MagicMock())
+        monkeypatch.setattr("amil_utils.renderer.context7_enrich", lambda *a, **kw: {})
 
         files, warnings = render_module(
             spec, tmp_path / "templates", tmp_path,
@@ -556,9 +556,9 @@ class TestResumeSpecChanged:
         """Changed spec_sha256 causes all stages to run (no skipping)."""
         from unittest.mock import MagicMock
 
-        from odoo_gen_utils.manifest import GenerationManifest, StageResult
-        from odoo_gen_utils.renderer import STAGE_NAMES, render_module
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.manifest import GenerationManifest, StageResult
+        from amil_utils.renderer import STAGE_NAMES, render_module
+        from amil_utils.validation.types import Result
 
         module_name = "test_mod"
         spec = {"module_name": module_name, "models": [], "odoo_version": "17.0"}
@@ -585,13 +585,13 @@ class TestResumeSpecChanged:
                     called_stages.append(s)
                     return Result(success=True, data=[])
                 return _mock
-            monkeypatch.setattr(f"odoo_gen_utils.renderer.{fn_name}", make_mock())
+            monkeypatch.setattr(f"amil_utils.renderer.{fn_name}", make_mock())
 
-        monkeypatch.setattr("odoo_gen_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
-        monkeypatch.setattr("odoo_gen_utils.renderer._validate_no_cycles", lambda s: None)
-        monkeypatch.setattr("odoo_gen_utils.renderer.run_preprocessors", lambda s: s)
-        monkeypatch.setattr("odoo_gen_utils.renderer.build_context7_from_env", lambda: MagicMock())
-        monkeypatch.setattr("odoo_gen_utils.renderer.context7_enrich", lambda *a, **kw: {})
+        monkeypatch.setattr("amil_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
+        monkeypatch.setattr("amil_utils.renderer._validate_no_cycles", lambda s: None)
+        monkeypatch.setattr("amil_utils.renderer.run_preprocessors", lambda s: s)
+        monkeypatch.setattr("amil_utils.renderer.build_context7_from_env", lambda: MagicMock())
+        monkeypatch.setattr("amil_utils.renderer.context7_enrich", lambda *a, **kw: {})
 
         files, warnings = render_module(
             spec, tmp_path / "templates", tmp_path,
@@ -616,7 +616,7 @@ class TestResumeIntegrityCheck:
         """A completed stage with modified artifact SHA256 re-runs."""
         from unittest.mock import MagicMock
 
-        from odoo_gen_utils.manifest import (
+        from amil_utils.manifest import (
             ArtifactEntry,
             ArtifactInfo,
             GenerationManifest,
@@ -624,8 +624,8 @@ class TestResumeIntegrityCheck:
             compute_file_sha256,
             compute_spec_sha256,
         )
-        from odoo_gen_utils.renderer import STAGE_NAMES, render_module
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.renderer import STAGE_NAMES, render_module
+        from amil_utils.validation.types import Result
 
         module_name = "test_mod"
         spec = {"module_name": module_name, "models": [], "odoo_version": "17.0"}
@@ -662,13 +662,13 @@ class TestResumeIntegrityCheck:
                     called_stages.append(s)
                     return Result(success=True, data=[])
                 return _mock
-            monkeypatch.setattr(f"odoo_gen_utils.renderer.{fn_name}", make_mock())
+            monkeypatch.setattr(f"amil_utils.renderer.{fn_name}", make_mock())
 
-        monkeypatch.setattr("odoo_gen_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
-        monkeypatch.setattr("odoo_gen_utils.renderer._validate_no_cycles", lambda s: None)
-        monkeypatch.setattr("odoo_gen_utils.renderer.run_preprocessors", lambda s: s)
-        monkeypatch.setattr("odoo_gen_utils.renderer.build_context7_from_env", lambda: MagicMock())
-        monkeypatch.setattr("odoo_gen_utils.renderer.context7_enrich", lambda *a, **kw: {})
+        monkeypatch.setattr("amil_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
+        monkeypatch.setattr("amil_utils.renderer._validate_no_cycles", lambda s: None)
+        monkeypatch.setattr("amil_utils.renderer.run_preprocessors", lambda s: s)
+        monkeypatch.setattr("amil_utils.renderer.build_context7_from_env", lambda: MagicMock())
+        monkeypatch.setattr("amil_utils.renderer.context7_enrich", lambda *a, **kw: {})
 
         files, warnings = render_module(
             spec, tmp_path / "templates", tmp_path,
@@ -694,8 +694,8 @@ class TestCLIResume:
 
         from click.testing import CliRunner
 
-        from odoo_gen_utils.cli import main
-        from odoo_gen_utils.manifest import GenerationManifest, save_manifest
+        from amil_utils.cli import main
+        from amil_utils.manifest import GenerationManifest, save_manifest
 
         module_name = "test_resume_mod"
         spec = {"module_name": module_name, "models": [], "odoo_version": "17.0"}
@@ -720,7 +720,7 @@ class TestCLIResume:
             captured_kwargs.update(kwargs)
             return ([], [])
 
-        with patch("odoo_gen_utils.renderer.render_module", mock_render_module):
+        with patch("amil_utils.renderer.render_module", mock_render_module):
             runner = CliRunner()
             result = runner.invoke(main, [
                 "render-module",
@@ -740,7 +740,7 @@ class TestCLIResume:
 
         from click.testing import CliRunner
 
-        from odoo_gen_utils.cli import main
+        from amil_utils.cli import main
 
         module_name = "test_no_resume"
         spec = {"module_name": module_name, "models": [], "odoo_version": "17.0"}
@@ -752,7 +752,7 @@ class TestCLIResume:
             captured_kwargs.update(kwargs)
             return ([], [])
 
-        with patch("odoo_gen_utils.renderer.render_module", mock_render_module):
+        with patch("amil_utils.renderer.render_module", mock_render_module):
             runner = CliRunner()
             result = runner.invoke(main, [
                 "render-module",
@@ -771,14 +771,14 @@ class TestCLIResume:
 
 
 class TestShowStateManifest:
-    """show-state reads .odoo-gen-manifest.json first, falls back to old format."""
+    """show-state reads .amil-manifest.json first, falls back to old format."""
 
     def test_show_state_reads_manifest(self, tmp_path):
-        """show-state on dir with .odoo-gen-manifest.json displays manifest summary."""
+        """show-state on dir with .amil-manifest.json displays manifest summary."""
         from click.testing import CliRunner
 
-        from odoo_gen_utils.cli import main
-        from odoo_gen_utils.manifest import (
+        from amil_utils.cli import main
+        from amil_utils.manifest import (
             ArtifactInfo,
             GenerationManifest,
             StageResult,
@@ -810,8 +810,8 @@ class TestShowStateManifest:
         """show-state --json outputs raw manifest JSON."""
         from click.testing import CliRunner
 
-        from odoo_gen_utils.cli import main
-        from odoo_gen_utils.manifest import GenerationManifest, save_manifest
+        from amil_utils.cli import main
+        from amil_utils.manifest import GenerationManifest, save_manifest
 
         manifest = GenerationManifest(
             module="json_test",
@@ -829,10 +829,10 @@ class TestShowStateManifest:
         assert data["module"] == "json_test"
 
     def test_show_state_legacy_state_file_message(self, tmp_path):
-        """show-state with only old .odoo-gen-state.json shows legacy message."""
+        """show-state with only old .amil-state.json shows legacy message."""
         from click.testing import CliRunner
 
-        from odoo_gen_utils.cli import main
+        from amil_utils.cli import main
 
         # Write an old-format state file
         state_data = {
@@ -840,7 +840,7 @@ class TestShowStateManifest:
             "artifacts": [],
             "generated_at": "2026-01-01",
         }
-        state_file = tmp_path / ".odoo-gen-state.json"
+        state_file = tmp_path / ".amil-state.json"
         state_file.write_text(json.dumps(state_data), encoding="utf-8")
 
         runner = CliRunner()

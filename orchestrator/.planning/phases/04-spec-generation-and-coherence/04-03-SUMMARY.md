@@ -19,8 +19,8 @@ tech-stack:
 
 key-files:
   created:
-    - commands/odoo-gsd/plan-module.md
-    - odoo-gsd/workflows/plan-module.md
+    - commands/amil/plan-module.md
+    - amil/workflows/plan-module.md
     - tests/plan-module.test.cjs
   modified: []
 
@@ -64,8 +64,8 @@ Each task was committed atomically:
 2. **Task 2: Create plan-module structural validation tests** - `d8bb4c0` (test)
 
 ## Files Created/Modified
-- `commands/odoo-gsd/plan-module.md` - Slash command entry point routing to workflow
-- `odoo-gsd/workflows/plan-module.md` - 10-step workflow with full pipeline orchestration
+- `commands/amil/plan-module.md` - Slash command entry point routing to workflow
+- `amil/workflows/plan-module.md` - 10-step workflow with full pipeline orchestration
 - `tests/plan-module.test.cjs` - 35 structural tests: command structure, workflow completeness, schema coverage, registry injection
 
 ## Decisions Made

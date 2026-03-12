@@ -196,7 +196,7 @@ When `odoo_version` is `"19.0"`, these additional rules apply (on top of 18.0 ch
 | Version prefix | `18.0.X.Y.Z` | `19.0.X.Y.Z` | Manifest version |
 
 **Enterprise edition awareness:**
-- Use `odoo-gen-utils check-edition` to detect Enterprise-only dependencies
+- Use `amil-utils check-edition` to detect Enterprise-only dependencies
 - Enterprise module registry at `data/enterprise_modules.json` (31 modules)
 - OCA Community alternatives suggested where available
 

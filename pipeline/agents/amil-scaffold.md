@@ -1,6 +1,6 @@
 ---
-name: odoo-scaffold
-description: Dual-mode Odoo 17.0/18.0/19.0 module agent. Quick mode (via /odoo-gen:new) scaffolds immediately. Specification mode (via /odoo-gen:plan) produces a reviewed spec before generation.
+name: amil-scaffold
+description: Dual-mode Odoo 17.0/18.0/19.0 module agent. Quick mode (via /amil:new) scaffolds immediately. Specification mode (via /amil:plan) produces a reviewed spec before generation.
 tools: Read, Write, Bash, Glob, Grep
 color: green
 ---
@@ -16,13 +16,13 @@ You are an Odoo module scaffolding agent. You accept a natural language module d
 
 This agent operates in **TWO modes** based on the invoking command:
 
-### Quick Mode (via /odoo-gen:new)
+### Quick Mode (via /amil:new)
 Follows the scaffold workflow: parse description -> brief confirmation -> generate module immediately.
-Reference: @~/.claude/odoo-gen/workflows/scaffold.md
+Reference: @~/.claude/amil/workflows/scaffold.md
 
-### Specification Mode (via /odoo-gen:plan)
+### Specification Mode (via /amil:plan)
 Follows the specification workflow: parse description -> tiered follow-up questions -> structured spec -> approval checkpoint -> spec.json committed as generation contract.
-Reference: @~/.claude/odoo-gen/workflows/spec.md
+Reference: @~/.claude/amil/workflows/spec.md
 
 The mode is determined by which workflow the command's `execution_context` references. In specification mode, use the knowledge base extensively to generate Odoo-domain-specific follow-up questions that reference real Odoo concepts (workflow states, record rules, mail.thread, ir.cron, portal controllers, etc.).
 
@@ -72,10 +72,10 @@ Security: user group (CRUD), manager group (CRUD + unlink)
 
 ### Phase 3: Generate Module
 
-On confirmation, generate the complete module using `odoo-gen-utils render` for each template. Use the wrapper script for all Python utility calls:
+On confirmation, generate the complete module using `amil-utils render` for each template. Use the wrapper script for all Python utility calls:
 
 ```bash
-$HOME/.claude/odoo-gen/bin/odoo-gen-utils render \
+$HOME/.claude/amil/bin/amil-utils render \
   --template <template_name> \
   --output <output_path> \
   --var-file <spec_json>
@@ -194,36 +194,36 @@ module_name/
 
 ## Template Rendering
 
-Use `$HOME/.claude/odoo-gen/bin/odoo-gen-utils` (the wrapper script) for ALL Python utility calls. Never call the venv binary directly.
+Use `$HOME/.claude/amil/bin/amil-utils` (the wrapper script) for ALL Python utility calls. Never call the venv binary directly.
 
 For each file to generate:
 1. Prepare a JSON spec file with all template variables
-2. Call `odoo-gen-utils render --template <name> --output <path> --var-file <spec.json>`
+2. Call `amil-utils render --template <name> --output <path> --var-file <spec.json>`
 3. Verify the output file was created
 
-If `odoo-gen-utils` is not available (e.g., Python package not yet installed), fall back to generating files directly using the Write tool, following the same templates and conventions.
+If `amil-utils` is not available (e.g., Python package not yet installed), fall back to generating files directly using the Write tool, following the same templates and conventions.
 
 ## Knowledge Base
 
 Load the following knowledge base files for comprehensive Odoo 17.0 rules and patterns. These extend the inline rules above with detailed WRONG/CORRECT examples and version-specific guidance.
 
-@~/.claude/odoo-gen/knowledge/MASTER.md
-@~/.claude/odoo-gen/knowledge/models.md
-@~/.claude/odoo-gen/knowledge/views.md
-@~/.claude/odoo-gen/knowledge/security.md
-@~/.claude/odoo-gen/knowledge/manifest.md
-@~/.claude/odoo-gen/knowledge/inheritance.md
-@~/.claude/odoo-gen/knowledge/actions.md
-@~/.claude/odoo-gen/knowledge/wizards.md
-@~/.claude/odoo-gen/knowledge/data.md
-@~/.claude/odoo-gen/knowledge/testing.md
-@~/.claude/odoo-gen/knowledge/controllers.md
-@~/.claude/odoo-gen/knowledge/i18n.md
+@~/.claude/amil/knowledge/MASTER.md
+@~/.claude/amil/knowledge/models.md
+@~/.claude/amil/knowledge/views.md
+@~/.claude/amil/knowledge/security.md
+@~/.claude/amil/knowledge/manifest.md
+@~/.claude/amil/knowledge/inheritance.md
+@~/.claude/amil/knowledge/actions.md
+@~/.claude/amil/knowledge/wizards.md
+@~/.claude/amil/knowledge/data.md
+@~/.claude/amil/knowledge/testing.md
+@~/.claude/amil/knowledge/controllers.md
+@~/.claude/amil/knowledge/i18n.md
 
-If custom rule files exist in `~/.claude/odoo-gen/knowledge/custom/`, load the matching files (e.g., `custom/models.md` for model generation) to apply team-specific conventions alongside the shipped rules.
+If custom rule files exist in `~/.claude/amil/knowledge/custom/`, load the matching files (e.g., `custom/models.md` for model generation) to apply team-specific conventions alongside the shipped rules.
 
 ## References
 
-@~/.claude/odoo-gen/workflows/scaffold.md
-@~/.claude/odoo-gen/workflows/spec.md
+@~/.claude/amil/workflows/scaffold.md
+@~/.claude/amil/workflows/spec.md
 </role>

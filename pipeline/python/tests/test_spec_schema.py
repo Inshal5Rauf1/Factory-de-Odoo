@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from odoo_gen_utils.spec_schema import (
+from amil_utils.spec_schema import (
     ApprovalLevelSpec,
     ApprovalSpec,
     ConstraintSpec,
@@ -324,7 +324,7 @@ class TestExportSchema:
     def test_export_schema_stdout(self):
         """export-schema outputs valid JSON Schema to stdout."""
         from click.testing import CliRunner
-        from odoo_gen_utils.cli import main
+        from amil_utils.cli import main
 
         runner = CliRunner()
         result = runner.invoke(main, ["export-schema"])
@@ -338,7 +338,7 @@ class TestExportSchema:
     def test_export_schema_contains_defs(self):
         """export-schema JSON contains $defs with nested model schemas."""
         from click.testing import CliRunner
-        from odoo_gen_utils.cli import main
+        from amil_utils.cli import main
 
         runner = CliRunner()
         result = runner.invoke(main, ["export-schema"])
@@ -357,7 +357,7 @@ class TestExportSchemaFile:
     def test_export_schema_to_file(self, tmp_path):
         """export-schema --output writes valid JSON Schema to specified file."""
         from click.testing import CliRunner
-        from odoo_gen_utils.cli import main
+        from amil_utils.cli import main
 
         out_file = tmp_path / "schema.json"
         runner = CliRunner()
@@ -378,7 +378,7 @@ class TestRendererIntegration:
 
     def test_invalid_spec_raises_validation_error(self):
         """render_module() raises ValidationError on invalid field type."""
-        from odoo_gen_utils.renderer import get_template_dir, render_module
+        from amil_utils.renderer import get_template_dir, render_module
 
         invalid_spec = {
             "module_name": "test_invalid",
@@ -396,7 +396,7 @@ class TestRendererIntegration:
         """render_module() does not raise ValidationError for a valid minimal spec."""
         import tempfile
 
-        from odoo_gen_utils.renderer import get_template_dir, render_module
+        from amil_utils.renderer import get_template_dir, render_module
 
         valid_spec = {
             "module_name": "test_valid",
@@ -416,11 +416,11 @@ class TestRendererIntegration:
             assert len(files) > 0
 
 
-# ─── Integration schema tests (odoo-gsd alignment) ──────────────────────────
+# ─── Integration schema tests (amil alignment) ──────────────────────────
 
 
 class TestOdooGsdSchemaAlignment:
-    """Tests for fields added to support odoo-gsd spec output."""
+    """Tests for fields added to support amil spec output."""
 
     def test_workflow_field_accepted(self):
         """ModuleSpec accepts workflow list with transitions."""
@@ -488,7 +488,7 @@ class TestOdooGsdSchemaAlignment:
         assert spec.view_hints == []
 
     def test_full_gsd_spec_roundtrip(self):
-        """A spec matching odoo-gsd's full output is accepted and round-trips."""
+        """A spec matching amil's full output is accepted and round-trips."""
         gsd_output = {
             "module_name": "uni_fee",
             "module_title": "Uni Fee",
@@ -561,7 +561,7 @@ class TestOdooGsdSchemaAlignment:
 
     def test_workflow_transition_python_name_construction(self):
         """populate_by_name=True allows constructing via Python attribute names."""
-        from odoo_gen_utils.spec_schema import WorkflowTransitionSpec
+        from amil_utils.spec_schema import WorkflowTransitionSpec
 
         t = WorkflowTransitionSpec(from_state="draft", to_state="confirmed", action="act")
         assert t.from_state == "draft"

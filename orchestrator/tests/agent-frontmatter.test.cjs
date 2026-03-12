@@ -1,5 +1,5 @@
 /**
- * GSD Agent Frontmatter Tests
+ * Amil Agent Frontmatter Tests
  *
  * Validates that all agent .md files have correct frontmatter fields:
  * - Anti-heredoc instruction present in file-writing agents
@@ -14,11 +14,11 @@ const fs = require('fs');
 const path = require('path');
 
 const AGENTS_DIR = path.join(__dirname, '..', 'agents');
-const WORKFLOWS_DIR = path.join(__dirname, '..', 'odoo-gsd', 'workflows');
+const WORKFLOWS_DIR = path.join(__dirname, '..', 'amil', 'workflows');
 const COMMANDS_DIR = path.join(__dirname, '..', 'commands', 'gsd');
 
 const ALL_AGENTS = fs.readdirSync(AGENTS_DIR)
-  .filter(f => f.startsWith('odoo-gsd-') && f.endsWith('.md'))
+  .filter(f => f.startsWith('amil-') && f.endsWith('.md'))
   .map(f => f.replace('.md', ''));
 
 const FILE_WRITING_AGENTS = ALL_AGENTS.filter(name => {
@@ -78,10 +78,10 @@ describe('SKILL: skills frontmatter', () => {
     for (const agent of ALL_AGENTS) {
       const content = fs.readFileSync(path.join(AGENTS_DIR, agent + '.md'), 'utf-8');
       const frontmatter = content.split('---')[1] || '';
-      const skillLines = frontmatter.split('\n').filter(l => l.trim().startsWith('- odoo-gsd-'));
+      const skillLines = frontmatter.split('\n').filter(l => l.trim().startsWith('- amil-'));
       for (const line of skillLines) {
         const skillName = line.trim().replace('- ', '');
-        assert.match(skillName, /^odoo-gsd-[\w-]+-workflow$/, `Invalid skill name: ${skillName}`);
+        assert.match(skillName, /^amil-[\w-]+-workflow$/, `Invalid skill name: ${skillName}`);
       }
     }
   });
@@ -121,7 +121,7 @@ describe('SPAWN: spawn type consistency', () => {
       const files = fs.readdirSync(dir).filter(f => f.endsWith('.md'));
       for (const file of files) {
         const content = fs.readFileSync(path.join(dir, file), 'utf-8');
-        const hasWorkaround = content.includes('First, read ~/.claude/agents/odoo-gsd-');
+        const hasWorkaround = content.includes('First, read ~/.claude/agents/amil-');
         assert.ok(
           !hasWorkaround,
           `${file} still has "First, read agent .md" workaround — use named subagent_type instead`
@@ -154,13 +154,13 @@ describe('SPAWN: spawn type consistency', () => {
     }
   });
 
-  test('diagnose-issues uses odoo-gsd-debugger (not general-purpose)', () => {
+  test('diagnose-issues uses amil-debugger (not general-purpose)', () => {
     const content = fs.readFileSync(
       path.join(WORKFLOWS_DIR, 'diagnose-issues.md'), 'utf-8'
     );
     assert.ok(
-      content.includes('subagent_type="odoo-gsd-debugger"'),
-      'diagnose-issues should spawn odoo-gsd-debugger, not general-purpose'
+      content.includes('subagent_type="amil-debugger"'),
+      'diagnose-issues should spawn amil-debugger, not general-purpose'
     );
   });
 });
@@ -183,9 +183,9 @@ describe('AGENT: required frontmatter fields', () => {
 // ─── Spec Generator Agent ───────────────────────────────────────────────────
 
 describe('SPEC-GEN: spec generator agent', () => {
-  const SPEC_GEN_FILE = path.join(AGENTS_DIR, 'odoo-gsd-spec-generator.md');
+  const SPEC_GEN_FILE = path.join(AGENTS_DIR, 'amil-spec-generator.md');
 
-  test('odoo-gsd-spec-generator.md exists', () => {
+  test('amil-spec-generator.md exists', () => {
     assert.ok(fs.existsSync(SPEC_GEN_FILE), 'spec generator agent file missing');
   });
 
@@ -193,7 +193,7 @@ describe('SPEC-GEN: spec generator agent', () => {
     const content = fs.readFileSync(SPEC_GEN_FILE, 'utf-8');
     const frontmatter = content.split('---')[1] || '';
     assert.ok(
-      frontmatter.includes('name: odoo-gsd-spec-generator') || frontmatter.includes("name: 'odoo-gsd-spec-generator'"),
+      frontmatter.includes('name: amil-spec-generator') || frontmatter.includes("name: 'amil-spec-generator'"),
       'spec generator name field must contain spec-generator'
     );
   });
@@ -231,9 +231,9 @@ describe('SPEC-GEN: spec generator agent', () => {
 // ─── Spec Reviewer Agent ────────────────────────────────────────────────────
 
 describe('SPEC-REV: spec reviewer agent', () => {
-  const SPEC_REV_FILE = path.join(AGENTS_DIR, 'odoo-gsd-spec-reviewer.md');
+  const SPEC_REV_FILE = path.join(AGENTS_DIR, 'amil-spec-reviewer.md');
 
-  test('odoo-gsd-spec-reviewer.md exists', () => {
+  test('amil-spec-reviewer.md exists', () => {
     assert.ok(fs.existsSync(SPEC_REV_FILE), 'spec reviewer agent file missing');
   });
 
@@ -241,7 +241,7 @@ describe('SPEC-REV: spec reviewer agent', () => {
     const content = fs.readFileSync(SPEC_REV_FILE, 'utf-8');
     const frontmatter = content.split('---')[1] || '';
     assert.ok(
-      frontmatter.includes('name: odoo-gsd-spec-reviewer') || frontmatter.includes("name: 'odoo-gsd-spec-reviewer'"),
+      frontmatter.includes('name: amil-spec-reviewer') || frontmatter.includes("name: 'amil-spec-reviewer'"),
       'spec reviewer name field must contain spec-reviewer'
     );
   });

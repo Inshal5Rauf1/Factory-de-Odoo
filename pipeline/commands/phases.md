@@ -1,5 +1,5 @@
 ---
-name: odoo-gen:phases
+name: amil:phases
 description: Show Odoo module generation phases and progress
 ---
 <objective>

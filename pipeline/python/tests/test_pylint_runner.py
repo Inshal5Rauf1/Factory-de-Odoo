@@ -13,11 +13,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from odoo_gen_utils.validation.pylint_runner import (
+from amil_utils.validation.pylint_runner import (
     parse_pylint_output,
     run_pylint_odoo,
 )
-from odoo_gen_utils.validation.types import Result, Violation
+from amil_utils.validation.types import Result, Violation
 
 
 # Sample pylint JSON2 output (verified structure from research)
@@ -116,7 +116,7 @@ class TestParsePylintOutput:
 class TestRunPylintOdoo:
     """Tests for run_pylint_odoo function."""
 
-    @patch("odoo_gen_utils.validation.pylint_runner.subprocess.run")
+    @patch("amil_utils.validation.pylint_runner.subprocess.run")
     def test_run_pylint_odoo_invocation(self, mock_run: MagicMock) -> None:
         """run_pylint_odoo calls subprocess.run with correct args and returns Result."""
         mock_run.return_value = MagicMock(stdout=SAMPLE_JSON2, stderr="")
@@ -142,7 +142,7 @@ class TestRunPylintOdoo:
         assert result.success is True
         assert len(result.data) == 2
 
-    @patch("odoo_gen_utils.validation.pylint_runner.subprocess.run")
+    @patch("amil_utils.validation.pylint_runner.subprocess.run")
     def test_run_pylint_odoo_with_pylintrc(self, mock_run: MagicMock) -> None:
         """When pylintrc_path is provided and exists, --rcfile is included."""
         mock_run.return_value = MagicMock(stdout=SAMPLE_JSON2, stderr="")
@@ -159,7 +159,7 @@ class TestRunPylintOdoo:
                 arg.startswith("--rcfile=") for arg in cmd
             ), f"--rcfile not found in command: {cmd}"
 
-    @patch("odoo_gen_utils.validation.pylint_runner.subprocess.run")
+    @patch("amil_utils.validation.pylint_runner.subprocess.run")
     def test_run_pylint_odoo_timeout(self, mock_run: MagicMock) -> None:
         """subprocess.TimeoutExpired returns Result.fail with error message."""
         mock_run.side_effect = subprocess.TimeoutExpired(cmd=["pylint"], timeout=120)
@@ -171,7 +171,7 @@ class TestRunPylintOdoo:
         assert len(result.errors) > 0
         assert "timed out" in result.errors[0]
 
-    @patch("odoo_gen_utils.validation.pylint_runner.subprocess.run")
+    @patch("amil_utils.validation.pylint_runner.subprocess.run")
     def test_run_pylint_odoo_subprocess_error(self, mock_run: MagicMock) -> None:
         """Other subprocess errors return Result.fail with error message."""
         mock_run.side_effect = OSError("Command not found")
@@ -183,7 +183,7 @@ class TestRunPylintOdoo:
         assert len(result.errors) > 0
         assert "failed" in result.errors[0].lower()
 
-    @patch("odoo_gen_utils.validation.pylint_runner.subprocess.run")
+    @patch("amil_utils.validation.pylint_runner.subprocess.run")
     def test_run_pylint_odoo_empty_output(self, mock_run: MagicMock) -> None:
         """Empty stdout returns Result.ok with empty tuple."""
         mock_run.return_value = MagicMock(stdout="", stderr="")
@@ -194,7 +194,7 @@ class TestRunPylintOdoo:
         assert result.success is True
         assert result.data == ()
 
-    @patch("odoo_gen_utils.validation.pylint_runner.subprocess.run")
+    @patch("amil_utils.validation.pylint_runner.subprocess.run")
     def test_run_pylint_odoo_timeout_kwarg(self, mock_run: MagicMock) -> None:
         """timeout parameter is passed to subprocess.run."""
         mock_run.return_value = MagicMock(stdout="", stderr="")

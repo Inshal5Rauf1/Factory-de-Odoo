@@ -5,8 +5,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from odoo_gen_utils.preprocessors._registry import register_preprocessor
-from odoo_gen_utils.renderer_utils import _to_python_var
+from amil_utils.preprocessors._registry import register_preprocessor
+from amil_utils.renderer_utils import _to_python_var
 
 logger = logging.getLogger(__name__)
 

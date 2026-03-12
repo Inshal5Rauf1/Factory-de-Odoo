@@ -16,18 +16,18 @@ function toPosixPath(p) {
 // ─── Model Profile Table ─────────────────────────────────────────────────────
 
 const MODEL_PROFILES = {
-  'odoo-gsd-planner':              { quality: 'opus', balanced: 'opus',   budget: 'sonnet' },
-  'odoo-gsd-roadmapper':           { quality: 'opus', balanced: 'sonnet', budget: 'sonnet' },
-  'odoo-gsd-executor':             { quality: 'opus', balanced: 'sonnet', budget: 'sonnet' },
-  'odoo-gsd-phase-researcher':     { quality: 'opus', balanced: 'sonnet', budget: 'haiku' },
-  'odoo-gsd-project-researcher':   { quality: 'opus', balanced: 'sonnet', budget: 'haiku' },
-  'odoo-gsd-research-synthesizer': { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
-  'odoo-gsd-debugger':             { quality: 'opus', balanced: 'sonnet', budget: 'sonnet' },
-  'odoo-gsd-codebase-mapper':      { quality: 'sonnet', balanced: 'haiku', budget: 'haiku' },
-  'odoo-gsd-verifier':             { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
-  'odoo-gsd-plan-checker':         { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
-  'odoo-gsd-integration-checker':  { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
-  'odoo-gsd-nyquist-auditor':      { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
+  'amil-planner':              { quality: 'opus', balanced: 'opus',   budget: 'sonnet' },
+  'amil-roadmapper':           { quality: 'opus', balanced: 'sonnet', budget: 'sonnet' },
+  'amil-executor':             { quality: 'opus', balanced: 'sonnet', budget: 'sonnet' },
+  'amil-phase-researcher':     { quality: 'opus', balanced: 'sonnet', budget: 'haiku' },
+  'amil-project-researcher':   { quality: 'opus', balanced: 'sonnet', budget: 'haiku' },
+  'amil-research-synthesizer': { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
+  'amil-debugger':             { quality: 'opus', balanced: 'sonnet', budget: 'sonnet' },
+  'amil-codebase-mapper':      { quality: 'sonnet', balanced: 'haiku', budget: 'haiku' },
+  'amil-verifier':             { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
+  'amil-plan-checker':         { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
+  'amil-integration-checker':  { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
+  'amil-nyquist-auditor':      { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
 };
 
 // ─── Output helpers ───────────────────────────────────────────────────────────
@@ -40,7 +40,7 @@ function output(result, raw, rawValue) {
     // Large payloads exceed Claude Code's Bash tool buffer (~50KB).
     // Write to tmpfile and output the path prefixed with @file: so callers can detect it.
     if (json.length > 50000) {
-      const tmpPath = path.join(require('os').tmpdir(), `odoo-gsd-${Date.now()}-${process.pid}.json`);
+      const tmpPath = path.join(require('os').tmpdir(), `amil-${Date.now()}-${process.pid}.json`);
       fs.writeFileSync(tmpPath, json, { encoding: 'utf-8', mode: 0o600 });
       process.stdout.write('@file:' + tmpPath);
     } else {
@@ -72,8 +72,8 @@ function loadConfig(cwd) {
     commit_docs: true,
     search_gitignored: false,
     branching_strategy: 'none',
-    phase_branch_template: 'odoo-gsd/phase-{phase}-{slug}',
-    milestone_branch_template: 'odoo-gsd/{milestone}-{slug}',
+    phase_branch_template: 'amil/phase-{phase}-{slug}',
+    milestone_branch_template: 'amil/{milestone}-{slug}',
     research: true,
     plan_checker: true,
     verifier: true,

@@ -2,13 +2,13 @@
 
 Run the 10-step spec generation pipeline to produce an approved spec.json for a specific Odoo module.
 
-**Rules:** CJS tooling, zero npm deps, atomic writes via `odoo-gsd-tools.cjs`.
+**Rules:** CJS tooling, zero npm deps, atomic writes via `amil-tools.cjs`.
 
 ---
 
 ## Prerequisites
 
-The module argument `{MODULE}` is provided by the user when invoking `/odoo-gsd:plan-module {module_name}`.
+The module argument `{MODULE}` is provided by the user when invoking `/amil:plan-module {module_name}`.
 
 ---
 
@@ -17,10 +17,10 @@ The module argument `{MODULE}` is provided by the user when invoking `/odoo-gsd:
 Check that the module exists in module_status.json and is at an appropriate status.
 
 ```bash
-MODULE_STATUS=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" module-status get "${MODULE}" --raw --cwd "$(pwd)" 2>&1)
+MODULE_STATUS=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status get "${MODULE}" --raw --cwd "$(pwd)" 2>&1)
 ```
 
-- If command fails or returns empty: show error "Module '${MODULE}' not found in module_status.json. Run /odoo-gsd:new-erp first." and STOP.
+- If command fails or returns empty: show error "Module '${MODULE}' not found in module_status.json. Run /amil:new-erp first." and STOP.
 - Parse the JSON result.
 - If `.status` is "planned": proceed normally.
 - If `.status` is "spec_approved": use AskUserQuestion: "Module '${MODULE}' already has an approved spec. Overwrite and re-run pipeline? (yes / abort)". If "abort": STOP.
@@ -47,7 +47,7 @@ Read the module's CONTEXT.md:
 Read .planning/modules/${MODULE}/CONTEXT.md
 ```
 
-- If missing or empty: show error "CONTEXT.md not found for ${MODULE}. Run /odoo-gsd:discuss-module ${MODULE} first." and STOP.
+- If missing or empty: show error "CONTEXT.md not found for ${MODULE}. Run /amil:discuss-module ${MODULE} first." and STOP.
 - Store the full content for passing to agents.
 
 ## Step 4: Load Decomposition Entry
@@ -89,7 +89,7 @@ Tier: ${TIER}
 
 Follow your agent instructions to research this module and write RESEARCH.md to:
 .planning/modules/${MODULE}/RESEARCH.md",
-  subagent_type="odoo-gsd-module-researcher",
+  subagent_type="amil-module-researcher",
   description="Module research: ${MODULE}"
 )
 ```
@@ -120,7 +120,7 @@ REGISTRY_EXISTS=$(node -e "
 
 - If registry exists and is non-empty:
   ```bash
-  TIERED_REGISTRY=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" registry tiered-injection "${MODULE}" --raw --cwd "$(pwd)")
+  TIERED_REGISTRY=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" registry tiered-injection "${MODULE}" --raw --cwd "$(pwd)")
   ```
 - If registry is empty or missing (first module in project): use empty tiered result:
   ```json
@@ -133,7 +133,7 @@ Spawn the spec generator agent to produce spec.json:
 
 ```bash
 # Read config odoo block
-ODOO_CONFIG=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config-get odoo --raw --cwd "$(pwd)" 2>/dev/null || echo '{}')
+ODOO_CONFIG=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" config-get odoo --raw --cwd "$(pwd)" 2>/dev/null || echo '{}')
 ```
 
 ```
@@ -170,13 +170,13 @@ TIERED REGISTRY (for _available_models):
 ${TIERED_REGISTRY_JSON}
 ---
 
-Follow your agent instructions to generate a complete spec.json conforming to odoo-gen's
+Follow your agent instructions to generate a complete spec.json conforming to amil's
 ModuleSpec schema. Include all metadata fields (module_name, module_title, odoo_version, version,
 summary, author, website, license, category, application, depends) and all 11 content sections
 (models, business_rules, computation_chains, workflow, view_hints, reports, notifications,
 cron_jobs, security, portal, controllers). Do NOT include _available_models. Write to:
 .planning/modules/${MODULE}/spec.json",
-  subagent_type="odoo-gsd-spec-generator",
+  subagent_type="amil-spec-generator",
   description="Spec generation: ${MODULE}"
 )
 ```
@@ -202,7 +202,7 @@ node -e "
 Run the coherence checker against the produced spec.json:
 
 ```bash
-COHERENCE_REPORT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" coherence check --spec ".planning/modules/${MODULE}/spec.json" --registry ".planning/model_registry.json" --raw --cwd "$(pwd)")
+COHERENCE_REPORT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" coherence check --spec ".planning/modules/${MODULE}/spec.json" --registry ".planning/model_registry.json" --raw --cwd "$(pwd)")
 ```
 
 - Parse the JSON coherence report.
@@ -232,7 +232,7 @@ MODULE NAME: ${MODULE}
 
 Follow your agent instructions to present a human-readable review of the spec
 and coherence results.",
-  subagent_type="odoo-gsd-spec-reviewer",
+  subagent_type="amil-spec-reviewer",
   description="Spec review: ${MODULE}"
 )
 ```
@@ -257,10 +257,10 @@ Based on the coherence check status, present approval options:
 
 **On "approve" or "approve_anyway":**
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" module-status transition "${MODULE}" spec_approved --raw --cwd "$(pwd)"
+node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status transition "${MODULE}" spec_approved --raw --cwd "$(pwd)"
 ```
 Report: "Module '${MODULE}' spec approved. Status transitioned to spec_approved."
-Report: "Next step: /odoo-gsd:generate-module ${MODULE}"
+Report: "Next step: /amil:generate-module ${MODULE}"
 
 **On "revise":**
 Go back to Step 5 (researcher) and re-run the pipeline.
@@ -276,4 +276,4 @@ Report to user:
 - "Output: .planning/modules/${MODULE}/spec.json"
 - "Coherence report: .planning/modules/${MODULE}/coherence-report.json"
 - "Module status: spec_approved"
-- "Next step: /odoo-gsd:generate-module ${MODULE}"
+- "Next step: /amil:generate-module ${MODULE}"

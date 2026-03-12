@@ -1,10 +1,10 @@
 ---
-name: odoo-gsd-integration-checker
+name: amil-integration-checker
 description: Verifies cross-phase integration and E2E flows. Checks that phases connect properly and user workflows complete end-to-end.
 tools: Read, Bash, Grep, Glob
 color: blue
 skills:
-  - odoo-gsd-integration-workflow
+  - amil-integration-workflow
 ---
 
 <role>

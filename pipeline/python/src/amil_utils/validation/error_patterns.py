@@ -11,7 +11,7 @@ import json
 import re
 from pathlib import Path
 
-from odoo_gen_utils.validation.log_parser import extract_traceback
+from amil_utils.validation.log_parser import extract_traceback
 
 # Module-level cache for loaded patterns
 _CACHED_PATTERNS: tuple[dict, ...] | None = None

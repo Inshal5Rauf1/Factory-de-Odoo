@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import json
 
-from odoo_gen_utils.validation.report import format_report_json, format_report_markdown
-from odoo_gen_utils.validation.types import (
+from amil_utils.validation.report import format_report_json, format_report_markdown
+from amil_utils.validation.types import (
     InstallResult,
     TestResult,
     ValidationReport,

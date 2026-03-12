@@ -18,7 +18,7 @@ from graphlib import CycleError, TopologicalSorter
 from pathlib import Path
 from typing import Any
 
-logger = logging.getLogger("odoo-gen.registry")
+logger = logging.getLogger("amil.registry")
 
 
 # ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 # Specification Workflow
 
-End-to-end workflow for `/odoo-gen:plan`. Referenced by the `odoo-scaffold` agent and the `plan` command.
+End-to-end workflow for `/amil:plan`. Referenced by the `amil-scaffold` agent and the `plan` command.
 
 ## Overview
 
@@ -23,7 +23,7 @@ Receive the module description from `$ARGUMENTS` and parse it into a draft speci
 
 1. **Extract the description** from `$ARGUMENTS`:
    ```
-   /odoo-gen:plan "equipment maintenance tracking with work orders and technician assignments"
+   /amil:plan "equipment maintenance tracking with work orders and technician assignments"
    ```
 
 2. **Infer module technical name** -- Convert the description to `snake_case`:
@@ -115,7 +115,7 @@ Receive the module description from `$ARGUMENTS` and parse it into a draft speci
 
    If any model will use chatter (messages, activity tracking), add `mail` to depends.
 
-9. **Read defaults** -- Check `~/.claude/odoo-gen/defaults.json` for:
+9. **Read defaults** -- Check `~/.claude/amil/defaults.json` for:
    - `odoo_version` (default: "17.0")
    - `license` (default: "LGPL-3")
    - `author` (default: "")
@@ -127,7 +127,7 @@ Receive the module description from `$ARGUMENTS` and parse it into a draft speci
 
 ## Phase 2: Tiered Follow-Up Questions
 
-Ask targeted, Odoo-specific follow-up questions to refine the draft specification. Questions are informed by the knowledge base (`@~/.claude/odoo-gen/knowledge/`) and reference real Odoo concepts.
+Ask targeted, Odoo-specific follow-up questions to refine the draft specification. Questions are informed by the knowledge base (`@~/.claude/amil/knowledge/`) and reference real Odoo concepts.
 
 ### Tier 1 (Always Asked -- 3-5 Questions)
 
@@ -318,7 +318,7 @@ Build the complete `spec.json` from the parsed description (Phase 1) and user an
 After building the spec, run the enterprise dependency check before presenting for approval:
 
 ```bash
-odoo-gen-utils check-edition {spec_path}
+amil-utils check-edition {spec_path}
 ```
 
 If warnings are returned:
@@ -490,8 +490,8 @@ Options:
    Commit: {git_hash}
 
    Next steps:
-   - To re-run generation: /odoo-gen:plan {module_name}
-   - To validate the generated module: /odoo-gen:validate ./{module_name}/
+   - To re-run generation: /amil:plan {module_name}
+   - To validate the generated module: /amil:validate ./{module_name}/
    - To modify the spec: edit ./{module_name}/spec.json and re-run
    ```
 
@@ -523,7 +523,7 @@ Track the number of review-and-revise cycles. After 3 rounds of changes (whether
 
 ```
 We've iterated 3 times on this specification. If it still needs significant changes,
-consider starting fresh with `/odoo-gen:plan` and a more detailed description that
+consider starting fresh with `/amil:plan` and a more detailed description that
 includes the specific requirements up front.
 
 You can still approve the current version, or continue editing if the changes are minor.
@@ -549,13 +549,13 @@ Continue allowing edits after the suggestion -- this is advisory, not a hard sto
 
 4. **spec.json is the contract**: The markdown summary is for human review only. The JSON file at `./{module_name}/spec.json` is what code generation reads. If there is ever a conflict between what the markdown showed and what the JSON contains, the JSON is authoritative.
 
-5. **Backward compatibility**: The spec.json MUST be loadable by `odoo-gen-utils render-module --spec-file`. All fields beyond the Phase 1 render-module format are optional with `null` or empty defaults. An old-format spec will still work.
+5. **Backward compatibility**: The spec.json MUST be loadable by `amil-utils render-module --spec-file`. All fields beyond the Phase 1 render-module format are optional with `null` or empty defaults. An old-format spec will still work.
 
 ---
 
 ## Error Handling
 
-- **Empty `$ARGUMENTS`**: Prompt the user: "Please describe the module you need. For example: `/odoo-gen:plan 'equipment maintenance tracking with work orders and technician assignments'`"
+- **Empty `$ARGUMENTS`**: Prompt the user: "Please describe the module you need. For example: `/amil:plan 'equipment maintenance tracking with work orders and technician assignments'`"
 
 - **Vague description (< 5 words)**: Infer a minimal spec and present it with: "I inferred the following from your brief description. Please confirm or provide more details so I can refine the specification."
 
@@ -573,20 +573,20 @@ Continue allowing edits after the suggestion -- this is advisory, not a hard sto
 
 ## References
 
-- Agent: `agents/odoo-scaffold.md`
+- Agent: `agents/amil-scaffold.md`
 - Command: `commands/plan.md`
 - Existing workflow: `workflows/scaffold.md` (pattern reference for quick mode)
 - Knowledge base (loaded by agent for question generation):
-  - `@~/.claude/odoo-gen/knowledge/MASTER.md` (global conventions)
-  - `@~/.claude/odoo-gen/knowledge/models.md` (model patterns, field types, inheritance)
-  - `@~/.claude/odoo-gen/knowledge/views.md` (view types, modifiers, widgets)
-  - `@~/.claude/odoo-gen/knowledge/security.md` (groups, ACLs, record rules)
-  - `@~/.claude/odoo-gen/knowledge/manifest.md` (manifest keys, depends)
-  - `@~/.claude/odoo-gen/knowledge/inheritance.md` (inheritance patterns)
-  - `@~/.claude/odoo-gen/knowledge/actions.md` (server actions, automated actions)
-  - `@~/.claude/odoo-gen/knowledge/wizards.md` (transient models, wizard pattern)
-  - `@~/.claude/odoo-gen/knowledge/data.md` (data files, email templates)
-  - `@~/.claude/odoo-gen/knowledge/testing.md` (test patterns, TransactionCase)
-  - `@~/.claude/odoo-gen/knowledge/controllers.md` (HTTP controllers, portal)
-  - `@~/.claude/odoo-gen/knowledge/i18n.md` (translations, _() function)
-- Defaults: `~/.claude/odoo-gen/defaults.json`
+  - `@~/.claude/amil/knowledge/MASTER.md` (global conventions)
+  - `@~/.claude/amil/knowledge/models.md` (model patterns, field types, inheritance)
+  - `@~/.claude/amil/knowledge/views.md` (view types, modifiers, widgets)
+  - `@~/.claude/amil/knowledge/security.md` (groups, ACLs, record rules)
+  - `@~/.claude/amil/knowledge/manifest.md` (manifest keys, depends)
+  - `@~/.claude/amil/knowledge/inheritance.md` (inheritance patterns)
+  - `@~/.claude/amil/knowledge/actions.md` (server actions, automated actions)
+  - `@~/.claude/amil/knowledge/wizards.md` (transient models, wizard pattern)
+  - `@~/.claude/amil/knowledge/data.md` (data files, email templates)
+  - `@~/.claude/amil/knowledge/testing.md` (test patterns, TransactionCase)
+  - `@~/.claude/amil/knowledge/controllers.md` (HTTP controllers, portal)
+  - `@~/.claude/amil/knowledge/i18n.md` (translations, _() function)
+- Defaults: `~/.claude/amil/defaults.json`

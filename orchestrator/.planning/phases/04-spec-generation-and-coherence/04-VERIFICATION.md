@@ -19,9 +19,9 @@ re_verification: false
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | Running `/odoo-gsd:plan-module {module}` produces a spec.json with all 12 sections plus _available_models | VERIFIED | `commands/odoo-gsd/plan-module.md` exists with correct frontmatter (name, argument-hint, allowed-tools including Task/AskUserQuestion). Workflow `odoo-gsd/workflows/plan-module.md` (277 lines) has all 10 steps. Step 7 spawns spec-generator agent which covers all 12 sections. Step 7 post-validation checks all 12 required keys. |
+| 1 | Running `/amil:plan-module {module}` produces a spec.json with all 12 sections plus _available_models | VERIFIED | `commands/amil/plan-module.md` exists with correct frontmatter (name, argument-hint, allowed-tools including Task/AskUserQuestion). Workflow `amil/workflows/plan-module.md` (277 lines) has all 10 steps. Step 7 spawns spec-generator agent which covers all 12 sections. Step 7 post-validation checks all 12 required keys. |
 | 2 | Registry context is injected into spec.json as `_available_models` using tiered injection | VERIFIED | Workflow Step 6 invokes `registry tiered-injection` CLI. Empty registry fallback handled with `{"direct": {}, "transitive": {}, "rest": []}`. Spec generator agent writes `_available_models` from tiered registry input. |
-| 3 | Coherence checker validates Many2one targets, duplicate models, computed depends, security groups -- presenting pass/fail report | VERIFIED | `coherence.cjs` (285 lines) exports all 4 checks + `runAllChecks` + `cmdCoherenceCheck` + `BASE_ODOO_MODELS`. CLI registered at line 652 of `odoo-gsd-tools.cjs`. Output format matches locked JSON schema. 449-line test suite with 33 tests covers all checks, edge cases, and CLI integration. |
+| 3 | Coherence checker validates Many2one targets, duplicate models, computed depends, security groups -- presenting pass/fail report | VERIFIED | `coherence.cjs` (285 lines) exports all 4 checks + `runAllChecks` + `cmdCoherenceCheck` + `BASE_ODOO_MODELS`. CLI registered at line 652 of `amil-tools.cjs`. Output format matches locked JSON schema. 449-line test suite with 33 tests covers all checks, edge cases, and CLI integration. |
 | 4 | Human approves the spec and module status transitions to "spec_approved" | VERIFIED | Workflow Step 9 spawns spec-reviewer agent for presentation. Step 10 uses AskUserQuestion with approve/revise/abort options. On approve, invokes `module-status transition ${MODULE} spec_approved`. Revise loops to Step 5. |
 | 5 | Coherence tests pass covering Many2one validation, computation chain integrity, and spec coverage | VERIFIED | `tests/coherence.test.cjs` has 33 tests covering: Many2one/Many2many/One2many targets, BASE_ODOO_MODELS passthrough, duplicate models, computed depends with dot-notation, security group validation, runAllChecks aggregation, CLI integration. All pass (743/743 total suite). |
 
@@ -31,27 +31,27 @@ re_verification: false
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `odoo-gsd/bin/lib/coherence.cjs` | 4 structural checks + runAllChecks + cmdCoherenceCheck + BASE_ODOO_MODELS | VERIFIED | 285 lines. Exports all 7 items. No TODOs/placeholders. |
+| `amil/bin/lib/coherence.cjs` | 4 structural checks + runAllChecks + cmdCoherenceCheck + BASE_ODOO_MODELS | VERIFIED | 285 lines. Exports all 7 items. No TODOs/placeholders. |
 | `tests/coherence.test.cjs` | Unit tests for all checks, edge cases, CLI integration (min 150 lines) | VERIFIED | 449 lines, 33 tests. Covers all 4 checks, edge cases, CLI. |
-| `odoo-gsd/bin/odoo-gsd-tools.cjs` | coherence check CLI dispatch | VERIFIED | `case 'coherence'` at line 652, require at line 145. |
-| `agents/odoo-gsd-spec-generator.md` | Spec generation agent with all 12 sections | VERIFIED | 293 lines. Frontmatter: name, description, tools (Read/Write/Bash), color, model_tier, skills. Body covers all 12 spec sections with detailed schema. Anti-heredoc instruction present. |
-| `agents/odoo-gsd-spec-reviewer.md` | Coherence presentation agent (read-only) | VERIFIED | 126 lines. Frontmatter: tools (Read/Bash -- no Write). References all 4 coherence checks. Structured output format. |
+| `amil/bin/amil-tools.cjs` | coherence check CLI dispatch | VERIFIED | `case 'coherence'` at line 652, require at line 145. |
+| `agents/amil-spec-generator.md` | Spec generation agent with all 12 sections | VERIFIED | 293 lines. Frontmatter: name, description, tools (Read/Write/Bash), color, model_tier, skills. Body covers all 12 spec sections with detailed schema. Anti-heredoc instruction present. |
+| `agents/amil-spec-reviewer.md` | Coherence presentation agent (read-only) | VERIFIED | 126 lines. Frontmatter: tools (Read/Bash -- no Write). References all 4 coherence checks. Structured output format. |
 | `tests/agent-frontmatter.test.cjs` | Extended with spec-generator and spec-reviewer tests | VERIFIED | SPEC-GEN and SPEC-REV describe blocks with 10 new tests validating frontmatter, tools, and section coverage. |
-| `commands/odoo-gsd/plan-module.md` | Slash command entry point | VERIFIED | Correct frontmatter with name, argument-hint, allowed-tools. References workflow. |
-| `odoo-gsd/workflows/plan-module.md` | 10-step workflow (min 100 lines) | VERIFIED | 277 lines. All 10 steps present with CLI invocations, agent spawns, error handling. |
+| `commands/amil/plan-module.md` | Slash command entry point | VERIFIED | Correct frontmatter with name, argument-hint, allowed-tools. References workflow. |
+| `amil/workflows/plan-module.md` | 10-step workflow (min 100 lines) | VERIFIED | 277 lines. All 10 steps present with CLI invocations, agent spawns, error handling. |
 | `tests/plan-module.test.cjs` | Structural validation tests (min 60 lines) | VERIFIED | 232 lines, 35 tests across 4 suites: command structure, workflow completeness, schema coverage, registry injection. |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 |------|----|-----|--------|---------|
-| `odoo-gsd-tools.cjs` | `coherence.cjs` | require and dispatch | WIRED | `require('./lib/coherence.cjs')` at L145, `case 'coherence'` at L652 |
+| `amil-tools.cjs` | `coherence.cjs` | require and dispatch | WIRED | `require('./lib/coherence.cjs')` at L145, `case 'coherence'` at L652 |
 | `tests/coherence.test.cjs` | `coherence.cjs` | direct require | WIRED | `require(coherencePath)` at L17, destructures all 6 exports |
 | `spec-generator.md` | spec.json schema | agent instructions | WIRED | All 12 sections documented with JSON examples and field type reference |
 | `spec-reviewer.md` | coherence report format | agent instructions | WIRED | References many2one_targets, duplicate_models, computed_depends, security_groups |
-| `plan-module.md workflow` | `coherence.cjs` | CLI invocation | WIRED | `odoo-gsd-tools.cjs coherence check --spec ... --registry ...` in Step 8 |
-| `plan-module.md workflow` | `spec-generator` agent | Task() spawn | WIRED | `subagent_type="odoo-gsd-spec-generator"` in Step 7 |
-| `plan-module.md workflow` | `spec-reviewer` agent | Task() spawn | WIRED | `subagent_type="odoo-gsd-spec-reviewer"` in Step 9 |
+| `plan-module.md workflow` | `coherence.cjs` | CLI invocation | WIRED | `amil-tools.cjs coherence check --spec ... --registry ...` in Step 8 |
+| `plan-module.md workflow` | `spec-generator` agent | Task() spawn | WIRED | `subagent_type="amil-spec-generator"` in Step 7 |
+| `plan-module.md workflow` | `spec-reviewer` agent | Task() spawn | WIRED | `subagent_type="amil-spec-reviewer"` in Step 9 |
 | `plan-module.md workflow` | `module-status.cjs` | CLI invocation | WIRED | `module-status transition ${MODULE} spec_approved` in Step 10 |
 | `plan-module.md workflow` | `registry.cjs` | tiered-registry CLI | WIRED | `registry tiered-injection ${MODULE}` in Step 6 |
 
@@ -59,8 +59,8 @@ re_verification: false
 
 | Requirement | Source Plan | Description | Status | Evidence |
 |-------------|------------|-------------|--------|----------|
-| SPEC-01 | 04-03 | `/odoo-gsd:plan-module` command and workflow created | SATISFIED | Command file exists with correct frontmatter; workflow has 10 steps |
-| SPEC-02 | 04-02 | Spec generator agent produces spec.json from context + research + registry | SATISFIED | `odoo-gsd-spec-generator.md` with full schema coverage |
+| SPEC-01 | 04-03 | `/amil:plan-module` command and workflow created | SATISFIED | Command file exists with correct frontmatter; workflow has 10 steps |
+| SPEC-02 | 04-02 | Spec generator agent produces spec.json from context + research + registry | SATISFIED | `amil-spec-generator.md` with full schema coverage |
 | SPEC-03 | 04-02 | spec.json includes all 12 sections | SATISFIED | Generator agent documents all 12 sections; workflow validates 12 required keys |
 | SPEC-04 | 04-03 | `_available_models` injected from tiered registry | SATISFIED | Workflow Step 6 builds tiered registry; Step 7 passes to generator |
 | SPEC-05 | 04-01 | Coherence checker validates spec against registry | SATISFIED | `coherence.cjs` with 4 structural checks |
@@ -85,7 +85,7 @@ No TODOs, FIXMEs, placeholders, empty implementations, or console.log-only handl
 
 ### 1. End-to-End Pipeline Execution
 
-**Test:** Run `/odoo-gsd:plan-module {module}` on a real module with CONTEXT.md
+**Test:** Run `/amil:plan-module {module}` on a real module with CONTEXT.md
 **Expected:** Pipeline progresses through all 10 steps, produces spec.json, runs coherence check, presents review, offers approval
 **Why human:** Requires live Claude Code environment with Task() agent spawning and AskUserQuestion interaction
 

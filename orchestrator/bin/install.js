@@ -14,20 +14,20 @@ const dim = '\x1b[2m';
 const reset = '\x1b[0m';
 
 // Codex config.toml constants
-const GSD_CODEX_MARKER = '# GSD Agent Configuration \u2014 managed by odoo-gsd installer';
+const GSD_CODEX_MARKER = '# Amil Agent Configuration \u2014 managed by amil installer';
 
 const CODEX_AGENT_SANDBOX = {
-  'odoo-gsd-executor': 'workspace-write',
-  'odoo-gsd-planner': 'workspace-write',
-  'odoo-gsd-phase-researcher': 'workspace-write',
-  'odoo-gsd-project-researcher': 'workspace-write',
-  'odoo-gsd-research-synthesizer': 'workspace-write',
-  'odoo-gsd-verifier': 'workspace-write',
-  'odoo-gsd-codebase-mapper': 'workspace-write',
-  'odoo-gsd-roadmapper': 'workspace-write',
-  'odoo-gsd-debugger': 'workspace-write',
-  'odoo-gsd-plan-checker': 'read-only',
-  'odoo-gsd-integration-checker': 'read-only',
+  'amil-executor': 'workspace-write',
+  'amil-planner': 'workspace-write',
+  'amil-phase-researcher': 'workspace-write',
+  'amil-project-researcher': 'workspace-write',
+  'amil-research-synthesizer': 'workspace-write',
+  'amil-verifier': 'workspace-write',
+  'amil-codebase-mapper': 'workspace-write',
+  'amil-roadmapper': 'workspace-write',
+  'amil-debugger': 'workspace-write',
+  'amil-plan-checker': 'read-only',
+  'amil-integration-checker': 'read-only',
 };
 
 // Get version from package.json
@@ -218,7 +218,7 @@ console.log(banner);
 
 // Show help if requested
 if (hasHelp) {
-  console.log(`  ${yellow}Usage:${reset} npx odoo-gsd-cc [options]\n\n  ${yellow}Options:${reset}\n    ${cyan}-g, --global${reset}              Install globally (to config directory)\n    ${cyan}-l, --local${reset}               Install locally (to current directory)\n    ${cyan}--claude${reset}                  Install for Claude Code only\n    ${cyan}--opencode${reset}                Install for OpenCode only\n    ${cyan}--gemini${reset}                  Install for Gemini only\n    ${cyan}--codex${reset}                   Install for Codex only\n    ${cyan}--all${reset}                     Install for all runtimes\n    ${cyan}-u, --uninstall${reset}           Uninstall GSD (remove all GSD files)\n    ${cyan}-c, --config-dir <path>${reset}   Specify custom config directory\n    ${cyan}-h, --help${reset}                Show this help message\n    ${cyan}--force-statusline${reset}        Replace existing statusline config\n\n  ${yellow}Examples:${reset}\n    ${dim}# Interactive install (prompts for runtime and location)${reset}\n    npx odoo-gsd-cc\n\n    ${dim}# Install for Claude Code globally${reset}\n    npx odoo-gsd-cc --claude --global\n\n    ${dim}# Install for Gemini globally${reset}\n    npx odoo-gsd-cc --gemini --global\n\n    ${dim}# Install for Codex globally${reset}\n    npx odoo-gsd-cc --codex --global\n\n    ${dim}# Install for all runtimes globally${reset}\n    npx odoo-gsd-cc --all --global\n\n    ${dim}# Install to custom config directory${reset}\n    npx odoo-gsd-cc --codex --global --config-dir ~/.codex-work\n\n    ${dim}# Install to current project only${reset}\n    npx odoo-gsd-cc --claude --local\n\n    ${dim}# Uninstall GSD from Codex globally${reset}\n    npx odoo-gsd-cc --codex --global --uninstall\n\n  ${yellow}Notes:${reset}\n    The --config-dir option is useful when you have multiple configurations.\n    It takes priority over CLAUDE_CONFIG_DIR / GEMINI_CONFIG_DIR / CODEX_HOME environment variables.\n`);
+  console.log(`  ${yellow}Usage:${reset} npx amil-cc [options]\n\n  ${yellow}Options:${reset}\n    ${cyan}-g, --global${reset}              Install globally (to config directory)\n    ${cyan}-l, --local${reset}               Install locally (to current directory)\n    ${cyan}--claude${reset}                  Install for Claude Code only\n    ${cyan}--opencode${reset}                Install for OpenCode only\n    ${cyan}--gemini${reset}                  Install for Gemini only\n    ${cyan}--codex${reset}                   Install for Codex only\n    ${cyan}--all${reset}                     Install for all runtimes\n    ${cyan}-u, --uninstall${reset}           Uninstall Amil (remove all Amil files)\n    ${cyan}-c, --config-dir <path>${reset}   Specify custom config directory\n    ${cyan}-h, --help${reset}                Show this help message\n    ${cyan}--force-statusline${reset}        Replace existing statusline config\n\n  ${yellow}Examples:${reset}\n    ${dim}# Interactive install (prompts for runtime and location)${reset}\n    npx amil-cc\n\n    ${dim}# Install for Claude Code globally${reset}\n    npx amil-cc --claude --global\n\n    ${dim}# Install for Gemini globally${reset}\n    npx amil-cc --gemini --global\n\n    ${dim}# Install for Codex globally${reset}\n    npx amil-cc --codex --global\n\n    ${dim}# Install for all runtimes globally${reset}\n    npx amil-cc --all --global\n\n    ${dim}# Install to custom config directory${reset}\n    npx amil-cc --codex --global --config-dir ~/.codex-work\n\n    ${dim}# Install to current project only${reset}\n    npx amil-cc --claude --local\n\n    ${dim}# Uninstall Amil from Codex globally${reset}\n    npx amil-cc --codex --global --uninstall\n\n  ${yellow}Notes:${reset}\n    The --config-dir option is useful when you have multiple configurations.\n    It takes priority over CLAUDE_CONFIG_DIR / GEMINI_CONFIG_DIR / CODEX_HOME environment variables.\n`);
   process.exit(0);
 }
 
@@ -453,10 +453,10 @@ function extractFrontmatterField(frontmatter, fieldName) {
 }
 
 function convertSlashCommandsToCodexSkillMentions(content) {
-  let converted = content.replace(/\/odoo-gsd:([a-z0-9-]+)/gi, (_, commandName) => {
-    return `$odoo-gsd-${String(commandName).toLowerCase()}`;
+  let converted = content.replace(/\/amil:([a-z0-9-]+)/gi, (_, commandName) => {
+    return `$amil-${String(commandName).toLowerCase()}`;
   });
-  converted = converted.replace(/\/odoo-gsd-help\b/g, '$odoo-gsd-help');
+  converted = converted.replace(/\/amil-help\b/g, '$amil-help');
   return converted;
 }
 
@@ -475,7 +475,7 @@ function getCodexSkillAdapterHeader(skillName) {
 - If no arguments are present, treat \`{{GSD_ARGS}}\` as empty.
 
 ## B. AskUserQuestion → request_user_input Mapping
-GSD workflows use \`AskUserQuestion\` (Claude Code syntax). Translate to Codex \`request_user_input\`:
+Amil workflows use \`AskUserQuestion\` (Claude Code syntax). Translate to Codex \`request_user_input\`:
 
 Parameter mapping:
 - \`header\` → \`header\`
@@ -493,12 +493,12 @@ Execute mode fallback:
 - When \`request_user_input\` is rejected (Execute mode), present a plain-text numbered list and pick a reasonable default.
 
 ## C. Task() → spawn_agent Mapping
-GSD workflows use \`Task(...)\` (Claude Code syntax). Translate to Codex collaboration tools:
+Amil workflows use \`Task(...)\` (Claude Code syntax). Translate to Codex collaboration tools:
 
 Direct mapping:
 - \`Task(subagent_type="X", prompt="Y")\` → \`spawn_agent(agent_type="X", message="Y")\`
 - \`Task(model="...")\` → omit (Codex uses per-role config, not inline model selection)
-- \`fork_context: false\` by default — GSD agents load their own context via \`<files_to_read>\` blocks
+- \`fork_context: false\` by default — Amil agents load their own context via \`<files_to_read>\` blocks
 
 Parallel fan-out:
 - Spawn multiple agents → collect agent IDs → \`wait(ids)\` for all to complete
@@ -512,7 +512,7 @@ Result parsing:
 function convertClaudeCommandToCodexSkill(content, skillName) {
   const converted = convertClaudeToCodexMarkdown(content);
   const { frontmatter, body } = extractFrontmatterAndBody(converted);
-  let description = `Run GSD workflow ${skillName}.`;
+  let description = `Run Amil workflow ${skillName}.`;
   if (frontmatter) {
     const maybeDescription = extractFrontmatterField(frontmatter, 'description');
     if (maybeDescription) {
@@ -571,7 +571,7 @@ function generateCodexAgentToml(agentName, agentContent) {
 }
 
 /**
- * Generate the GSD config block for Codex config.toml.
+ * Generate the Amil config block for Codex config.toml.
  * @param {Array<{name: string, description: string}>} agents
  */
 function generateCodexConfigBlock(agents) {
@@ -598,16 +598,16 @@ function generateCodexConfigBlock(agents) {
 }
 
 /**
- * Strip GSD sections from Codex config.toml content.
+ * Strip Amil sections from Codex config.toml content.
  * Returns cleaned content, or null if file would be empty.
  */
 function stripGsdFromCodexConfig(content) {
   const markerIndex = content.indexOf(GSD_CODEX_MARKER);
 
   if (markerIndex !== -1) {
-    // Has GSD marker — remove everything from marker to EOF
+    // Has Amil marker — remove everything from marker to EOF
     let before = content.substring(0, markerIndex).trimEnd();
-    // Also strip GSD-injected feature keys above the marker (Case 3 inject)
+    // Also strip Amil-injected feature keys above the marker (Case 3 inject)
     before = before.replace(/^multi_agent\s*=\s*true\s*\n?/m, '');
     before = before.replace(/^default_mode_request_user_input\s*=\s*true\s*\n?/m, '');
     before = before.replace(/^\[features\]\s*\n(?=\[|$)/m, '');
@@ -616,13 +616,13 @@ function stripGsdFromCodexConfig(content) {
     return before + '\n';
   }
 
-  // No marker but may have GSD-injected feature keys
+  // No marker but may have Amil-injected feature keys
   let cleaned = content;
   cleaned = cleaned.replace(/^multi_agent\s*=\s*true\s*\n?/m, '');
   cleaned = cleaned.replace(/^default_mode_request_user_input\s*=\s*true\s*\n?/m, '');
 
-  // Remove [agents.odoo-gsd-*] sections (from header to next section or EOF)
-  cleaned = cleaned.replace(/^\[agents\.odoo-gsd-[^\]]+\]\n(?:(?!\[)[^\n]*\n?)*/gm, '');
+  // Remove [agents.amil-*] sections (from header to next section or EOF)
+  cleaned = cleaned.replace(/^\[agents\.amil-[^\]]+\]\n(?:(?!\[)[^\n]*\n?)*/gm, '');
 
   // Remove [features] section if now empty (only header, no keys before next section)
   cleaned = cleaned.replace(/^\[features\]\s*\n(?=\[|$)/m, '');
@@ -638,8 +638,8 @@ function stripGsdFromCodexConfig(content) {
 }
 
 /**
- * Merge GSD config block into an existing or new config.toml.
- * Three cases: new file, existing with GSD marker, existing without marker.
+ * Merge Amil config block into an existing or new config.toml.
+ * Three cases: new file, existing with Amil marker, existing without marker.
  */
 function mergeCodexConfig(configPath, gsdBlock) {
   // Case 1: No config.toml — create fresh
@@ -651,12 +651,12 @@ function mergeCodexConfig(configPath, gsdBlock) {
   const existing = fs.readFileSync(configPath, 'utf8');
   const markerIndex = existing.indexOf(GSD_CODEX_MARKER);
 
-  // Case 2: Has GSD marker — truncate and re-append
+  // Case 2: Has Amil marker — truncate and re-append
   if (markerIndex !== -1) {
     let before = existing.substring(0, markerIndex).trimEnd();
     if (before) {
-      // Strip any GSD-managed sections that leaked above the marker from previous installs
-      before = before.replace(/^\[agents\.odoo-gsd-[^\]]+\]\n(?:(?!\[)[^\n]*\n?)*/gm, '');
+      // Strip any Amil-managed sections that leaked above the marker from previous installs
+      before = before.replace(/^\[agents\.amil-[^\]]+\]\n(?:(?!\[)[^\n]*\n?)*/gm, '');
       before = before.replace(/^\[agents\]\n(?:(?!\[)[^\n]*\n?)*/m, '');
       before = before.replace(/\n{3,}/g, '\n\n').trimEnd();
 
@@ -712,7 +712,7 @@ function installCodexConfig(targetDir, agentsSrc) {
   const agentsTomlDir = path.join(targetDir, 'agents');
   fs.mkdirSync(agentsTomlDir, { recursive: true });
 
-  const agentEntries = fs.readdirSync(agentsSrc).filter(f => f.startsWith('odoo-gsd-') && f.endsWith('.md'));
+  const agentEntries = fs.readdirSync(agentsSrc).filter(f => f.startsWith('amil-') && f.endsWith('.md'));
   const agents = [];
 
   // Compute the Codex pathPrefix for replacing .claude paths
@@ -828,7 +828,7 @@ function convertClaudeToGeminiAgent(content) {
   // Escape ${VAR} patterns in agent body for Gemini CLI compatibility.
   // Gemini's templateString() treats all ${word} patterns as template variables
   // and throws "Template validation failed: Missing required input parameters"
-  // when they can't be resolved. GSD agents use ${PHASE}, ${PLAN}, etc. as
+  // when they can't be resolved. Amil agents use ${PHASE}, ${PLAN}, etc. as
   // shell variables in bash code blocks — convert to $VAR (no braces) which
   // is equivalent bash and invisible to Gemini's /\$\{(\w+)\}/g regex.
   const escapedBody = body.replace(/\$\{(\w+)\}/g, '$$$1');
@@ -842,8 +842,8 @@ function convertClaudeToOpencodeFrontmatter(content) {
   convertedContent = convertedContent.replace(/\bAskUserQuestion\b/g, 'question');
   convertedContent = convertedContent.replace(/\bSlashCommand\b/g, 'skill');
   convertedContent = convertedContent.replace(/\bTodoWrite\b/g, 'todowrite');
-  // Replace /odoo-gsd:command with /odoo-gsd-command for opencode (flat command structure)
-  convertedContent = convertedContent.replace(/\/odoo-gsd:/g, '/odoo-gsd-');
+  // Replace /amil:command with /amil-command for opencode (flat command structure)
+  convertedContent = convertedContent.replace(/\/amil:/g, '/amil-');
   // Replace ~/.claude and $HOME/.claude with OpenCode's config location
   convertedContent = convertedContent.replace(/~\/\.claude\b/g, '~/.config/opencode');
   convertedContent = convertedContent.replace(/\$HOME\/\.claude\b/g, '$HOME/.config/opencode');
@@ -986,7 +986,7 @@ function convertClaudeToGeminiToml(content) {
 
 /**
  * Copy commands to a flat structure for OpenCode
- * OpenCode expects: command/odoo-gsd-help.md (invoked as /odoo-gsd-help)
+ * OpenCode expects: command/amil-help.md (invoked as /amil-help)
  * Source structure: commands/gsd/help.md
  * 
  * @param {string} srcDir - Source directory (e.g., commands/gsd/)
@@ -1000,7 +1000,7 @@ function copyFlattenedCommands(srcDir, destDir, prefix, pathPrefix, runtime) {
     return;
   }
   
-  // Remove old odoo-gsd-*.md files before copying new ones
+  // Remove old amil-*.md files before copying new ones
   if (fs.existsSync(destDir)) {
     for (const file of fs.readdirSync(destDir)) {
       if (file.startsWith(`${prefix}-`) && file.endsWith('.md')) {
@@ -1018,10 +1018,10 @@ function copyFlattenedCommands(srcDir, destDir, prefix, pathPrefix, runtime) {
     
     if (entry.isDirectory()) {
       // Recurse into subdirectories, adding to prefix
-      // e.g., commands/gsd/debug/start.md -> command/odoo-gsd-debug-start.md
+      // e.g., commands/gsd/debug/start.md -> command/amil-debug-start.md
       copyFlattenedCommands(srcPath, destDir, `${prefix}-${entry.name}`, pathPrefix, runtime);
     } else if (entry.name.endsWith('.md')) {
-      // Flatten: help.md -> odoo-gsd-help.md
+      // Flatten: help.md -> amil-help.md
       const baseName = entry.name.replace('.md', '');
       const destName = `${prefix}-${baseName}.md`;
       const destPath = path.join(destDir, destName);
@@ -1043,7 +1043,7 @@ function copyFlattenedCommands(srcDir, destDir, prefix, pathPrefix, runtime) {
   }
 }
 
-function listCodexSkillNames(skillsDir, prefix = 'odoo-gsd-') {
+function listCodexSkillNames(skillsDir, prefix = 'amil-') {
   if (!fs.existsSync(skillsDir)) return [];
   const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
   return entries
@@ -1060,7 +1060,7 @@ function copyCommandsAsCodexSkills(srcDir, skillsDir, prefix, pathPrefix, runtim
 
   fs.mkdirSync(skillsDir, { recursive: true });
 
-  // Remove previous GSD Codex skills to avoid stale command skills.
+  // Remove previous Amil Codex skills to avoid stale command skills.
   const existing = fs.readdirSync(skillsDir, { withFileTypes: true });
   for (const entry of existing) {
     if (entry.isDirectory() && entry.name.startsWith(`${prefix}-`)) {
@@ -1172,12 +1172,12 @@ function copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand
 }
 
 /**
- * Clean up orphaned files from previous GSD versions
+ * Clean up orphaned files from previous Amil versions
  */
 function cleanupOrphanedFiles(configDir) {
   const orphanedFiles = [
-    'hooks/odoo-gsd-notify.sh',  // Removed in v1.6.x
-    'hooks/statusline.js',  // Renamed to odoo-gsd-statusline.js in v1.9.0
+    'hooks/amil-notify.sh',  // Removed in v1.6.x
+    'hooks/statusline.js',  // Renamed to amil-statusline.js in v1.9.0
   ];
 
   for (const relPath of orphanedFiles) {
@@ -1194,11 +1194,11 @@ function cleanupOrphanedFiles(configDir) {
  */
 function cleanupOrphanedHooks(settings) {
   const orphanedHookPatterns = [
-    'odoo-gsd-notify.sh',  // Removed in v1.6.x
-    'hooks/statusline.js',  // Renamed to odoo-gsd-statusline.js in v1.9.0
-    'odoo-gsd-intel-index.js',  // Removed in v1.9.2
-    'odoo-gsd-intel-session.js',  // Removed in v1.9.2
-    'odoo-gsd-intel-prune.js',  // Removed in v1.9.2
+    'amil-notify.sh',  // Removed in v1.6.x
+    'hooks/statusline.js',  // Renamed to amil-statusline.js in v1.9.0
+    'amil-intel-index.js',  // Removed in v1.9.2
+    'amil-intel-session.js',  // Removed in v1.9.2
+    'amil-intel-prune.js',  // Removed in v1.9.2
   ];
 
   let cleanedHooks = false;
@@ -1231,24 +1231,24 @@ function cleanupOrphanedHooks(settings) {
     console.log(`  ${green}✓${reset} Removed orphaned hook registrations`);
   }
 
-  // Fix #330: Update statusLine if it points to old GSD statusline.js path
-  // Only match the specific old GSD path pattern (hooks/statusline.js),
+  // Fix #330: Update statusLine if it points to old Amil statusline.js path
+  // Only match the specific old Amil path pattern (hooks/statusline.js),
   // not third-party statusline scripts that happen to contain 'statusline.js'
   if (settings.statusLine && settings.statusLine.command &&
       /hooks[\/\\]statusline\.js/.test(settings.statusLine.command)) {
     settings.statusLine.command = settings.statusLine.command.replace(
       /hooks([\/\\])statusline\.js/,
-      'hooks$1odoo-gsd-statusline.js'
+      'hooks$1amil-statusline.js'
     );
-    console.log(`  ${green}✓${reset} Updated statusline path (hooks/statusline.js → hooks/odoo-gsd-statusline.js)`);
+    console.log(`  ${green}✓${reset} Updated statusline path (hooks/statusline.js → hooks/amil-statusline.js)`);
   }
 
   return settings;
 }
 
 /**
- * Uninstall GSD from the specified directory for a specific runtime
- * Removes only GSD-specific files/directories, preserves user content
+ * Uninstall Amil from the specified directory for a specific runtime
+ * Removes only Amil-specific files/directories, preserves user content
  * @param {boolean} isGlobal - Whether to uninstall from global or local
  * @param {string} runtime - Target runtime ('claude', 'opencode', 'gemini', 'codex')
  */
@@ -1271,7 +1271,7 @@ function uninstall(isGlobal, runtime = 'claude') {
   if (runtime === 'gemini') runtimeLabel = 'Gemini';
   if (runtime === 'codex') runtimeLabel = 'Codex';
 
-  console.log(`  Uninstalling GSD from ${cyan}${runtimeLabel}${reset} at ${cyan}${locationLabel}${reset}\n`);
+  console.log(`  Uninstalling Amil from ${cyan}${runtimeLabel}${reset} at ${cyan}${locationLabel}${reset}\n`);
 
   // Check if target directory exists
   if (!fs.existsSync(targetDir)) {
@@ -1282,28 +1282,28 @@ function uninstall(isGlobal, runtime = 'claude') {
 
   let removedCount = 0;
 
-  // 1. Remove GSD commands/skills
+  // 1. Remove Amil commands/skills
   if (isOpencode) {
-    // OpenCode: remove command/odoo-gsd-*.md files
+    // OpenCode: remove command/amil-*.md files
     const commandDir = path.join(targetDir, 'command');
     if (fs.existsSync(commandDir)) {
       const files = fs.readdirSync(commandDir);
       for (const file of files) {
-        if (file.startsWith('odoo-gsd-') && file.endsWith('.md')) {
+        if (file.startsWith('amil-') && file.endsWith('.md')) {
           fs.unlinkSync(path.join(commandDir, file));
           removedCount++;
         }
       }
-      console.log(`  ${green}✓${reset} Removed GSD commands from command/`);
+      console.log(`  ${green}✓${reset} Removed Amil commands from command/`);
     }
   } else if (isCodex) {
-    // Codex: remove skills/odoo-gsd-*/SKILL.md skill directories
+    // Codex: remove skills/amil-*/SKILL.md skill directories
     const skillsDir = path.join(targetDir, 'skills');
     if (fs.existsSync(skillsDir)) {
       let skillCount = 0;
       const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
       for (const entry of entries) {
-        if (entry.isDirectory() && entry.name.startsWith('odoo-gsd-')) {
+        if (entry.isDirectory() && entry.name.startsWith('amil-')) {
           fs.rmSync(path.join(skillsDir, entry.name), { recursive: true });
           skillCount++;
         }
@@ -1314,13 +1314,13 @@ function uninstall(isGlobal, runtime = 'claude') {
       }
     }
 
-    // Codex: remove GSD agent .toml config files
+    // Codex: remove Amil agent .toml config files
     const codexAgentsDir = path.join(targetDir, 'agents');
     if (fs.existsSync(codexAgentsDir)) {
       const tomlFiles = fs.readdirSync(codexAgentsDir);
       let tomlCount = 0;
       for (const file of tomlFiles) {
-        if (file.startsWith('odoo-gsd-') && file.endsWith('.toml')) {
+        if (file.startsWith('amil-') && file.endsWith('.toml')) {
           fs.unlinkSync(path.join(codexAgentsDir, file));
           tomlCount++;
         }
@@ -1331,7 +1331,7 @@ function uninstall(isGlobal, runtime = 'claude') {
       }
     }
 
-    // Codex: clean GSD sections from config.toml
+    // Codex: clean Amil sections from config.toml
     const configPath = path.join(targetDir, 'config.toml');
     if (fs.existsSync(configPath)) {
       const content = fs.readFileSync(configPath, 'utf8');
@@ -1340,11 +1340,11 @@ function uninstall(isGlobal, runtime = 'claude') {
         // File is empty after stripping — delete it
         fs.unlinkSync(configPath);
         removedCount++;
-        console.log(`  ${green}✓${reset} Removed config.toml (was GSD-only)`);
+        console.log(`  ${green}✓${reset} Removed config.toml (was Amil-only)`);
       } else if (cleaned !== content) {
         fs.writeFileSync(configPath, cleaned);
         removedCount++;
-        console.log(`  ${green}✓${reset} Cleaned GSD sections from config.toml`);
+        console.log(`  ${green}✓${reset} Cleaned Amil sections from config.toml`);
       }
     }
   } else {
@@ -1357,35 +1357,35 @@ function uninstall(isGlobal, runtime = 'claude') {
     }
   }
 
-  // 2. Remove odoo-gsd directory
-  const gsdDir = path.join(targetDir, 'odoo-gsd');
+  // 2. Remove amil directory
+  const gsdDir = path.join(targetDir, 'amil');
   if (fs.existsSync(gsdDir)) {
     fs.rmSync(gsdDir, { recursive: true });
     removedCount++;
-    console.log(`  ${green}✓${reset} Removed odoo-gsd/`);
+    console.log(`  ${green}✓${reset} Removed amil/`);
   }
 
-  // 3. Remove GSD agents (odoo-gsd-*.md files only)
+  // 3. Remove Amil agents (amil-*.md files only)
   const agentsDir = path.join(targetDir, 'agents');
   if (fs.existsSync(agentsDir)) {
     const files = fs.readdirSync(agentsDir);
     let agentCount = 0;
     for (const file of files) {
-      if (file.startsWith('odoo-gsd-') && file.endsWith('.md')) {
+      if (file.startsWith('amil-') && file.endsWith('.md')) {
         fs.unlinkSync(path.join(agentsDir, file));
         agentCount++;
       }
     }
     if (agentCount > 0) {
       removedCount++;
-      console.log(`  ${green}✓${reset} Removed ${agentCount} GSD agents`);
+      console.log(`  ${green}✓${reset} Removed ${agentCount} Amil agents`);
     }
   }
 
-  // 4. Remove GSD hooks
+  // 4. Remove Amil hooks
   const hooksDir = path.join(targetDir, 'hooks');
   if (fs.existsSync(hooksDir)) {
-    const gsdHooks = ['odoo-gsd-statusline.js', 'odoo-gsd-check-update.js', 'odoo-gsd-check-update.sh', 'odoo-gsd-context-monitor.js'];
+    const gsdHooks = ['amil-statusline.js', 'amil-check-update.js', 'amil-check-update.sh', 'amil-context-monitor.js'];
     let hookCount = 0;
     for (const hook of gsdHooks) {
       const hookPath = path.join(hooksDir, hook);
@@ -1396,11 +1396,11 @@ function uninstall(isGlobal, runtime = 'claude') {
     }
     if (hookCount > 0) {
       removedCount++;
-      console.log(`  ${green}✓${reset} Removed ${hookCount} GSD hooks`);
+      console.log(`  ${green}✓${reset} Removed ${hookCount} Amil hooks`);
     }
   }
 
-  // 5. Remove GSD package.json (CommonJS mode marker)
+  // 5. Remove Amil package.json (CommonJS mode marker)
   const pkgJsonPath = path.join(targetDir, 'package.json');
   if (fs.existsSync(pkgJsonPath)) {
     try {
@@ -1409,35 +1409,35 @@ function uninstall(isGlobal, runtime = 'claude') {
       if (content === '{"type":"commonjs"}') {
         fs.unlinkSync(pkgJsonPath);
         removedCount++;
-        console.log(`  ${green}✓${reset} Removed GSD package.json`);
+        console.log(`  ${green}✓${reset} Removed Amil package.json`);
       }
     } catch (e) {
       // Ignore read errors
     }
   }
 
-  // 6. Clean up settings.json (remove GSD hooks and statusline)
+  // 6. Clean up settings.json (remove Amil hooks and statusline)
   const settingsPath = path.join(targetDir, 'settings.json');
   if (fs.existsSync(settingsPath)) {
     let settings = readSettings(settingsPath);
     let settingsModified = false;
 
-    // Remove GSD statusline if it references our hook
+    // Remove Amil statusline if it references our hook
     if (settings.statusLine && settings.statusLine.command &&
-        settings.statusLine.command.includes('odoo-gsd-statusline')) {
+        settings.statusLine.command.includes('amil-statusline')) {
       delete settings.statusLine;
       settingsModified = true;
-      console.log(`  ${green}✓${reset} Removed GSD statusline from settings`);
+      console.log(`  ${green}✓${reset} Removed Amil statusline from settings`);
     }
 
-    // Remove GSD hooks from SessionStart
+    // Remove Amil hooks from SessionStart
     if (settings.hooks && settings.hooks.SessionStart) {
       const before = settings.hooks.SessionStart.length;
       settings.hooks.SessionStart = settings.hooks.SessionStart.filter(entry => {
         if (entry.hooks && Array.isArray(entry.hooks)) {
-          // Filter out GSD hooks
+          // Filter out Amil hooks
           const hasGsdHook = entry.hooks.some(h =>
-            h.command && (h.command.includes('odoo-gsd-check-update') || h.command.includes('odoo-gsd-statusline'))
+            h.command && (h.command.includes('amil-check-update') || h.command.includes('amil-statusline'))
           );
           return !hasGsdHook;
         }
@@ -1445,7 +1445,7 @@ function uninstall(isGlobal, runtime = 'claude') {
       });
       if (settings.hooks.SessionStart.length < before) {
         settingsModified = true;
-        console.log(`  ${green}✓${reset} Removed GSD hooks from settings`);
+        console.log(`  ${green}✓${reset} Removed Amil hooks from settings`);
       }
       // Clean up empty array
       if (settings.hooks.SessionStart.length === 0) {
@@ -1453,14 +1453,14 @@ function uninstall(isGlobal, runtime = 'claude') {
       }
     }
 
-    // Remove GSD hooks from PostToolUse and AfterTool (Gemini uses AfterTool)
+    // Remove Amil hooks from PostToolUse and AfterTool (Gemini uses AfterTool)
     for (const eventName of ['PostToolUse', 'AfterTool']) {
       if (settings.hooks && settings.hooks[eventName]) {
         const before = settings.hooks[eventName].length;
         settings.hooks[eventName] = settings.hooks[eventName].filter(entry => {
           if (entry.hooks && Array.isArray(entry.hooks)) {
             const hasGsdHook = entry.hooks.some(h =>
-              h.command && h.command.includes('odoo-gsd-context-monitor')
+              h.command && h.command.includes('amil-context-monitor')
             );
             return !hasGsdHook;
           }
@@ -1500,13 +1500,13 @@ function uninstall(isGlobal, runtime = 'claude') {
         const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
         let modified = false;
 
-        // Remove GSD permission entries
+        // Remove Amil permission entries
         if (config.permission) {
           for (const permType of ['read', 'external_directory']) {
             if (config.permission[permType]) {
               const keys = Object.keys(config.permission[permType]);
               for (const key of keys) {
-                if (key.includes('odoo-gsd')) {
+                if (key.includes('amil')) {
                   delete config.permission[permType][key];
                   modified = true;
                 }
@@ -1525,7 +1525,7 @@ function uninstall(isGlobal, runtime = 'claude') {
         if (modified) {
           fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
           removedCount++;
-          console.log(`  ${green}✓${reset} Removed GSD permissions from opencode.json`);
+          console.log(`  ${green}✓${reset} Removed Amil permissions from opencode.json`);
         }
       } catch (e) {
         // Ignore JSON parse errors
@@ -1534,11 +1534,11 @@ function uninstall(isGlobal, runtime = 'claude') {
   }
 
   if (removedCount === 0) {
-    console.log(`  ${yellow}⚠${reset} No GSD files found to remove.`);
+    console.log(`  ${yellow}⚠${reset} No Amil files found to remove.`);
   }
 
   console.log(`
-  ${green}Done!${reset} GSD has been uninstalled from ${runtimeLabel}.
+  ${green}Done!${reset} Amil has been uninstalled from ${runtimeLabel}.
   Your other files and settings have been preserved.
 `);
 }
@@ -1605,8 +1605,8 @@ function parseJsonc(content) {
 }
 
 /**
- * Configure OpenCode permissions to allow reading GSD reference docs
- * This prevents permission prompts when GSD accesses the odoo-gsd directory
+ * Configure OpenCode permissions to allow reading Amil reference docs
+ * This prevents permission prompts when Amil accesses the amil directory
  * @param {boolean} isGlobal - Whether this is a global or local install
  */
 function configureOpencodePermissions(isGlobal = true) {
@@ -1640,12 +1640,12 @@ function configureOpencodePermissions(isGlobal = true) {
     config.permission = {};
   }
 
-  // Build the GSD path using the actual config directory
+  // Build the Amil path using the actual config directory
   // Use ~ shorthand if it's in the default location, otherwise use full path
   const defaultConfigDir = path.join(os.homedir(), '.config', 'opencode');
   const gsdPath = opencodeConfigDir === defaultConfigDir
-    ? '~/.config/opencode/odoo-gsd/*'
-    : `${opencodeConfigDir.replace(/\\/g, '/')}/odoo-gsd/*`;
+    ? '~/.config/opencode/amil/*'
+    : `${opencodeConfigDir.replace(/\\/g, '/')}/amil/*`;
   
   let modified = false;
 
@@ -1673,7 +1673,7 @@ function configureOpencodePermissions(isGlobal = true) {
 
   // Write config back
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
-  console.log(`  ${green}✓${reset} Configured read permission for GSD docs`);
+  console.log(`  ${green}✓${reset} Configured read permission for Amil docs`);
 }
 
 /**
@@ -1718,8 +1718,8 @@ function verifyFileInstalled(filePath, description) {
 // Local Patch Persistence
 // ──────────────────────────────────────────────────────
 
-const PATCHES_DIR_NAME = 'odoo-gsd-local-patches';
-const MANIFEST_NAME = 'odoo-gsd-file-manifest.json';
+const PATCHES_DIR_NAME = 'amil-local-patches';
+const MANIFEST_NAME = 'amil-file-manifest.json';
 
 /**
  * Compute SHA256 hash of file contents
@@ -1755,7 +1755,7 @@ function generateManifest(dir, baseDir) {
 function writeManifest(configDir, runtime = 'claude') {
   const isOpencode = runtime === 'opencode';
   const isCodex = runtime === 'codex';
-  const gsdDir = path.join(configDir, 'odoo-gsd');
+  const gsdDir = path.join(configDir, 'amil');
   const commandsDir = path.join(configDir, 'commands', 'gsd');
   const opencodeCommandDir = path.join(configDir, 'command');
   const codexSkillsDir = path.join(configDir, 'skills');
@@ -1764,7 +1764,7 @@ function writeManifest(configDir, runtime = 'claude') {
 
   const gsdHashes = generateManifest(gsdDir);
   for (const [rel, hash] of Object.entries(gsdHashes)) {
-    manifest.files['odoo-gsd/' + rel] = hash;
+    manifest.files['amil/' + rel] = hash;
   }
   if (!isOpencode && !isCodex && fs.existsSync(commandsDir)) {
     const cmdHashes = generateManifest(commandsDir);
@@ -1774,7 +1774,7 @@ function writeManifest(configDir, runtime = 'claude') {
   }
   if (isOpencode && fs.existsSync(opencodeCommandDir)) {
     for (const file of fs.readdirSync(opencodeCommandDir)) {
-      if (file.startsWith('odoo-gsd-') && file.endsWith('.md')) {
+      if (file.startsWith('amil-') && file.endsWith('.md')) {
         manifest.files['command/' + file] = fileHash(path.join(opencodeCommandDir, file));
       }
     }
@@ -1790,7 +1790,7 @@ function writeManifest(configDir, runtime = 'claude') {
   }
   if (fs.existsSync(agentsDir)) {
     for (const file of fs.readdirSync(agentsDir)) {
-      if (file.startsWith('odoo-gsd-') && file.endsWith('.md')) {
+      if (file.startsWith('amil-') && file.endsWith('.md')) {
         manifest.files['agents/' + file] = fileHash(path.join(agentsDir, file));
       }
     }
@@ -1801,8 +1801,8 @@ function writeManifest(configDir, runtime = 'claude') {
 }
 
 /**
- * Detect user-modified GSD files by comparing against install manifest.
- * Backs up modified files to odoo-gsd-local-patches/ for reapply after update.
+ * Detect user-modified Amil files by comparing against install manifest.
+ * Backs up modified files to amil-local-patches/ for reapply after update.
  */
 function saveLocalPatches(configDir) {
   const manifestPath = path.join(configDir, MANIFEST_NAME);
@@ -1833,7 +1833,7 @@ function saveLocalPatches(configDir) {
       files: modified
     };
     fs.writeFileSync(path.join(patchesDir, 'backup-meta.json'), JSON.stringify(meta, null, 2));
-    console.log('  ' + yellow + 'i' + reset + '  Found ' + modified.length + ' locally modified GSD file(s) — backed up to ' + PATCHES_DIR_NAME + '/');
+    console.log('  ' + yellow + 'i' + reset + '  Found ' + modified.length + ' locally modified Amil file(s) — backed up to ' + PATCHES_DIR_NAME + '/');
     for (const f of modified) {
       console.log('     ' + dim + f + reset);
     }
@@ -1854,10 +1854,10 @@ function reportLocalPatches(configDir, runtime = 'claude') {
 
   if (meta.files && meta.files.length > 0) {
     const reapplyCommand = runtime === 'opencode'
-      ? '/odoo-gsd-reapply-patches'
+      ? '/amil-reapply-patches'
       : runtime === 'codex'
-        ? '$odoo-gsd-reapply-patches'
-        : '/odoo-gsd:reapply-patches';
+        ? '$amil-reapply-patches'
+        : '/amil:reapply-patches';
     console.log('');
     console.log('  ' + yellow + 'Local patches detected' + reset + ' (from v' + meta.from_version + '):');
     for (const f of meta.files) {
@@ -1905,7 +1905,7 @@ function install(isGlobal, runtime = 'claude') {
   // Track installation failures
   const failures = [];
 
-  // Save any locally modified GSD files before they get wiped
+  // Save any locally modified Amil files before they get wiped
   saveLocalPatches(targetDir);
 
   // Clean up orphaned files from previous versions
@@ -1917,14 +1917,14 @@ function install(isGlobal, runtime = 'claude') {
     const commandDir = path.join(targetDir, 'command');
     fs.mkdirSync(commandDir, { recursive: true });
     
-    // Copy commands/gsd/*.md as command/odoo-gsd-*.md (flatten structure)
+    // Copy commands/gsd/*.md as command/amil-*.md (flatten structure)
     const gsdSrc = path.join(src, 'commands', 'gsd');
     copyFlattenedCommands(gsdSrc, commandDir, 'gsd', pathPrefix, runtime);
-    if (verifyInstalled(commandDir, 'command/odoo-gsd-*')) {
-      const count = fs.readdirSync(commandDir).filter(f => f.startsWith('odoo-gsd-')).length;
+    if (verifyInstalled(commandDir, 'command/amil-*')) {
+      const count = fs.readdirSync(commandDir).filter(f => f.startsWith('amil-')).length;
       console.log(`  ${green}✓${reset} Installed ${count} commands to command/`);
     } else {
-      failures.push('command/odoo-gsd-*');
+      failures.push('command/amil-*');
     }
   } else if (isCodex) {
     const skillsDir = path.join(targetDir, 'skills');
@@ -1934,7 +1934,7 @@ function install(isGlobal, runtime = 'claude') {
     if (installedSkillNames.length > 0) {
       console.log(`  ${green}✓${reset} Installed ${installedSkillNames.length} skills to skills/`);
     } else {
-      failures.push('skills/odoo-gsd-*');
+      failures.push('skills/amil-*');
     }
   } else {
     // Claude Code & Gemini: nested structure in commands/ directory
@@ -1951,14 +1951,14 @@ function install(isGlobal, runtime = 'claude') {
     }
   }
 
-  // Copy odoo-gsd skill with path replacement
-  const skillSrc = path.join(src, 'odoo-gsd');
-  const skillDest = path.join(targetDir, 'odoo-gsd');
+  // Copy amil skill with path replacement
+  const skillSrc = path.join(src, 'amil');
+  const skillDest = path.join(targetDir, 'amil');
   copyWithPathReplacement(skillSrc, skillDest, pathPrefix, runtime);
-  if (verifyInstalled(skillDest, 'odoo-gsd')) {
-    console.log(`  ${green}✓${reset} Installed odoo-gsd`);
+  if (verifyInstalled(skillDest, 'amil')) {
+    console.log(`  ${green}✓${reset} Installed amil`);
   } else {
-    failures.push('odoo-gsd');
+    failures.push('amil');
   }
 
   // Copy agents to agents directory
@@ -1967,10 +1967,10 @@ function install(isGlobal, runtime = 'claude') {
     const agentsDest = path.join(targetDir, 'agents');
     fs.mkdirSync(agentsDest, { recursive: true });
 
-    // Remove old GSD agents (odoo-gsd-*.md) before copying new ones
+    // Remove old Amil agents (amil-*.md) before copying new ones
     if (fs.existsSync(agentsDest)) {
       for (const file of fs.readdirSync(agentsDest)) {
-        if (file.startsWith('odoo-gsd-') && file.endsWith('.md')) {
+        if (file.startsWith('amil-') && file.endsWith('.md')) {
           fs.unlinkSync(path.join(agentsDest, file));
         }
       }
@@ -2007,7 +2007,7 @@ function install(isGlobal, runtime = 'claude') {
 
   // Copy CHANGELOG.md
   const changelogSrc = path.join(src, 'CHANGELOG.md');
-  const changelogDest = path.join(targetDir, 'odoo-gsd', 'CHANGELOG.md');
+  const changelogDest = path.join(targetDir, 'amil', 'CHANGELOG.md');
   if (fs.existsSync(changelogSrc)) {
     fs.copyFileSync(changelogSrc, changelogDest);
     if (verifyFileInstalled(changelogDest, 'CHANGELOG.md')) {
@@ -2018,7 +2018,7 @@ function install(isGlobal, runtime = 'claude') {
   }
 
   // Write VERSION file
-  const versionDest = path.join(targetDir, 'odoo-gsd', 'VERSION');
+  const versionDest = path.join(targetDir, 'amil', 'VERSION');
   fs.writeFileSync(versionDest, pkg.version);
   if (verifyFileInstalled(versionDest, 'VERSION')) {
     console.log(`  ${green}✓${reset} Wrote VERSION (${pkg.version})`);
@@ -2027,7 +2027,7 @@ function install(isGlobal, runtime = 'claude') {
   }
 
   if (!isCodex) {
-    // Write package.json to force CommonJS mode for GSD scripts
+    // Write package.json to force CommonJS mode for Amil scripts
     // Prevents "require is not defined" errors when project has "type": "module"
     // Node.js walks up looking for package.json - this stops inheritance from project
     const pkgJsonDest = path.join(targetDir, 'package.json');
@@ -2123,14 +2123,14 @@ function install(isGlobal, runtime = 'claude') {
   const settingsPath = path.join(targetDir, 'settings.json');
   const settings = cleanupOrphanedHooks(readSettings(settingsPath));
   const statuslineCommand = isGlobal
-    ? buildHookCommand(targetDir, 'odoo-gsd-statusline.js')
-    : 'node ' + dirName + '/hooks/odoo-gsd-statusline.js';
+    ? buildHookCommand(targetDir, 'amil-statusline.js')
+    : 'node ' + dirName + '/hooks/amil-statusline.js';
   const updateCheckCommand = isGlobal
-    ? buildHookCommand(targetDir, 'odoo-gsd-check-update.js')
-    : 'node ' + dirName + '/hooks/odoo-gsd-check-update.js';
+    ? buildHookCommand(targetDir, 'amil-check-update.js')
+    : 'node ' + dirName + '/hooks/amil-check-update.js';
   const contextMonitorCommand = isGlobal
-    ? buildHookCommand(targetDir, 'odoo-gsd-context-monitor.js')
-    : 'node ' + dirName + '/hooks/odoo-gsd-context-monitor.js';
+    ? buildHookCommand(targetDir, 'amil-context-monitor.js')
+    : 'node ' + dirName + '/hooks/amil-context-monitor.js';
 
   // Enable experimental agents for Gemini CLI (required for custom sub-agents)
   if (isGemini) {
@@ -2153,7 +2153,7 @@ function install(isGlobal, runtime = 'claude') {
     }
 
     const hasGsdUpdateHook = settings.hooks.SessionStart.some(entry =>
-      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('odoo-gsd-check-update'))
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('amil-check-update'))
     );
 
     if (!hasGsdUpdateHook) {
@@ -2174,7 +2174,7 @@ function install(isGlobal, runtime = 'claude') {
     }
 
     const hasContextMonitorHook = settings.hooks[postToolEvent].some(entry =>
-      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('odoo-gsd-context-monitor'))
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('amil-context-monitor'))
     );
 
     if (!hasContextMonitorHook) {
@@ -2223,9 +2223,9 @@ function finishInstall(settingsPath, settings, statuslineCommand, shouldInstallS
   if (runtime === 'gemini') program = 'Gemini';
   if (runtime === 'codex') program = 'Codex';
 
-  let command = '/odoo-gsd:new-project';
-  if (runtime === 'opencode') command = '/odoo-gsd-new-project';
-  if (runtime === 'codex') command = '$odoo-gsd-new-project';
+  let command = '/amil:new-project';
+  if (runtime === 'opencode') command = '/amil-new-project';
+  if (runtime === 'codex') command = '$amil-new-project';
   console.log(`
   ${green}Done!${reset} Open a blank directory in ${program} and run ${cyan}${command}${reset}.
 
@@ -2268,13 +2268,13 @@ function handleStatusline(settings, isInteractive, callback) {
   Your current statusline:
     ${dim}command: ${existingCmd}${reset}
 
-  GSD includes a statusline showing:
+  Amil includes a statusline showing:
     • Model name
     • Current task (from todo list)
     • Context window usage (color-coded)
 
   ${cyan}1${reset}) Keep existing
-  ${cyan}2${reset}) Replace with GSD statusline
+  ${cyan}2${reset}) Replace with Amil statusline
 `);
 
   rl.question(`  Choice ${dim}[1]${reset}: `, (answer) => {
@@ -2374,7 +2374,7 @@ function promptLocation(runtimes) {
 }
 
 /**
- * Install GSD for all selected runtimes
+ * Install Amil for all selected runtimes
  */
 function installAllRuntimes(runtimes, isGlobal, isInteractive) {
   const results = [];

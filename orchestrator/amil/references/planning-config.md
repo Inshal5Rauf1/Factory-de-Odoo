@@ -36,19 +36,19 @@ Configuration options for `.planning/` directory behavior.
 - User must add `.planning/` to `.gitignore`
 - Useful for: OSS contributions, client projects, keeping planning private
 
-**Using odoo-gsd-tools.cjs (preferred):**
+**Using amil-tools.cjs (preferred):**
 
 ```bash
 # Commit with automatic commit_docs + gitignore checks:
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" commit "docs: update state" --files .planning/STATE.md
+node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs: update state" --files .planning/STATE.md
 
 # Load config via state load (returns JSON):
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" state load)
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" state load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # commit_docs is available in the JSON output
 
 # Or use init commands which include commit_docs:
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" init execute-phase "1")
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init execute-phase "1")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # commit_docs is included in all init command outputs
 ```
@@ -58,7 +58,7 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 **Commit via CLI (handles checks automatically):**
 
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" commit "docs: update state" --files .planning/STATE.md
+node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs: update state" --files .planning/STATE.md
 ```
 
 The CLI checks `commit_docs` config and gitignore status internally — no manual conditionals needed.
@@ -76,7 +76,7 @@ The CLI checks `commit_docs` config and gitignore status internally — no manua
 - Add `--no-ignore` to broad rg searches that should include `.planning/`
 - Only needed when searching entire repo and expecting `.planning/` matches
 
-**Note:** Most GSD operations use direct file reads or explicit paths, which work regardless of gitignore status.
+**Note:** Most Amil operations use direct file reads or explicit paths, which work regardless of gitignore status.
 
 </search_behavior>
 
@@ -119,7 +119,7 @@ To use uncommitted mode:
 
 **When `git.branching_strategy: "none"` (default):**
 - All work commits to current branch
-- Standard GSD behavior
+- Standard Amil behavior
 
 **When `git.branching_strategy: "phase"`:**
 - `execute-phase` creates/switches to a branch before execution
@@ -146,14 +146,14 @@ To use uncommitted mode:
 
 Use `init execute-phase` which returns all config as JSON:
 ```bash
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" init execute-phase "1")
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init execute-phase "1")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # JSON output includes: branching_strategy, phase_branch_template, milestone_branch_template
 ```
 
 Or use `state load` for the config values:
 ```bash
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" state load)
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" state load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # Parse branching_strategy, phase_branch_template, milestone_branch_template from JSON
 ```

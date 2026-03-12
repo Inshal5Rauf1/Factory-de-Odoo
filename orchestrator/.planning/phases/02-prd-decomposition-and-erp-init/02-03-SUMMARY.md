@@ -12,10 +12,10 @@ tech_stack:
   patterns: [5-step-merge, tier-assignment, step-prefix-matching]
 key_files:
   created:
-    - odoo-gsd/bin/lib/decomposition.cjs
+    - amil/bin/lib/decomposition.cjs
     - tests/new-erp.test.cjs
   modified:
-    - odoo-gsd/workflows/new-erp.md
+    - amil/workflows/new-erp.md
 key_decisions:
   - "Decomposition merge as standalone CJS module (not inline in workflow) for testability"
   - "Computation chains attached by step prefix matching (step starts with module_name.)"
@@ -55,9 +55,9 @@ Each task was committed atomically:
 _Note: Task 1 used TDD (test + impl in single GREEN commit)_
 
 ## Files Created/Modified
-- `odoo-gsd/bin/lib/decomposition.cjs` - 5-step merge, table formatter, ROADMAP generator (190 lines)
+- `amil/bin/lib/decomposition.cjs` - 5-step merge, table formatter, ROADMAP generator (190 lines)
 - `tests/new-erp.test.cjs` - 8 tests with fixture data for 4-module ERP
-- `odoo-gsd/workflows/new-erp.md` - Stage C added (merge, approval, module init, ROADMAP)
+- `amil/workflows/new-erp.md` - Stage C added (merge, approval, module init, ROADMAP)
 
 ## Decisions Made
 - Decomposition merge extracted as standalone CJS module for unit testability (workflow calls it via node -e)

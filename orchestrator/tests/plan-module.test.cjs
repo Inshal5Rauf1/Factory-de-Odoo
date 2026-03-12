@@ -13,9 +13,9 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 
-const CMD_PATH = path.join(__dirname, '..', 'commands', 'odoo-gsd', 'plan-module.md');
-const WORKFLOW_PATH = path.join(__dirname, '..', 'odoo-gsd', 'workflows', 'plan-module.md');
-const SPEC_GEN_PATH = path.join(__dirname, '..', 'agents', 'odoo-gsd-spec-generator.md');
+const CMD_PATH = path.join(__dirname, '..', 'commands', 'amil', 'plan-module.md');
+const WORKFLOW_PATH = path.join(__dirname, '..', 'amil', 'workflows', 'plan-module.md');
+const SPEC_GEN_PATH = path.join(__dirname, '..', 'agents', 'amil-spec-generator.md');
 
 // ─── Command File Structure (SPEC-01) ──────────────────────────────────────
 
@@ -23,13 +23,13 @@ describe('PLAN-CMD: plan-module command file structure', () => {
   const content = fs.readFileSync(CMD_PATH, 'utf-8');
 
   test('command file exists', () => {
-    assert.ok(fs.existsSync(CMD_PATH), 'commands/odoo-gsd/plan-module.md should exist');
+    assert.ok(fs.existsSync(CMD_PATH), 'commands/amil/plan-module.md should exist');
   });
 
-  test('frontmatter contains name odoo-gsd:plan-module', () => {
+  test('frontmatter contains name amil:plan-module', () => {
     assert.ok(
-      content.includes('name: odoo-gsd:plan-module'),
-      'should have name: odoo-gsd:plan-module in frontmatter'
+      content.includes('name: amil:plan-module'),
+      'should have name: amil:plan-module in frontmatter'
     );
   });
 
@@ -66,7 +66,7 @@ describe('PLAN-WF: plan-module workflow 10-step completeness', () => {
   const content = fs.readFileSync(WORKFLOW_PATH, 'utf-8');
 
   test('workflow file exists', () => {
-    assert.ok(fs.existsSync(WORKFLOW_PATH), 'odoo-gsd/workflows/plan-module.md should exist');
+    assert.ok(fs.existsSync(WORKFLOW_PATH), 'amil/workflows/plan-module.md should exist');
   });
 
   test('contains all 10 steps', () => {
@@ -95,14 +95,14 @@ describe('PLAN-WF: plan-module workflow 10-step completeness', () => {
   test('references spec-generator subagent_type', () => {
     assert.ok(
       content.includes('spec-generator'),
-      'should reference odoo-gsd-spec-generator subagent_type'
+      'should reference amil-spec-generator subagent_type'
     );
   });
 
   test('references spec-reviewer subagent_type', () => {
     assert.ok(
       content.includes('spec-reviewer'),
-      'should reference odoo-gsd-spec-reviewer subagent_type'
+      'should reference amil-spec-reviewer subagent_type'
     );
   });
 
@@ -120,7 +120,7 @@ describe('PLAN-WF: plan-module workflow 10-step completeness', () => {
   test('references researcher agent', () => {
     assert.ok(
       content.includes('module-researcher'),
-      'should reference odoo-gsd-module-researcher subagent_type'
+      'should reference amil-module-researcher subagent_type'
     );
   });
 

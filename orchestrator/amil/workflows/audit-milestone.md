@@ -11,7 +11,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 ## 0. Initialize Milestone Context
 
 ```bash
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" init milestone-op)
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init milestone-op)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -19,14 +19,14 @@ Extract from init JSON: `milestone_version`, `milestone_name`, `phase_count`, `c
 
 Resolve integration checker model:
 ```bash
-integration_checker_model=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" resolve-model odoo-gsd-integration-checker --raw)
+integration_checker_model=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" resolve-model amil-integration-checker --raw)
 ```
 
 ## 1. Determine Milestone Scope
 
 ```bash
 # Get phases in milestone (sorted numerically, handles decimals)
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" phases list
+node "$HOME/.claude/amil/bin/amil-tools.cjs" phases list
 ```
 
 - Parse version from arguments or detect current from ROADMAP.md
@@ -40,7 +40,7 @@ For each phase directory, read the VERIFICATION.md:
 
 ```bash
 # For each phase, use find-phase to resolve the directory (handles archived phases)
-PHASE_INFO=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" find-phase 01 --raw)
+PHASE_INFO=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" find-phase 01 --raw)
 # Extract directory from JSON, then read VERIFICATION.md from that directory
 # Repeat for each phase number from ROADMAP.md
 ```
@@ -74,7 +74,7 @@ Milestone Requirements:
 MUST map each integration finding to affected requirement IDs where applicable.
 
 Verify cross-phase wiring and E2E user flows.",
-  subagent_type="odoo-gsd-integration-checker",
+  subagent_type="amil-integration-checker",
   model="{integration_checker_model}"
 )
 ```
@@ -105,7 +105,7 @@ For each phase's VERIFICATION.md, extract the expanded requirements table:
 For each phase's SUMMARY.md, extract `requirements-completed` from YAML frontmatter:
 ```bash
 for summary in .planning/phases/*-*/*-SUMMARY.md; do
-  node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" summary-extract "$summary" --fields requirements_completed | jq -r '.requirements_completed'
+  node "$HOME/.claude/amil/bin/amil-tools.cjs" summary-extract "$summary" --fields requirements_completed | jq -r '.requirements_completed'
 done
 ```
 
@@ -133,7 +133,7 @@ For each REQ-ID, determine status using all three sources:
 Skip if `workflow.nyquist_validation` is explicitly `false` (absent = enabled).
 
 ```bash
-NYQUIST_CONFIG=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" config get workflow.nyquist_validation --raw 2>/dev/null)
+NYQUIST_CONFIG=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" config get workflow.nyquist_validation --raw 2>/dev/null)
 ```
 
 If `false`: skip entirely.
@@ -150,7 +150,7 @@ Classify per phase:
 
 Add to audit YAML: `nyquist: { compliant_phases, partial_phases, missing_phases, overall }`
 
-Discovery only — never auto-calls `/odoo-gsd:validate-phase`.
+Discovery only — never auto-calls `/amil:validate-phase`.
 
 ## 6. Aggregate into v{version}-MILESTONE-AUDIT.md
 
@@ -221,7 +221,7 @@ All requirements covered. Cross-phase integration verified. E2E flows complete.
 
 **Complete milestone** — archive and tag
 
-/odoo-gsd:complete-milestone {version}
+/amil:complete-milestone {version}
 
 <sub>/clear first → fresh context window</sub>
 
@@ -256,9 +256,9 @@ All requirements covered. Cross-phase integration verified. E2E flows complete.
 
 | Phase | VALIDATION.md | Compliant | Action |
 |-------|---------------|-----------|--------|
-| {phase} | exists/missing | true/false/partial | `/odoo-gsd:validate-phase {N}` |
+| {phase} | exists/missing | true/false/partial | `/amil:validate-phase {N}` |
 
-Phases needing validation: run `/odoo-gsd:validate-phase {N}` for each flagged phase.
+Phases needing validation: run `/amil:validate-phase {N}` for each flagged phase.
 
 ───────────────────────────────────────────────────────────────
 
@@ -266,7 +266,7 @@ Phases needing validation: run `/odoo-gsd:validate-phase {N}` for each flagged p
 
 **Plan gap closure** — create phases to complete milestone
 
-/odoo-gsd:plan-milestone-gaps
+/amil:plan-milestone-gaps
 
 <sub>/clear first → fresh context window</sub>
 
@@ -274,7 +274,7 @@ Phases needing validation: run `/odoo-gsd:validate-phase {N}` for each flagged p
 
 **Also available:**
 - cat .planning/v{version}-MILESTONE-AUDIT.md — see full report
-- /odoo-gsd:complete-milestone {version} — proceed anyway (accept tech debt)
+- /amil:complete-milestone {version} — proceed anyway (accept tech debt)
 
 ───────────────────────────────────────────────────────────────
 
@@ -304,11 +304,11 @@ All requirements met. No critical blockers. Accumulated tech debt needs review.
 
 **A. Complete milestone** — accept debt, track in backlog
 
-/odoo-gsd:complete-milestone {version}
+/amil:complete-milestone {version}
 
 **B. Plan cleanup phase** — address debt before completing
 
-/odoo-gsd:plan-milestone-gaps
+/amil:plan-milestone-gaps
 
 <sub>/clear first → fresh context window</sub>
 

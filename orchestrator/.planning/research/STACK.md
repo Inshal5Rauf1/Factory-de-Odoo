@@ -10,33 +10,33 @@
 
 | Technology | Version | Purpose | Why Recommended |
 |------------|---------|---------|-----------------|
-| Node.js | 25.x (system) | Runtime | GSD is pure Node.js CJS. Forking means inheriting this runtime. No reason to change -- Claude Code extensions are Node.js. Node 25 is installed on this system. |
-| CommonJS (.cjs) | N/A | Module format | GSD uses CJS throughout (`require`/`module.exports`). Converting to ESM adds zero value and creates merge-forward friction with upstream GSD changes. Keep CJS. |
-| Node.js built-in `fs` | N/A | File I/O, state persistence | GSD uses `fs.readFileSync`/`fs.writeFileSync` for all state. The model registry, module status, computation chains, and security scope files are all JSON -- `fs` handles this fine. |
+| Node.js | 25.x (system) | Runtime | Amil is pure Node.js CJS. Forking means inheriting this runtime. No reason to change -- Claude Code extensions are Node.js. Node 25 is installed on this system. |
+| CommonJS (.cjs) | N/A | Module format | Amil uses CJS throughout (`require`/`module.exports`). Converting to ESM adds zero value and creates merge-forward friction with upstream Amil changes. Keep CJS. |
+| Node.js built-in `fs` | N/A | File I/O, state persistence | Amil uses `fs.readFileSync`/`fs.writeFileSync` for all state. The model registry, module status, computation chains, and security scope files are all JSON -- `fs` handles this fine. |
 | Node.js built-in `path` | N/A | Path resolution | Cross-platform path handling for `.planning/modules/{name}/` artifact directories and registry files. |
-| Node.js built-in `child_process` | N/A | Git operations, belt invocation | GSD uses `execSync` for git commits. odoo-gsd will also use it for invoking odoo-gen belt validation commands. |
+| Node.js built-in `child_process` | N/A | Git operations, belt invocation | Amil uses `execSync` for git commits. amil will also use it for invoking amil belt validation commands. |
 | Node.js built-in `test` runner | 25.x | Testing | Node 25 has a mature built-in test runner (`node --test`). Zero dependencies. Supports describe/it, beforeEach/afterEach, mocking, coverage. No need for Vitest/Jest in a CLI tool with no browser concerns. |
 
-**Confidence: HIGH** -- This is not a technology choice, it is an inheritance. GSD is zero-dependency Node.js CJS. The fork must maintain this to preserve the 34 existing workflow files, 12 lib modules (~5400 LOC), and the entire command/agent/workflow architecture.
+**Confidence: HIGH** -- This is not a technology choice, it is an inheritance. Amil is zero-dependency Node.js CJS. The fork must maintain this to preserve the 34 existing workflow files, 12 lib modules (~5400 LOC), and the entire command/agent/workflow architecture.
 
 ### State Management Files
 
 | File | Format | Purpose | Why This Format |
 |------|--------|---------|-----------------|
-| `model_registry.json` | JSON | Cross-module model definitions (fields, relations, inherits) | JSON is human-readable, diffable in git, parseable without dependencies. GSD already uses JSON for `config.json`. |
+| `model_registry.json` | JSON | Cross-module model definitions (fields, relations, inherits) | JSON is human-readable, diffable in git, parseable without dependencies. Amil already uses JSON for `config.json`. |
 | `module_status.json` | JSON | Module lifecycle tracking (planned -> spec_approved -> generated -> checked -> shipped) | Simple key-value state transitions. JSON is sufficient. |
 | `computation_chains.json` | JSON | Tracks computed field dependencies across modules | Directed graph of field computations. JSON array of edges. |
 | `security_scope.json` | JSON | Security groups, record rules, scope hierarchy | Hierarchical scope data (institution > campus > faculty > department > program). JSON nests naturally. |
 
-**Confidence: HIGH** -- GSD's proven pattern is markdown for human-facing state (STATE.md, ROADMAP.md) and JSON for machine-facing state (config.json). The registry files are machine-facing.
+**Confidence: HIGH** -- Amil's proven pattern is markdown for human-facing state (STATE.md, ROADMAP.md) and JSON for machine-facing state (config.json). The registry files are machine-facing.
 
 ### Supporting Libraries
 
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|
-| None (zero dependencies) | N/A | N/A | GSD is explicitly zero-dependency. odoo-gsd MUST maintain this. Every npm dependency is a liability for a tool installed globally in `~/.claude/`. No `node_modules`, no `package.json`, no version conflicts with user projects. |
+| None (zero dependencies) | N/A | N/A | Amil is explicitly zero-dependency. amil MUST maintain this. Every npm dependency is a liability for a tool installed globally in `~/.claude/`. No `node_modules`, no `package.json`, no version conflicts with user projects. |
 
-**Confidence: HIGH** -- This is a critical architectural constraint, not a limitation. The zero-dependency approach is what makes GSD installable via `git clone` with no build step.
+**Confidence: HIGH** -- This is a critical architectural constraint, not a limitation. The zero-dependency approach is what makes Amil installable via `git clone` with no build step.
 
 ### Development Tools
 
@@ -45,17 +45,17 @@
 | Node.js built-in test runner | Unit + integration testing | `node --test --experimental-test-coverage`. Supports glob patterns: `node --test 'tests/**/*.test.cjs'` |
 | Node.js built-in `assert` | Test assertions | `const assert = require('node:assert/strict')`. Covers deepEqual, throws, rejects -- everything needed. |
 | Node.js built-in `test` mocking | Mock fs/child_process | `const { mock } = require('node:test')`. Mock file reads for registry testing without touching disk. |
-| `git` | Version control | Already used by GSD for commit automation. |
-| Claude Code | AI agent runtime | The orchestrator runs inside Claude Code. Commands are registered as `/odoo-gsd:*` slash commands. |
+| `git` | Version control | Already used by Amil for commit automation. |
+| Claude Code | AI agent runtime | The orchestrator runs inside Claude Code. Commands are registered as `/amil:*` slash commands. |
 
 ## Key Architecture Decisions
 
 ### Why Zero Dependencies
 
-GSD's zero-dependency approach is deliberate and must be preserved:
+Amil's zero-dependency approach is deliberate and must be preserved:
 
 1. **Install simplicity**: `git clone` + add to Claude settings. No `npm install`.
-2. **No version conflicts**: The tool lives in `~/.claude/odoo-gsd/`. If it had dependencies, they could conflict with user project dependencies.
+2. **No version conflicts**: The tool lives in `~/.claude/amil/`. If it had dependencies, they could conflict with user project dependencies.
 3. **No build step**: CJS files run directly. No transpilation, no bundling.
 4. **Claude Code context**: The tool is loaded into Claude Code's context. Smaller footprint = more context budget for actual work.
 
@@ -120,7 +120,7 @@ This is 20 lines. The `toposort` npm package is 80 lines. Not worth a dependency
 
 ### Atomic JSON Writes Without Libraries
 
-GSD currently does direct `fs.writeFileSync`. For the model registry, which is the single source of truth for cross-module coherence, use a write-rename pattern:
+Amil currently does direct `fs.writeFileSync`. For the model registry, which is the single source of truth for cross-module coherence, use a write-rename pattern:
 
 ```javascript
 function atomicWriteJSON(filePath, data) {
@@ -137,13 +137,13 @@ This is 5 lines. The `write-file-atomic` npm package is 150+ lines with uid/gid 
 
 ```bash
 # Clone the fork
-git clone <repo-url> ~/.claude/odoo-gsd
+git clone <repo-url> ~/.claude/amil
 
 # Add to Claude Code settings (~/.claude/settings.json)
-# Add to customInstructions: "Read and follow ~/.claude/odoo-gsd/CLAUDE.md"
+# Add to customInstructions: "Read and follow ~/.claude/amil/CLAUDE.md"
 
 # Verify
-node ~/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs --help
+node ~/.claude/amil/bin/amil-tools.cjs --help
 ```
 
 No `npm install`. No build step. No dependencies.
@@ -162,25 +162,25 @@ No `npm install`. No build step. No dependencies.
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| TypeScript | GSD is 5400 LOC of CJS. Converting to TS adds a build step, breaks the `git clone` install model, and provides no value for a tool where all consumers are Claude Code agents reading markdown prompts. | Plain JavaScript with JSDoc type comments where clarity helps. |
+| TypeScript | Amil is 5400 LOC of CJS. Converting to TS adds a build step, breaks the `git clone` install model, and provides no value for a tool where all consumers are Claude Code agents reading markdown prompts. | Plain JavaScript with JSDoc type comments where clarity helps. |
 | npm dependencies (any) | Breaks the zero-dependency install model. Every dependency is a risk of version conflicts, supply chain attacks, and install failures in the `~/.claude/` directory. | Inline implementations. The algorithms needed (toposort, JSON validation, atomic writes) are each <50 LOC. |
 | SQLite / LevelDB / any database | The state files (model_registry.json, module_status.json) are small (<1MB even at 100 modules). A database adds complexity, a binary dependency, and breaks git-diffability. | JSON files with atomic write pattern. |
-| YAML for state files | JSON is parseable with zero dependencies (`JSON.parse`). YAML requires a parser library (js-yaml, yaml). GSD already uses JSON for config. | JSON for machine state, Markdown for human state. |
-| Monorepo tools (nx, turborepo) | This is a single CLI tool, not a monorepo. odoo-gen and odoo-gen-utils are separate repos by design. | Simple git clone per repo. |
-| Commander.js / yargs / oclif | GSD's CLI is not a traditional CLI -- it is invoked by Claude Code via `node gsd-tools.cjs <command> [args]`. The argument parsing is a simple switch statement in `commands.cjs` (~550 LOC). No need for a CLI framework. | Manual argument parsing (inherited from GSD). |
+| YAML for state files | JSON is parseable with zero dependencies (`JSON.parse`). YAML requires a parser library (js-yaml, yaml). Amil already uses JSON for config. | JSON for machine state, Markdown for human state. |
+| Monorepo tools (nx, turborepo) | This is a single CLI tool, not a monorepo. amil and amil-utils are separate repos by design. | Simple git clone per repo. |
+| Commander.js / yargs / oclif | Amil's CLI is not a traditional CLI -- it is invoked by Claude Code via `node gsd-tools.cjs <command> [args]`. The argument parsing is a simple switch statement in `commands.cjs` (~550 LOC). No need for a CLI framework. | Manual argument parsing (inherited from Amil). |
 
 ## Stack Patterns by Variant
 
 **If adding a new state file (e.g., `computation_chains.json`):**
-- Follow GSD's config.json pattern: JSON file in `.planning/`
+- Follow Amil's config.json pattern: JSON file in `.planning/`
 - Read with `JSON.parse(fs.readFileSync(path, 'utf-8'))`
 - Write with `atomicWriteJSON(path, data)`
 - Validate with domain-specific functions, not schema libraries
 
-**If adding a new CLI command (e.g., `odoo-gsd:plan-module`):**
+**If adding a new CLI command (e.g., `amil:plan-module`):**
 - Add a workflow markdown file in `workflows/plan-module.md`
 - Add command handler in `bin/lib/commands.cjs`
-- Follow GSD's pattern: parse args, load state, perform operation, output JSON
+- Follow Amil's pattern: parse args, load state, perform operation, output JSON
 
 **If adding a new agent (e.g., `odoo-coherence-checker`):**
 - Create markdown prompt file in `references/agents/`
@@ -197,10 +197,10 @@ No `npm install`. No build step. No dependencies.
 
 | Component | Compatible With | Notes |
 |-----------|-----------------|-------|
-| Node.js 25.x | GSD CJS codebase | Node 25 runs CJS natively. Built-in test runner is stable. |
+| Node.js 25.x | Amil CJS codebase | Node 25 runs CJS natively. Built-in test runner is stable. |
 | Node.js 25.x built-in test | `assert/strict` | Both are built-in, always compatible. |
-| Odoo 17.0 | Python 3.10+ | odoo-gsd does not run Python -- it generates specs that odoo-gen uses to produce Python. But the generated model names, field types, and manifest fields must conform to Odoo 17 conventions. |
-| Claude Code | Task() subagent API | odoo-gsd relies on Claude Code's Task() for spawning agents with fresh 200K context. This is a Claude Code feature, not a Node.js one. |
+| Odoo 17.0 | Python 3.10+ | amil does not run Python -- it generates specs that amil uses to produce Python. But the generated model names, field types, and manifest fields must conform to Odoo 17 conventions. |
+| Claude Code | Task() subagent API | amil relies on Claude Code's Task() for spawning agents with fresh 200K context. This is a Claude Code feature, not a Node.js one. |
 
 ## Odoo 17 Domain Knowledge (Relevant to Stack)
 
@@ -217,7 +217,7 @@ This domain knowledge lives in validation functions within `registry.cjs`, not i
 
 ## Sources
 
-- [GSD source code](~/.claude/get-shit-done/) -- Direct inspection of bin/lib/*.cjs (5400 LOC total), zero npm dependencies confirmed
+- [Amil source code](~/.claude/get-shit-done/) -- Direct inspection of bin/lib/*.cjs (5400 LOC total), zero npm dependencies confirmed
 - [Odoo 17 Module Manifests](https://www.odoo.com/documentation/17.0/developer/reference/backend/module.html) -- Official manifest field reference
 - [Ajv JSON Schema Validator](https://ajv.js.org/) -- Evaluated and rejected; domain-specific validation is better inline
 - [toposort npm](https://www.npmjs.com/package/toposort) -- Evaluated and rejected; 20 LOC inline implementation sufficient
@@ -225,5 +225,5 @@ This domain knowledge lives in validation functions within `registry.cjs`, not i
 - [Node.js built-in test runner](https://nodejs.org/api/test.html) -- Native test runner available in Node 25
 
 ---
-*Stack research for: Odoo ERP module orchestration system (odoo-gsd)*
+*Stack research for: Odoo ERP module orchestration system (amil)*
 *Researched: 2026-03-05*

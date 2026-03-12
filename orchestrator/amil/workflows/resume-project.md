@@ -11,7 +11,7 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 </purpose>
 
 <required_reading>
-@~/.claude/odoo-gsd/references/continuation-format.md
+@~/.claude/amil/references/continuation-format.md
 </required_reading>
 
 <process>
@@ -20,7 +20,7 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 Load all context in one call:
 
 ```bash
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" init resume)
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init resume)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -28,7 +28,7 @@ Parse JSON for: `state_exists`, `roadmap_exists`, `project_exists`, `planning_ex
 
 **If `state_exists` is true:** Proceed to load_state
 **If `state_exists` is false but `roadmap_exists` or `project_exists` is true:** Offer to reconstruct STATE.md
-**If `planning_exists` is false:** This is a new project - route to /odoo-gsd:new-project
+**If `planning_exists` is false:** This is a new project - route to /amil:new-project
 </step>
 
 <step name="load_state">
@@ -125,7 +125,7 @@ Present complete project status to user:
     Resume with: Task tool (resume parameter with agent ID)
 
 [If pending todos exist:]
-📋 [N] pending todos — /odoo-gsd:check-todos to review
+📋 [N] pending todos — /amil:check-todos to review
 
 [If blockers exist:]
 ⚠️  Carried concerns:
@@ -181,11 +181,11 @@ What would you like to do?
 [Primary action based on state - e.g.:]
 1. Resume interrupted agent [if interrupted agent found]
    OR
-1. Execute phase (/odoo-gsd:execute-phase {phase})
+1. Execute phase (/amil:execute-phase {phase})
    OR
-1. Discuss Phase 3 context (/odoo-gsd:discuss-phase 3) [if CONTEXT.md missing]
+1. Discuss Phase 3 context (/amil:discuss-phase 3) [if CONTEXT.md missing]
    OR
-1. Plan Phase 3 (/odoo-gsd:plan-phase 3) [if CONTEXT.md exists or discuss option declined]
+1. Plan Phase 3 (/amil:plan-phase 3) [if CONTEXT.md exists or discuss option declined]
 
 [Secondary options:]
 2. Review current phase status
@@ -216,7 +216,7 @@ Based on user selection, route to appropriate workflow:
 
   **{phase}-{plan}: [Plan Name]** — [objective from PLAN.md]
 
-  `/odoo-gsd:execute-phase {phase}`
+  `/amil:execute-phase {phase}`
 
   <sub>`/clear` first → fresh context window</sub>
 
@@ -230,15 +230,15 @@ Based on user selection, route to appropriate workflow:
 
   **Phase [N]: [Name]** — [Goal from ROADMAP.md]
 
-  `/odoo-gsd:plan-phase [phase-number]`
+  `/amil:plan-phase [phase-number]`
 
   <sub>`/clear` first → fresh context window</sub>
 
   ---
 
   **Also available:**
-  - `/odoo-gsd:discuss-phase [N]` — gather context first
-  - `/odoo-gsd:research-phase [N]` — investigate unknowns
+  - `/amil:discuss-phase [N]` — gather context first
+  - `/amil:research-phase [N]` — investigate unknowns
 
   ---
   ```

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import re
 
-from odoo_gen_utils.validation.types import TestResult
+from amil_utils.validation.types import TestResult
 
 # --- Compiled regex patterns ---
 

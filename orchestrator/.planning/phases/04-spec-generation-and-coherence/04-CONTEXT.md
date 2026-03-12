@@ -7,7 +7,7 @@
 <domain>
 ## Phase Boundary
 
-Phase 4 creates the `/odoo-gsd:plan-module` command and workflow that:
+Phase 4 creates the `/amil:plan-module` command and workflow that:
 1. Loads module CONTEXT.md + decomposition entry + config
 2. Spawns researcher agent for per-module Odoo research (RESEARCH.md)
 3. Spawns spec generator agent with CONTEXT.md + RESEARCH.md + tiered registry
@@ -22,9 +22,9 @@ Phase 4 creates the `/odoo-gsd:plan-module` command and workflow that:
 
 ### spec.json Schema — Declarative Contract (SPEC-03)
 
-**Locked: spec.json is a contract between odoo-gsd (orchestrator) and odoo-gen (belt)**
+**Locked: spec.json is a contract between amil (orchestrator) and amil (belt)**
 
-The spec is declarative, not Odoo code. The belt's agents (odoo-model-gen, odoo-view-gen, odoo-security-gen) translate declarations into actual Odoo code.
+The spec is declarative, not Odoo code. The belt's agents (amil-model-gen, amil-view-gen, amil-security-gen) translate declarations into actual Odoo code.
 
 12 top-level sections: models, fields, business_rules, computation_chains, workflow, view_hints, reports, notifications, cron_jobs, security, portal, api_endpoints
 
@@ -52,7 +52,7 @@ No field type info — belt's model architect agent looks up types from the mode
   {"model": "uni.fee.line", "view_type": "form", "key_fields": ["student_id", "fee_structure_id", "line_ids", "total_amount"], "notes": "notebook with lines tab and payment history tab"}
 ]
 ```
-No XML. Belt's odoo-view-gen translates hints into Odoo XML views.
+No XML. Belt's amil-view-gen translates hints into Odoo XML views.
 
 **Security format (locked):**
 ```json
@@ -66,14 +66,14 @@ No XML. Belt's odoo-view-gen translates hints into Odoo XML views.
   ]
 }
 ```
-Record rule domains stay as natural language descriptions. Belt's odoo-security-gen translates to actual `ir.rule` domain expressions.
+Record rule domains stay as natural language descriptions. Belt's amil-security-gen translates to actual `ir.rule` domain expressions.
 
 ### Coherence Checker — Pure CJS (SPEC-05, SPEC-06)
 
 **Locked: Option A — pure CJS library, no agent, fully deterministic**
 
 File: `bin/lib/coherence.cjs`
-CLI subcommand: `odoo-gsd-tools coherence check --spec X --registry Y`
+CLI subcommand: `amil-tools coherence check --spec X --registry Y`
 Test file: `tests/coherence.test.cjs`
 
 4 structural checks, all JSON pattern matching:
@@ -102,11 +102,11 @@ Test file: `tests/coherence.test.cjs`
 
 **Locked: Two sequential agents (researcher then generator), tiered registry injection**
 
-Flow for `/odoo-gsd:plan-module uni_fee`:
+Flow for `/amil:plan-module uni_fee`:
 
 1. Workflow loads module's CONTEXT.md + decomposition entry + config
-2. Spawn researcher agent (`odoo-gsd-module-researcher.md`) with module context -> produces `.planning/modules/uni_fee/RESEARCH.md`
-3. Spawn spec generator agent (`odoo-gsd-spec-generator.md`) with CONTEXT.md + RESEARCH.md + tiered registry -> produces `.planning/modules/uni_fee/spec.json`
+2. Spawn researcher agent (`amil-module-researcher.md`) with module context -> produces `.planning/modules/uni_fee/RESEARCH.md`
+3. Spawn spec generator agent (`amil-spec-generator.md`) with CONTEXT.md + RESEARCH.md + tiered registry -> produces `.planning/modules/uni_fee/spec.json`
 4. Run `coherence.cjs` against spec.json + model_registry.json (pure CJS, no agent)
 5. Present spec summary + coherence report to human
 6. On approval, update module_status.json to `spec_approved`
@@ -132,7 +132,7 @@ Presentation order:
 
 **Locked: Reviewer agent IS the coherence presentation layer**
 
-- `odoo-gsd-spec-reviewer.md` reads CJS coherence report + spec.json
+- `amil-spec-reviewer.md` reads CJS coherence report + spec.json
 - Formats human-readable summary with Odoo-specific context (e.g., "Many2one to uni.enrollment — this model is in uni_student module, Tier 2")
 - Runs inline in plan-module workflow after coherence check
 - NOT a separate command — part of the plan-module flow
@@ -141,7 +141,7 @@ Presentation order:
 
 **Locked: New dedicated agent file**
 
-- `agents/odoo-gsd-spec-generator.md` — produces spec.json from CONTEXT.md + RESEARCH.md + tiered registry
+- `agents/amil-spec-generator.md` — produces spec.json from CONTEXT.md + RESEARCH.md + tiered registry
 - Single-shot generation (all 12 sections in one pass)
 - Must include `_available_models` section from tiered registry injection
 - Agent receives: module CONTEXT.md, module RESEARCH.md, decomposition entry, config.json odoo block, tiered registry output
@@ -200,7 +200,7 @@ Presentation order:
 
 ```bash
 # Check a spec against registry
-node odoo-gsd/bin/odoo-gsd-tools.cjs coherence check --spec .planning/modules/uni_fee/spec.json --registry .planning/model_registry.json
+node amil/bin/amil-tools.cjs coherence check --spec .planning/modules/uni_fee/spec.json --registry .planning/model_registry.json
 
 # Output: JSON coherence report to stdout
 ```
@@ -208,7 +208,7 @@ node odoo-gsd/bin/odoo-gsd-tools.cjs coherence check --spec .planning/modules/un
 ### plan-module Command Flow
 
 ```
-/odoo-gsd:plan-module uni_fee
+/amil:plan-module uni_fee
   |
   v
 1. Validate module exists in module_status.json (status: "planned")

@@ -8,13 +8,13 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from odoo_gen_utils.validation.docker_runner import (
+from amil_utils.validation.docker_runner import (
     check_docker_available,
     docker_install_module,
     docker_run_tests,
     get_compose_file,
 )
-from odoo_gen_utils.validation.types import InstallResult, Result, TestResult
+from amil_utils.validation.types import InstallResult, Result, TestResult
 
 
 # --- Fixtures ---
@@ -40,8 +40,8 @@ def compose_file(tmp_path: Path) -> Path:
 class TestCheckDockerAvailablePresent:
     """When docker CLI is present, returns True."""
 
-    @patch("odoo_gen_utils.validation.docker_runner.subprocess.run")
-    @patch("odoo_gen_utils.validation.docker_runner.shutil.which")
+    @patch("amil_utils.validation.docker_runner.subprocess.run")
+    @patch("amil_utils.validation.docker_runner.shutil.which")
     def test_docker_available(self, mock_which: MagicMock, mock_run: MagicMock) -> None:
         mock_which.return_value = "/usr/bin/docker"
         mock_run.return_value = MagicMock(returncode=0)
@@ -52,7 +52,7 @@ class TestCheckDockerAvailablePresent:
 class TestCheckDockerAvailableMissing:
     """When docker CLI is missing, returns False."""
 
-    @patch("odoo_gen_utils.validation.docker_runner.shutil.which")
+    @patch("amil_utils.validation.docker_runner.shutil.which")
     def test_docker_not_available(self, mock_which: MagicMock) -> None:
         mock_which.return_value = None
         assert check_docker_available() is False
@@ -77,9 +77,9 @@ class TestGetComposeFilePath:
 class TestDockerInstallModuleSuccess:
     """Successful install returns InstallResult(success=True)."""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_docker_install_success(
         self,
         mock_available: MagicMock,
@@ -114,9 +114,9 @@ class TestDockerInstallModuleSuccess:
 class TestDockerInstallUsesRunNotExec:
     """docker_install_module uses 'run --rm' pattern, not 'exec'."""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_first_call_starts_db_only(
         self,
         mock_available: MagicMock,
@@ -144,9 +144,9 @@ class TestDockerInstallUsesRunNotExec:
             f"got args: {first_call_args[0][1]}"
         )
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_second_call_uses_run_rm_not_exec(
         self,
         mock_available: MagicMock,
@@ -184,9 +184,9 @@ class TestDockerInstallUsesRunNotExec:
 class TestDockerInstallModuleFailure:
     """Failed install returns InstallResult(success=False)."""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_docker_install_failure(
         self,
         mock_available: MagicMock,
@@ -217,9 +217,9 @@ class TestDockerInstallModuleFailure:
 class TestDockerInstallTeardown:
     """docker compose down -v is ALWAYS called, even on failure."""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_teardown_always_called(
         self,
         mock_available: MagicMock,
@@ -245,9 +245,9 @@ class TestDockerInstallTeardown:
 class TestDockerRunTestsSuccess:
     """Successful test run returns tuple of TestResult with passed=True."""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_docker_run_tests_success(
         self,
         mock_available: MagicMock,
@@ -282,9 +282,9 @@ class TestDockerRunTestsSuccess:
 class TestDockerRunTestsFailure:
     """Test run with failures returns TestResult with passed=False."""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_docker_run_tests_failure(
         self,
         mock_available: MagicMock,
@@ -321,9 +321,9 @@ class TestDockerRunTestsFailure:
 class TestDockerRunTestsTeardown:
     """docker compose down -v is ALWAYS called after test run."""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_teardown_always_called(
         self,
         mock_available: MagicMock,
@@ -349,7 +349,7 @@ class TestDockerRunTestsTeardown:
 class TestDockerNotAvailableInstall:
     """When Docker unavailable, install returns graceful degradation."""
 
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_docker_not_available_install(
         self, mock_available: MagicMock, module_dir: Path
     ) -> None:
@@ -365,7 +365,7 @@ class TestDockerNotAvailableInstall:
 class TestDockerNotAvailableTests:
     """When Docker unavailable, run_tests returns empty tuple."""
 
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_docker_not_available_tests(
         self, mock_available: MagicMock, module_dir: Path
     ) -> None:
@@ -384,9 +384,9 @@ class TestDockerNotAvailableTests:
 class TestDockerTimeout:
     """When subprocess times out, returns failure result."""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_docker_install_timeout(
         self,
         mock_available: MagicMock,
@@ -416,9 +416,9 @@ class TestDockerTimeout:
 class TestInstallIntegrationWithRealLogParsing:
     """Mock only subprocess (not log parser) to verify end-to-end log parsing."""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_real_odoo17_success_log_parsed(
         self,
         mock_available: MagicMock,
@@ -451,9 +451,9 @@ class TestInstallIntegrationWithRealLogParsing:
         assert result.data.success is True
         assert result.data.error_message == ""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_real_odoo17_error_log_parsed(
         self,
         mock_available: MagicMock,
@@ -485,9 +485,9 @@ class TestInstallIntegrationWithRealLogParsing:
         assert result.data.success is False  # Install itself failed
         assert result.data.error_message != ""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_empty_log_output_parsed_as_failure(
         self,
         mock_available: MagicMock,
@@ -513,9 +513,9 @@ class TestInstallIntegrationWithRealLogParsing:
 class TestRunTestsIntegrationWithRealLogParsing:
     """Mock only subprocess to verify end-to-end test log parsing."""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_odoo17_test_start_format_parsed(
         self,
         mock_available: MagicMock,
@@ -548,9 +548,9 @@ class TestRunTestsIntegrationWithRealLogParsing:
         assert "test_create" in test_names
         assert "test_write" in test_names
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_mixed_pass_fail_parsed(
         self,
         mock_available: MagicMock,
@@ -588,9 +588,9 @@ class TestRunTestsIntegrationWithRealLogParsing:
         assert failed[0].test_name == "test_write"
         assert failed[0].error_message != ""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_log_in_stderr_also_parsed(
         self,
         mock_available: MagicMock,
@@ -626,9 +626,9 @@ class TestRunTestsIntegrationWithRealLogParsing:
 class TestModuleNameValidation:
     """SEC-09: Module name is validated before use in Docker env."""
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_invalid_module_name_rejected_install(
         self,
         mock_available: MagicMock,
@@ -645,9 +645,9 @@ class TestModuleNameValidation:
         assert result.success is False
         assert any("invalid" in e.lower() for e in result.errors)
 
-    @patch("odoo_gen_utils.validation.docker_runner._teardown")
-    @patch("odoo_gen_utils.validation.docker_runner._run_compose")
-    @patch("odoo_gen_utils.validation.docker_runner.check_docker_available")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
     def test_invalid_module_name_rejected_tests(
         self,
         mock_available: MagicMock,

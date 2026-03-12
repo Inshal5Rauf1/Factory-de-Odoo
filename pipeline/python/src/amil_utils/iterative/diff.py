@@ -2,7 +2,7 @@
 
 Provides:
 - ``save_spec_stash`` / ``load_spec_stash`` — persist raw spec as
-  ``.odoo-gen-spec.json`` sidecar for later diffing.
+  ``.amil-spec.json`` sidecar for later diffing.
 - ``compute_spec_diff`` — SHA256-gated diff returning ``SpecDiff | None``.
 
 These are **pure functions** (except file I/O for stash persistence).
@@ -16,19 +16,19 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from odoo_gen_utils.manifest import compute_spec_sha256
-from odoo_gen_utils.spec_differ import diff_specs
+from amil_utils.manifest import compute_spec_sha256
+from amil_utils.spec_differ import diff_specs
 
 if TYPE_CHECKING:
-    from odoo_gen_utils.spec_differ import SpecDiff
+    from amil_utils.spec_differ import SpecDiff
 
-logger = logging.getLogger("odoo-gen.iterative.diff")
+logger = logging.getLogger("amil.iterative.diff")
 
-SPEC_STASH_FILENAME = ".odoo-gen-spec.json"
+SPEC_STASH_FILENAME = ".amil-spec.json"
 
 
 def save_spec_stash(spec: dict, module_path: Path) -> Path:
-    """Write *spec* as canonical JSON to ``module_path / .odoo-gen-spec.json``.
+    """Write *spec* as canonical JSON to ``module_path / .amil-spec.json``.
 
     Uses ``sort_keys=True`` for deterministic output and a trailing newline.
     Stashes the RAW spec (before preprocessing) so that future diffs compare
@@ -45,7 +45,7 @@ def save_spec_stash(spec: dict, module_path: Path) -> Path:
 
 
 def load_spec_stash(module_path: Path) -> dict | None:
-    """Load a previously stashed spec from ``module_path / .odoo-gen-spec.json``.
+    """Load a previously stashed spec from ``module_path / .amil-spec.json``.
 
     Returns ``None`` when the file does not exist or is invalid JSON.
     """

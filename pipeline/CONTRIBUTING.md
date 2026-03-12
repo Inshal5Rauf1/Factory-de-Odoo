@@ -23,7 +23,7 @@ Thank you for your interest in contributing! This guide covers development setup
 - **[uv](https://docs.astral.sh/uv/)** package manager
 - **Docker** (for validation tests)
 - **Git**
-- **GSD** installed at `~/.claude/get-shit-done/` (for full integration testing)
+- **Amil** installed at `~/.claude/get-shit-done/` (for full integration testing)
 
 ### Clone and Install
 
@@ -38,8 +38,8 @@ uv venv --python 3.12
 uv pip install -e ".[test,search]"
 
 # Verify installation
-uv run odoo-gen-utils --version
-# → odoo-gen-utils, version 0.1.0
+uv run amil-utils --version
+# → amil-utils, version 0.1.0
 
 # Run tests
 uv run pytest tests/ -v
@@ -68,9 +68,9 @@ cat docker/docker-compose.yml
 ## Project Architecture
 
 ```
-Layer 1: GSD Orchestration    ← Inherited, don't modify
+Layer 1: Amil Orchestration    ← Inherited, don't modify
 Layer 2: Odoo Extension       ← agents/, commands/, knowledge/, workflows/
-Layer 3: Python Utilities     ← python/src/odoo_gen_utils/
+Layer 3: Python Utilities     ← python/src/amil_utils/
 Layer 4: AI Assistant         ← User's environment
 ```
 
@@ -179,7 +179,7 @@ uv run pytest tests/ -v
 uv run pytest tests/ -m "not docker and not e2e" -v
 
 # With coverage report
-uv run pytest tests/ --cov=odoo_gen_utils --cov-report=term-missing
+uv run pytest tests/ --cov=amil_utils --cov-report=term-missing
 
 # Single test file
 uv run pytest tests/test_renderer.py -v
@@ -201,7 +201,7 @@ uv run pytest tests/test_renderer.py::TestRenderModule::test_mail_thread_inherit
 ```python
 import pytest
 from pathlib import Path
-from odoo_gen_utils.renderer import render_module
+from amil_utils.renderer import render_module
 
 class TestMyFeature:
     """Tests for the new feature."""
@@ -237,13 +237,13 @@ uv run pytest tests/test_golden_path.py -v
 
 ### Adding a New CLI Command
 
-1. Add the Click command in `python/src/odoo_gen_utils/cli.py`
+1. Add the Click command in `python/src/amil_utils/cli.py`
 2. Write tests in `python/tests/test_cli_*.py`
-3. Create the GSD command definition in `commands/your_command.md`
+3. Create the Amil command definition in `commands/your_command.md`
 
 ### Adding a New Auto-Fix
 
-1. Add the fix function in `python/src/odoo_gen_utils/auto_fix.py`
+1. Add the fix function in `python/src/amil_utils/auto_fix.py`
 2. Follow the read-transform-write pattern (see [Auto-Fix Pattern](#auto-fix-pattern))
 3. Wire into `run_pylint_fix_loop()` or `run_docker_fix_loop()` as appropriate
 4. Add tests in `python/tests/test_auto_fix.py`
@@ -251,7 +251,7 @@ uv run pytest tests/test_golden_path.py -v
 
 ### Adding a New Template
 
-1. Create the Jinja2 template in `python/src/odoo_gen_utils/templates/`
+1. Create the Jinja2 template in `python/src/amil_utils/templates/`
    - `shared/` for version-independent templates
    - `17.0/` or `18.0/` for version-specific templates
 2. Wire into `renderer.py` if needed
@@ -260,7 +260,7 @@ uv run pytest tests/test_golden_path.py -v
 
 ### Adding a New Validation Check
 
-1. Add the check function in `python/src/odoo_gen_utils/validation/`
+1. Add the check function in `python/src/amil_utils/validation/`
 2. Wire into the validation pipeline in `cli.py`
 3. Add error patterns in `error_patterns.py` if needed
 4. Write tests

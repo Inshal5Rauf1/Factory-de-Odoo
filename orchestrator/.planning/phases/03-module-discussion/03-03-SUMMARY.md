@@ -8,9 +8,9 @@ requires:
   - phase: 03-module-discussion/01
     provides: module-questions.json question templates
   - phase: 03-module-discussion/02
-    provides: odoo-gsd-module-questioner agent
+    provides: amil-module-questioner agent
 provides:
-  - discuss-module slash command (/odoo-gsd:discuss-module)
+  - discuss-module slash command (/amil:discuss-module)
   - discuss-module workflow with 7-step orchestration
 affects: [04-module-spec, plan-module]
 
@@ -20,8 +20,8 @@ tech-stack:
 
 key-files:
   created:
-    - commands/odoo-gsd/discuss-module.md
-    - odoo-gsd/workflows/discuss-module.md
+    - commands/amil/discuss-module.md
+    - amil/workflows/discuss-module.md
   modified: []
 
 key-decisions:
@@ -63,11 +63,11 @@ Each task was committed atomically:
 2. **Task 2: Create discuss-module workflow** - `e4d33ee` (feat)
 
 ## Files Created/Modified
-- `commands/odoo-gsd/discuss-module.md` - Slash command routing to discuss-module workflow
-- `odoo-gsd/workflows/discuss-module.md` - 7-step workflow orchestrating type detection, template loading, and questioner agent spawning
+- `commands/amil/discuss-module.md` - Slash command routing to discuss-module workflow
+- `amil/workflows/discuss-module.md` - 7-step workflow orchestrating type detection, template loading, and questioner agent spawning
 
 ## Decisions Made
-- Used subagent_type="odoo-gsd-module-questioner" for clean agent spawning (no workaround pattern)
+- Used subagent_type="amil-module-questioner" for clean agent spawning (no workaround pattern)
 - Module type detection uses two-pass lookup: exact match then prefix+underscore match, falling back to null (user prompt)
 - Workflow passes only the relevant type's questions to the agent, not the entire module-questions.json
 

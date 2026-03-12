@@ -12,13 +12,13 @@ tech_stack:
   patterns: [slash-command, workflow, parallel-task-agents, config-collection]
 key_files:
   created:
-    - commands/odoo-gsd/new-erp.md
-    - agents/odoo-gsd-erp-decomposer.md
-    - agents/odoo-gsd-module-researcher.md
-    - odoo-gsd/workflows/new-erp.md
+    - commands/amil/new-erp.md
+    - agents/amil-erp-decomposer.md
+    - agents/amil-module-researcher.md
+    - amil/workflows/new-erp.md
   modified: []
 decisions:
-  - "Skills follow odoo-gsd-*-workflow naming convention per test suite"
+  - "Skills follow amil-*-workflow naming convention per test suite"
   - "Agents include anti-heredoc instruction and commented hooks pattern per project conventions"
 metrics:
   duration: 4min
@@ -27,26 +27,26 @@ metrics:
 
 # Phase 2 Plan 02: New-ERP Command and Workflow Summary
 
-/odoo-gsd:new-erp slash command with 7-question config collection (Stage A) and 4 parallel PRD analysis agents (Stage B), including 2 dedicated agent files with exact JSON schemas.
+/amil:new-erp slash command with 7-question config collection (Stage A) and 4 parallel PRD analysis agents (Stage B), including 2 dedicated agent files with exact JSON schemas.
 
 ## Tasks Completed
 
 | # | Task | Commit | Key Files |
 |---|------|--------|-----------|
-| 1 | Create new-erp command and 2 agent files | c61abdc, 1d05c00 | commands/odoo-gsd/new-erp.md, agents/odoo-gsd-erp-decomposer.md, agents/odoo-gsd-module-researcher.md |
-| 2 | Create new-erp workflow with Stage A and Stage B | 50d8531 | odoo-gsd/workflows/new-erp.md |
+| 1 | Create new-erp command and 2 agent files | c61abdc, 1d05c00 | commands/amil/new-erp.md, agents/amil-erp-decomposer.md, agents/amil-module-researcher.md |
+| 2 | Create new-erp workflow with Stage A and Stage B | 50d8531 | amil/workflows/new-erp.md |
 
 ## What Was Built
 
 ### Command Entry Point
-- `commands/odoo-gsd/new-erp.md` -- slash command with frontmatter matching existing pattern, references workflow via execution_context
+- `commands/amil/new-erp.md` -- slash command with frontmatter matching existing pattern, references workflow via execution_context
 
 ### Agent Files
-- `agents/odoo-gsd-erp-decomposer.md` -- Module Boundary Analyzer that outputs module-boundaries.json with uni_* prefixed modules
-- `agents/odoo-gsd-module-researcher.md` -- OCA Registry Checker that outputs oca-analysis.json with build_new/extend/skip recommendations
+- `agents/amil-erp-decomposer.md` -- Module Boundary Analyzer that outputs module-boundaries.json with uni_* prefixed modules
+- `agents/amil-module-researcher.md` -- OCA Registry Checker that outputs oca-analysis.json with build_new/extend/skip recommendations
 
 ### Workflow
-- `odoo-gsd/workflows/new-erp.md` (260 lines) -- Complete workflow with:
+- `amil/workflows/new-erp.md` (260 lines) -- Complete workflow with:
   - Stage A: 7 config questions (version, multi-company, localization, existing modules, LMS, notifications, deployment) each writing to config.json immediately
   - Stage B: PRD check, 4 parallel Task() agents (2 dedicated + 2 inline), output validation
   - Stage C: Placeholder comment for merge step (Plan 03)
@@ -59,19 +59,19 @@ metrics:
 - **Found during:** Task 1 verification
 - **Issue:** Agent files lacked `tools`, `color`, `skills`, commented hooks pattern, and anti-heredoc instruction required by agent-frontmatter.test.cjs
 - **Fix:** Added all required fields matching existing agent conventions
-- **Files modified:** agents/odoo-gsd-erp-decomposer.md, agents/odoo-gsd-module-researcher.md
+- **Files modified:** agents/amil-erp-decomposer.md, agents/amil-module-researcher.md
 - **Commit:** 1d05c00
 
 **2. [Rule 1 - Bug] Skill naming convention mismatch**
 - **Found during:** Task 1 verification
-- **Issue:** Skills must match `odoo-gsd-*-workflow` pattern per test suite
-- **Fix:** Renamed skills to odoo-gsd-erp-decomposer-workflow and odoo-gsd-module-researcher-workflow
+- **Issue:** Skills must match `amil-*-workflow` pattern per test suite
+- **Fix:** Renamed skills to amil-erp-decomposer-workflow and amil-module-researcher-workflow
 - **Commit:** 1d05c00
 
 ## Verification
 
 - All agent-frontmatter.test.cjs tests pass (0 failures for our agents)
-- Command file contains `odoo-gsd:new-erp` and references workflow
+- Command file contains `amil:new-erp` and references workflow
 - Workflow contains Stage A (7 questions), Stage B (4 agents), Stage C placeholder
 - Both agents contain exact JSON output schemas
 - Workflow exceeds 150 line minimum (260 lines)

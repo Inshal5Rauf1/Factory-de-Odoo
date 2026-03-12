@@ -1,5 +1,5 @@
 ---
-name: odoo-gen:validate
+name: amil:validate
 description: Run pylint-odoo and Docker-based validation on an Odoo module
 argument-hint: "<module_path>"
 ---
@@ -12,7 +12,7 @@ Run comprehensive validation on an Odoo module using pylint-odoo for static anal
 
 Validate a module (full pipeline):
 ```bash
-odoo-gen-utils validate /path/to/my_module
+amil-utils validate /path/to/my_module
 ```
 
 ## Options
@@ -27,22 +27,22 @@ odoo-gen-utils validate /path/to/my_module
 
 Full validation (pylint + Docker install + Docker tests):
 ```bash
-odoo-gen-utils validate ./my_module
+amil-utils validate ./my_module
 ```
 
 Quick static analysis only (no Docker needed):
 ```bash
-odoo-gen-utils validate ./my_module --pylint-only
+amil-utils validate ./my_module --pylint-only
 ```
 
 JSON output for automated processing:
 ```bash
-odoo-gen-utils validate ./my_module --json
+amil-utils validate ./my_module --json
 ```
 
 With custom pylint config:
 ```bash
-odoo-gen-utils validate ./my_module --pylintrc ./my_module/.pylintrc-odoo
+amil-utils validate ./my_module --pylintrc ./my_module/.pylintrc-odoo
 ```
 </usage>
 
@@ -77,7 +77,7 @@ Pattern-matched explanations for common Odoo errors with suggested fixes. Covers
 <requirements>
 ## Requirements
 
-- **pylint-odoo**: Installed automatically with odoo-gen-utils
+- **pylint-odoo**: Installed automatically with amil-utils
 - **Docker** (optional): Required for install and test validation. If Docker is not available, pylint-odoo still runs and Docker sections show "Skipped"
 - **Module must have __manifest__.py**: The validate command requires a valid Odoo module directory
 

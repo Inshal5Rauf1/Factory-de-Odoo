@@ -1,7 +1,7 @@
 # Odoo Module Automation
 
 ## Project Status
-- Phase: Roadmap rebuilt — ready for `/odoo-gsd:plan-phase 1`
+- Phase: Roadmap rebuilt — ready for `/amil:plan-phase 1`
 - Directory: /home/inshal-rauf/Factory-de-Odoo/pipeline
 - Remote: https://github.com/Inshal5Rauf1/Factory-de-Odoo.git
 - Architecture: **Pipeline component** of Factory de Odoo monorepo
@@ -16,7 +16,7 @@ Layer 1: Orchestrator (Factory de Odoo)
 Layer 2: Pipeline (THIS COMPONENT)
   Agents, workflows, commands, templates, knowledge base
 
-Layer 3: Python Utilities (odoo-gen-utils)
+Layer 3: Python Utilities (amil-utils)
   Jinja2 rendering, pylint-odoo, Docker validation, ChromaDB search
 
 Layer 4: AI Coding Assistant (USER'S ENVIRONMENT)
@@ -41,7 +41,7 @@ Layer 4: AI Coding Assistant (USER'S ENVIRONMENT)
 ## Prior Art
 | Project | Role | Use |
 |---------|------|-----|
-| **Orchestrator** | BUILT | Full orchestration layer (formerly based on GSD, now standalone) |
+| **Orchestrator** | BUILT | Full orchestration layer (formerly based on Amil, now standalone) |
 | **erp_claude** | ADOPT KNOWLEDGE | Odoo 17 model/view skills → knowledge base |
 | **UI UX Pro Max Skill** | ADOPT PATTERN | Reasoning engine, hierarchical system, rule library |
 | **Ralph** | REFERENCE | Fresh context loop, confirms orchestration approach |
@@ -74,7 +74,7 @@ Layer 4: AI Coding Assistant (USER'S ENVIRONMENT)
 
 ## Commands
 
-All commands are invoked as `/odoo-gen:<command>` through the AI coding assistant.
+All commands are invoked as `/amil:<command>` through the AI coding assistant.
 
 | Command | Description | Phase |
 |---------|-------------|-------|
@@ -92,7 +92,7 @@ All commands are invoked as `/odoo-gen:<command>` through the AI coding assistan
 | `history` | Show generation history and past modules | 7 |
 | `help` | Show available commands and usage | 1 |
 
-**Wrapper commands** (`config`, `status`, `resume`): These provide Odoo-specific context on top of orchestrator equivalents. Users interact with `/odoo-gen:status` (not bare `/odoo-gsd:progress`), keeping the experience unified within the Odoo domain.
+**Wrapper commands** (`config`, `status`, `resume`): These provide Odoo-specific context on top of orchestrator equivalents. Users interact with `/amil:status` (not bare `/amil:progress`), keeping the experience unified within the Odoo domain.
 
 ## Roadmap Overview
 | # | Phase | Requirements |
@@ -135,4 +135,4 @@ All commands are invoked as `/odoo-gen:<command>` through the AI coding assistan
 - Old Phase 1 plans (standalone CLI) deleted — they were for wrong architecture
 
 ---
-*Last updated: 2026-03-10 — removed GSD dependency references (orchestrator is standalone)*
+*Last updated: 2026-03-10 — removed Amil dependency references (orchestrator is standalone)*

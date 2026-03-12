@@ -1,10 +1,10 @@
 ---
-name: odoo-gsd-debugger
-description: Investigates bugs using scientific method, manages debug sessions, handles checkpoints. Spawned by /odoo-gsd:debug orchestrator.
+name: amil-debugger
+description: Investigates bugs using scientific method, manages debug sessions, handles checkpoints. Spawned by /amil:debug orchestrator.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
 color: orange
 skills:
-  - odoo-gsd-debugger-workflow
+  - amil-debugger-workflow
 # hooks:
 #   PostToolUse:
 #     - matcher: "Write|Edit"
@@ -14,11 +14,11 @@ skills:
 ---
 
 <role>
-You are a GSD debugger. You investigate bugs using systematic scientific method, manage persistent debug sessions, and handle checkpoints when user input is needed.
+You are a Amil debugger. You investigate bugs using systematic scientific method, manage persistent debug sessions, and handle checkpoints when user input is needed.
 
 You are spawned by:
 
-- `/odoo-gsd:debug` command (interactive debugging)
+- `/amil:debug` command (interactive debugging)
 - `diagnose-issues` workflow (parallel UAT diagnosis)
 
 Your job: Find the root cause through hypothesis testing, maintain debug file state, optionally fix and verify (depending on mode).
@@ -907,7 +907,7 @@ Gather symptoms through questioning. Update file after EACH answer.
   - Otherwise -> proceed to fix_and_verify
 - **ELIMINATED:** Append to Eliminated section, form new hypothesis, return to Phase 2
 
-**Context management:** After 5+ evidence entries, ensure Current Focus is updated. Suggest "/clear - run /odoo-gsd:debug to resume" if context filling up.
+**Context management:** After 5+ evidence entries, ensure Current Focus is updated. Suggest "/clear - run /amil:debug to resume" if context filling up.
 </step>
 
 <step name="resume_from_file">
@@ -1037,7 +1037,7 @@ mv .planning/debug/{slug}.md .planning/debug/resolved/
 **Check planning config using state load (commit_docs is available from the output):**
 
 ```bash
-INIT=$(node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" state load)
+INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" state load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # commit_docs is in the JSON output
 ```
@@ -1055,7 +1055,7 @@ Root cause: {root_cause}"
 
 Then commit planning docs via CLI (respects `commit_docs` config automatically):
 ```bash
-node "$HOME/.claude/odoo-gsd/bin/odoo-gsd-tools.cjs" commit "docs: resolve debug {slug}" --files .planning/debug/resolved/{slug}.md
+node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs: resolve debug {slug}" --files .planning/debug/resolved/{slug}.md
 ```
 
 Report completion and offer next steps.

@@ -30,18 +30,18 @@ pipeline/              — Python: Jinja2 templates, pylint-odoo, Docker validat
 ### Key Paths
 | Component | Path |
 |-----------|------|
-| Orchestrator lib | `orchestrator/odoo-gsd/bin/lib/` |
+| Orchestrator lib | `orchestrator/amil/bin/lib/` |
 | Orchestrator tests | `orchestrator/tests/` |
-| Commands | `orchestrator/commands/odoo-gsd/` |
-| Workflows | `orchestrator/odoo-gsd/workflows/` |
-| Python src | `pipeline/python/src/odoo_gen_utils/` |
-| Templates 17.0 | `pipeline/python/src/odoo_gen_utils/templates/17.0/` |
-| Templates 18.0 | `pipeline/python/src/odoo_gen_utils/templates/18.0/` |
-| Templates 19.0 | `pipeline/python/src/odoo_gen_utils/templates/19.0/` |
-| Templates shared | `pipeline/python/src/odoo_gen_utils/templates/shared/` |
-| Auto-fix | `pipeline/python/src/odoo_gen_utils/auto_fix.py` |
-| MCP server | `pipeline/python/src/odoo_gen_utils/mcp/server.py` |
-| Renderer context | `pipeline/python/src/odoo_gen_utils/renderer_context.py` |
+| Commands | `orchestrator/commands/amil/` |
+| Workflows | `orchestrator/amil/workflows/` |
+| Python src | `pipeline/python/src/amil_utils/` |
+| Templates 17.0 | `pipeline/python/src/amil_utils/templates/17.0/` |
+| Templates 18.0 | `pipeline/python/src/amil_utils/templates/18.0/` |
+| Templates 19.0 | `pipeline/python/src/amil_utils/templates/19.0/` |
+| Templates shared | `pipeline/python/src/amil_utils/templates/shared/` |
+| Auto-fix | `pipeline/python/src/amil_utils/auto_fix.py` |
+| MCP server | `pipeline/python/src/amil_utils/mcp/server.py` |
+| Renderer context | `pipeline/python/src/amil_utils/renderer_context.py` |
 
 ### Current State (factory-upgrades branch)
 All 8 fixes committed. All 8 gaps implemented. Ralph Loop docs complete.

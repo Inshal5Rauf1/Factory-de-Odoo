@@ -6,13 +6,13 @@ tags: [cli, registry, config, atomic-write, validation, odoo]
 
 requires:
   - phase: 01-01
-    provides: "odoo-gsd directory structure, CLI entry point, core.cjs helpers"
+    provides: "amil directory structure, CLI entry point, core.cjs helpers"
 provides:
   - "Model registry CRUD with atomic writes, versioning, rollback"
   - "Registry validation (Many2one targets, One2many inverse_name, model name format)"
   - "Registry stats (model count, field count, cross-module references)"
   - "Odoo config block with version validation (17.0/18.0)"
-  - "6 registry CLI subcommands dispatched from odoo-gsd-tools.cjs"
+  - "6 registry CLI subcommands dispatched from amil-tools.cjs"
 affects: [01-03, 02, 03, 04, 05]
 
 tech-stack:
@@ -21,11 +21,11 @@ tech-stack:
 
 key-files:
   created:
-    - odoo-gsd/bin/lib/registry.cjs
+    - amil/bin/lib/registry.cjs
     - tests/registry.test.cjs
   modified:
-    - odoo-gsd/bin/lib/config.cjs
-    - odoo-gsd/bin/odoo-gsd-tools.cjs
+    - amil/bin/lib/config.cjs
+    - amil/bin/amil-tools.cjs
     - tests/config.test.cjs
 
 key-decisions:
@@ -72,9 +72,9 @@ Each task was committed atomically:
 2. **Task 2: Register registry CLI subcommands in dispatcher** - `20c39fa` (feat)
 
 ## Files Created/Modified
-- `odoo-gsd/bin/lib/registry.cjs` - Model registry CRUD with atomic writes, versioning, rollback, validation, stats
-- `odoo-gsd/bin/lib/config.cjs` - Extended with odoo config block validation
-- `odoo-gsd/bin/odoo-gsd-tools.cjs` - Added registry case with 6 subcommands
+- `amil/bin/lib/registry.cjs` - Model registry CRUD with atomic writes, versioning, rollback, validation, stats
+- `amil/bin/lib/config.cjs` - Extended with odoo config block validation
+- `amil/bin/amil-tools.cjs` - Added registry case with 6 subcommands
 - `tests/registry.test.cjs` - 17 tests covering REG-01 through REG-06
 - `tests/config.test.cjs` - 4 new tests for odoo config block (CONF-01, CONF-02)
 

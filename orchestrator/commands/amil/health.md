@@ -1,5 +1,5 @@
 ---
-name: gsd:health
+name: amil:health
 description: Diagnose planning directory health and optionally repair issues
 argument-hint: [--repair]
 allowed-tools:
@@ -13,10 +13,10 @@ Validate `.planning/` directory integrity and report actionable issues. Checks f
 </objective>
 
 <execution_context>
-@~/.claude/odoo-gsd/workflows/health.md
+@~/.claude/amil/workflows/health.md
 </execution_context>
 
 <process>
-Execute the health workflow from @~/.claude/odoo-gsd/workflows/health.md end-to-end.
+Execute the health workflow from @~/.claude/amil/workflows/health.md end-to-end.
 Parse --repair flag from arguments and pass to workflow.
 </process>

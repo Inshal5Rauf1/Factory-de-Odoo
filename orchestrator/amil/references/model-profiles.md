@@ -1,23 +1,23 @@
 # Model Profiles
 
-Model profiles control which Claude model each GSD agent uses. This allows balancing quality vs token spend.
+Model profiles control which Claude model each Amil agent uses. This allows balancing quality vs token spend.
 
 ## Profile Definitions
 
 | Agent | `quality` | `balanced` | `budget` |
 |-------|-----------|------------|----------|
-| odoo-gsd-planner | opus | opus | sonnet |
-| odoo-gsd-roadmapper | opus | sonnet | sonnet |
-| odoo-gsd-executor | opus | sonnet | sonnet |
-| odoo-gsd-phase-researcher | opus | sonnet | haiku |
-| odoo-gsd-project-researcher | opus | sonnet | haiku |
-| odoo-gsd-research-synthesizer | sonnet | sonnet | haiku |
-| odoo-gsd-debugger | opus | sonnet | sonnet |
-| odoo-gsd-codebase-mapper | sonnet | haiku | haiku |
-| odoo-gsd-verifier | sonnet | sonnet | haiku |
-| odoo-gsd-plan-checker | sonnet | sonnet | haiku |
-| odoo-gsd-integration-checker | sonnet | sonnet | haiku |
-| odoo-gsd-nyquist-auditor | sonnet | sonnet | haiku |
+| amil-planner | opus | opus | sonnet |
+| amil-roadmapper | opus | sonnet | sonnet |
+| amil-executor | opus | sonnet | sonnet |
+| amil-phase-researcher | opus | sonnet | haiku |
+| amil-project-researcher | opus | sonnet | haiku |
+| amil-research-synthesizer | sonnet | sonnet | haiku |
+| amil-debugger | opus | sonnet | sonnet |
+| amil-codebase-mapper | sonnet | haiku | haiku |
+| amil-verifier | sonnet | sonnet | haiku |
+| amil-plan-checker | sonnet | sonnet | haiku |
+| amil-integration-checker | sonnet | sonnet | haiku |
+| amil-nyquist-auditor | sonnet | sonnet | haiku |
 
 ## Profile Philosophy
 
@@ -56,8 +56,8 @@ Override specific agents without changing the entire profile:
 {
   "model_profile": "balanced",
   "model_overrides": {
-    "odoo-gsd-executor": "opus",
-    "odoo-gsd-planner": "haiku"
+    "amil-executor": "opus",
+    "amil-planner": "haiku"
   }
 }
 ```
@@ -66,7 +66,7 @@ Overrides take precedence over the profile. Valid values: `opus`, `sonnet`, `hai
 
 ## Switching Profiles
 
-Runtime: `/odoo-gsd:set-profile <profile>`
+Runtime: `/amil:set-profile <profile>`
 
 Per-project default: Set in `.planning/config.json`:
 ```json
@@ -77,17 +77,17 @@ Per-project default: Set in `.planning/config.json`:
 
 ## Design Rationale
 
-**Why Opus for odoo-gsd-planner?**
+**Why Opus for amil-planner?**
 Planning involves architecture decisions, goal decomposition, and task design. This is where model quality has the highest impact.
 
-**Why Sonnet for odoo-gsd-executor?**
+**Why Sonnet for amil-executor?**
 Executors follow explicit PLAN.md instructions. The plan already contains the reasoning; execution is implementation.
 
 **Why Sonnet (not Haiku) for verifiers in balanced?**
 Verification requires goal-backward reasoning - checking if code *delivers* what the phase promised, not just pattern matching. Sonnet handles this well; Haiku may miss subtle gaps.
 
-**Why Haiku for odoo-gsd-codebase-mapper?**
+**Why Haiku for amil-codebase-mapper?**
 Read-only exploration and pattern extraction. No reasoning required, just structured output from file contents.
 
 **Why `inherit` instead of passing `opus` directly?**
-Claude Code's `"opus"` alias maps to a specific model version. Organizations may block older opus versions while allowing newer ones. GSD returns `"inherit"` for opus-tier agents, causing them to use whatever opus version the user has configured in their session. This avoids version conflicts and silent fallbacks to Sonnet.
+Claude Code's `"opus"` alias maps to a specific model version. Organizations may block older opus versions while allowing newer ones. Amil returns `"inherit"` for opus-tier agents, causing them to use whatever opus version the user has configured in their session. This avoids version conflicts and silent fallbacks to Sonnet.

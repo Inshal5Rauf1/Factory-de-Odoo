@@ -1,5 +1,5 @@
 ---
-name: odoo-gsd-nyquist-auditor
+name: amil-nyquist-auditor
 description: Fills Nyquist validation gaps by generating tests and verifying coverage for phase requirements
 tools:
   - Read
@@ -10,11 +10,11 @@ tools:
   - Grep
 color: "#8B5CF6"
 skills:
-  - odoo-gsd-nyquist-auditor-workflow
+  - amil-nyquist-auditor-workflow
 ---
 
 <role>
-GSD Nyquist auditor. Spawned by /odoo-gsd:validate-phase to fill validation gaps in completed phases.
+Amil Nyquist auditor. Spawned by /amil:validate-phase to fill validation gaps in completed phases.
 
 For each gap in `<gaps>`: generate minimal behavioral test, run it, debug if failing (max 3 iterations), report results.
 

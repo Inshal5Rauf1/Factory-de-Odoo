@@ -7,13 +7,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from odoo_gen_utils.search.wizard import AuthStatus, check_github_auth, format_auth_guidance
+from amil_utils.search.wizard import AuthStatus, check_github_auth, format_auth_guidance
 
 
 class TestCheckGithubAuth:
     """Tests for check_github_auth() function."""
 
-    @patch("odoo_gen_utils.search.wizard.subprocess.run")
+    @patch("amil_utils.search.wizard.subprocess.run")
     @patch.dict("os.environ", {}, clear=True)
     def test_gh_not_installed(self, mock_run: MagicMock) -> None:
         """When gh CLI is not installed, subprocess raises FileNotFoundError."""
@@ -24,7 +24,7 @@ class TestCheckGithubAuth:
         assert status.token_source is None
         assert "https://cli.github.com/" in status.guidance
 
-    @patch("odoo_gen_utils.search.wizard.subprocess.run")
+    @patch("amil_utils.search.wizard.subprocess.run")
     @patch.dict("os.environ", {}, clear=True)
     def test_gh_not_authenticated(self, mock_run: MagicMock) -> None:
         """When gh is installed but not authenticated, returncode != 0."""
@@ -35,7 +35,7 @@ class TestCheckGithubAuth:
         assert status.token_source is None
         assert "gh auth login" in status.guidance
 
-    @patch("odoo_gen_utils.search.wizard.subprocess.run")
+    @patch("amil_utils.search.wizard.subprocess.run")
     @patch.dict("os.environ", {}, clear=True)
     def test_gh_authenticated(self, mock_run: MagicMock) -> None:
         """When gh auth status succeeds, token_source is 'gh_cli'."""
@@ -46,7 +46,7 @@ class TestCheckGithubAuth:
         assert status.token_source == "gh_cli"
         assert "Authenticated" in status.guidance
 
-    @patch("odoo_gen_utils.search.wizard.subprocess.run")
+    @patch("amil_utils.search.wizard.subprocess.run")
     @patch.dict("os.environ", {"GITHUB_TOKEN": "ghp_test123"}, clear=True)
     def test_env_token_takes_precedence(self, mock_run: MagicMock) -> None:
         """When GITHUB_TOKEN env var is set, subprocess is NOT called."""
@@ -57,7 +57,7 @@ class TestCheckGithubAuth:
         assert "GITHUB_TOKEN" in status.guidance
         mock_run.assert_not_called()
 
-    @patch("odoo_gen_utils.search.wizard.subprocess.run")
+    @patch("amil_utils.search.wizard.subprocess.run")
     @patch.dict("os.environ", {}, clear=True)
     def test_timeout_handled(self, mock_run: MagicMock) -> None:
         """Subprocess timeout does not crash, returns reasonable AuthStatus."""

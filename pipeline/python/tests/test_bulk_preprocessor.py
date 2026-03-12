@@ -12,7 +12,7 @@ from typing import Any
 
 import pytest
 
-from odoo_gen_utils.preprocessors.bulk_operations import _process_bulk_operations
+from amil_utils.preprocessors.bulk_operations import _process_bulk_operations
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

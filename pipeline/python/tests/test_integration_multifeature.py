@@ -25,7 +25,7 @@ from typing import Any
 
 import pytest
 
-from odoo_gen_utils.renderer import get_template_dir, render_module
+from amil_utils.renderer import get_template_dir, render_module
 
 
 # ---------------------------------------------------------------------------
@@ -697,7 +697,7 @@ class TestWebhooksAuditPairwise:
 def _docker_available() -> bool:
     """Check if Docker daemon is available (lazy import)."""
     try:
-        from odoo_gen_utils.validation.docker_runner import check_docker_available
+        from amil_utils.validation.docker_runner import check_docker_available
 
         return check_docker_available()
     except Exception:
@@ -719,7 +719,7 @@ class TestKitchenSinkDocker:
     )
     def test_kitchen_sink_docker_install(self, tmp_path: Path) -> None:
         """Render the kitchen sink spec and install in Odoo via Docker."""
-        from odoo_gen_utils.validation.docker_runner import docker_install_module
+        from amil_utils.validation.docker_runner import docker_install_module
 
         spec = _get_kitchen_sink()
         files, warnings = render_module(

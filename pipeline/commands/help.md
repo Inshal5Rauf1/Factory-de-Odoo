@@ -1,9 +1,9 @@
 ---
-name: odoo-gen:help
-description: Show all available odoo-gen commands and usage
+name: amil:help
+description: Show all available amil commands and usage
 ---
 <objective>
-Display the complete odoo-gen command reference.
+Display the complete amil command reference.
 
 Output ONLY the reference content below. Do NOT add project-specific analysis, git status, or commentary beyond the reference.
 </objective>
@@ -11,14 +11,14 @@ Output ONLY the reference content below. Do NOT add project-specific analysis, g
 <process>
 Output the following command reference directly.
 
-# odoo-gen Command Reference
+# amil Command Reference
 
-An Odoo 17.0 module development automation tool built as a GSD extension.
+An Odoo 17.0 module development automation tool built as a Amil extension.
 
 ## Usage
 
 ```
-/odoo-gen:<command> [arguments]
+/amil:<command> [arguments]
 ```
 
 ## Commands
@@ -26,7 +26,7 @@ An Odoo 17.0 module development automation tool built as a GSD extension.
 | Command | Description | Status | Phase |
 |---------|-------------|--------|-------|
 | `new` | Scaffold a new Odoo 17.0 module from a natural language description | Active | 1 |
-| `help` | Show all available odoo-gen commands and usage | Active | 1 |
+| `help` | Show all available amil commands and usage | Active | 1 |
 | `config` | View or edit Odoo-specific configuration (odoo_version, edition, output_dir) | Wrapper | 1 |
 | `status` | Show current Odoo module generation status | Wrapper | 1 |
 | `resume` | Resume an interrupted Odoo module generation session | Wrapper | 1 |
@@ -40,34 +40,34 @@ An Odoo 17.0 module development automation tool built as a GSD extension.
 
 **Status Legend:**
 - **Active** -- Fully implemented and ready to use
-- **Wrapper** -- Provides Odoo-specific context on top of GSD equivalents
+- **Wrapper** -- Provides Odoo-specific context on top of Amil equivalents
 - **Stub** -- Registered but not yet implemented (see Phase column for activation)
 
 ## Examples
 
 ### Scaffold a new module
 ```
-/odoo-gen:new "inventory tracking with stock moves and warehouse locations"
+/amil:new "inventory tracking with stock moves and warehouse locations"
 ```
 
 ### Check available commands
 ```
-/odoo-gen:help
+/amil:help
 ```
 
 ### View Odoo configuration
 ```
-/odoo-gen:config
+/amil:config
 ```
 
 ### Check generation status
 ```
-/odoo-gen:status
+/amil:status
 ```
 
 ## Architecture
 
-odoo-gen is a GSD extension. It inherits orchestration, state management, checkpoints, and agent coordination from GSD. All Odoo-specific logic lives in `~/.claude/odoo-gen/`.
+amil is a Amil extension. It inherits orchestration, state management, checkpoints, and agent coordination from Amil. All Odoo-specific logic lives in `~/.claude/amil/`.
 
-For GSD commands, use `/gsd:help`.
+For Amil commands, use `/amil:help`.
 </process>

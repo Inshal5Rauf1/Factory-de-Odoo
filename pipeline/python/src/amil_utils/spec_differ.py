@@ -16,7 +16,7 @@ from typing import Any, TypedDict
 
 from deepdiff import DeepDiff
 
-logger = logging.getLogger("odoo-gen.spec_differ")
+logger = logging.getLogger("amil.spec_differ")
 
 
 # ---------------------------------------------------------------------------

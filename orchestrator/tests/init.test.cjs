@@ -1,5 +1,5 @@
 /**
- * GSD Tools Tests - Init
+ * Amil Tools Tests - Init
  */
 
 const { test, describe, beforeEach, afterEach } = require('node:test');

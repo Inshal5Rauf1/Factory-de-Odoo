@@ -18,7 +18,7 @@ header in ERP_CYCLE_LOG.md.
 
 ```
 /ralph-loop "
-You are the Factory de Odoo orchestrator. Run /odoo-gsd:run-prd to
+You are the Factory de Odoo orchestrator. Run /amil:run-prd to
 execute the next iteration of the ERP generation cycle.
 
 BEFORE EACH ITERATION:

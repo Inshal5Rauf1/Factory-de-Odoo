@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from odoo_gen_utils.validation.error_patterns import diagnose_errors, load_error_patterns
+from amil_utils.validation.error_patterns import diagnose_errors, load_error_patterns
 
 
 class TestLoadPatterns:
@@ -53,7 +53,7 @@ class TestLoadPatterns:
         json_path = (
             Path(__file__).parent.parent
             / "src"
-            / "odoo_gen_utils"
+            / "amil_utils"
             / "validation"
             / "data"
             / "error_patterns.json"

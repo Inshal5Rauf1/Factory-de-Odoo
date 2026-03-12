@@ -2,8 +2,8 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const provRegistry = require('../odoo-gsd/bin/lib/provisional-registry.cjs');
-const circularBreaker = require('../odoo-gsd/bin/lib/circular-dep-breaker.cjs');
+const provRegistry = require('../amil/bin/lib/provisional-registry.cjs');
+const circularBreaker = require('../amil/bin/lib/circular-dep-breaker.cjs');
 
 function makeTmpDir() {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-reg-test-'));

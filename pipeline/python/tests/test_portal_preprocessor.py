@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-from odoo_gen_utils.preprocessors._registry import (
+from amil_utils.preprocessors._registry import (
     clear_registry,
     get_registered_preprocessors,
 )
@@ -40,7 +40,7 @@ class TestPortalPreprocessor:
 
     def test_no_portal_key_returns_unchanged(self):
         """Preprocessor returns spec unchanged when no portal key."""
-        from odoo_gen_utils.preprocessors.portal import _process_portal
+        from amil_utils.preprocessors.portal import _process_portal
 
         spec: dict[str, Any] = {
             "module_name": "test_module",
@@ -53,7 +53,7 @@ class TestPortalPreprocessor:
 
     def test_sets_has_portal_true(self):
         """Preprocessor sets has_portal=True when portal key exists."""
-        from odoo_gen_utils.preprocessors.portal import _process_portal
+        from amil_utils.preprocessors.portal import _process_portal
 
         spec = _load_fixture()
         result = _process_portal(spec)
@@ -61,7 +61,7 @@ class TestPortalPreprocessor:
 
     def test_enriches_portal_pages(self):
         """Preprocessor creates portal_pages with enriched page metadata."""
-        from odoo_gen_utils.preprocessors.portal import _process_portal
+        from amil_utils.preprocessors.portal import _process_portal
 
         spec = _load_fixture()
         result = _process_portal(spec)
@@ -76,7 +76,7 @@ class TestPortalPreprocessor:
 
     def test_portal_auth_extracted(self):
         """Preprocessor extracts portal_auth from spec."""
-        from odoo_gen_utils.preprocessors.portal import _process_portal
+        from amil_utils.preprocessors.portal import _process_portal
 
         spec = _load_fixture()
         result = _process_portal(spec)
@@ -84,7 +84,7 @@ class TestPortalPreprocessor:
 
     def test_portal_auth_default(self):
         """portal_auth defaults to 'portal' when not specified."""
-        from odoo_gen_utils.preprocessors.portal import _process_portal
+        from amil_utils.preprocessors.portal import _process_portal
 
         spec: dict[str, Any] = {
             "module_name": "test",
@@ -107,7 +107,7 @@ class TestPortalPreprocessor:
 
     def test_auto_adds_portal_to_depends(self):
         """Preprocessor adds 'portal' to depends when not present."""
-        from odoo_gen_utils.preprocessors.portal import _process_portal
+        from amil_utils.preprocessors.portal import _process_portal
 
         spec: dict[str, Any] = {
             "module_name": "test",
@@ -130,7 +130,7 @@ class TestPortalPreprocessor:
 
     def test_no_duplicate_portal_depend(self):
         """Preprocessor does not duplicate 'portal' if already in depends."""
-        from odoo_gen_utils.preprocessors.portal import _process_portal
+        from amil_utils.preprocessors.portal import _process_portal
 
         spec = _load_fixture()
         # Fixture already has "portal" in depends
@@ -141,7 +141,7 @@ class TestPortalPreprocessor:
 
     def test_does_not_mutate_original_depends(self):
         """Preprocessor creates a new depends list (immutability)."""
-        from odoo_gen_utils.preprocessors.portal import _process_portal
+        from amil_utils.preprocessors.portal import _process_portal
 
         spec: dict[str, Any] = {
             "module_name": "test",
@@ -167,7 +167,7 @@ class TestPortalPreprocessor:
 
     def test_computes_portal_page_models(self):
         """Preprocessor computes sorted unique model names from pages."""
-        from odoo_gen_utils.preprocessors.portal import _process_portal
+        from amil_utils.preprocessors.portal import _process_portal
 
         spec = _load_fixture()
         result = _process_portal(spec)
@@ -182,7 +182,7 @@ class TestPortalPreprocessor:
 
     def test_enriched_page_has_model_var(self):
         """Enriched page has model_var derived from model name."""
-        from odoo_gen_utils.preprocessors.portal import _process_portal
+        from amil_utils.preprocessors.portal import _process_portal
 
         spec = _load_fixture()
         result = _process_portal(spec)
@@ -191,7 +191,7 @@ class TestPortalPreprocessor:
 
     def test_enriched_page_has_model_class(self):
         """Enriched page has model_class derived from model name."""
-        from odoo_gen_utils.preprocessors.portal import _process_portal
+        from amil_utils.preprocessors.portal import _process_portal
 
         spec = _load_fixture()
         result = _process_portal(spec)
@@ -200,7 +200,7 @@ class TestPortalPreprocessor:
 
     def test_enriched_page_has_singular_plural(self):
         """Enriched page has singular_name and plural_name derived from route."""
-        from odoo_gen_utils.preprocessors.portal import _process_portal
+        from amil_utils.preprocessors.portal import _process_portal
 
         spec = _load_fixture()
         result = _process_portal(spec)
@@ -212,7 +212,7 @@ class TestPortalPreprocessor:
 
     def test_returns_new_dict_not_mutated_original(self):
         """Preprocessor returns a new dict, not the original spec."""
-        from odoo_gen_utils.preprocessors.portal import _process_portal
+        from amil_utils.preprocessors.portal import _process_portal
 
         spec = _load_fixture()
         original = deepcopy(spec)
@@ -240,7 +240,7 @@ class TestPortalPreprocessorRegistry:
 
         submodule_names = [
             name for name in sorted(sys.modules)
-            if name.startswith("odoo_gen_utils.preprocessors.")
+            if name.startswith("amil_utils.preprocessors.")
             and not name.endswith("._registry")
         ]
         for name in submodule_names:

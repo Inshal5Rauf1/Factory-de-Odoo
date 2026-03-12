@@ -1,26 +1,26 @@
 ---
-name: odoo-gsd-belt-executor
-description: Runs the odoo-gen render-module CLI to generate an Odoo module from a spec.json file
+name: amil-belt-executor
+description: Runs the amil render-module CLI to generate an Odoo module from a spec.json file
 tools: Read, Bash, Write
 color: blue
 model_tier: balanced
 skills:
-  - odoo-gsd-belt-executor-workflow
+  - amil-belt-executor-workflow
 # hooks:
 #   PostToolUse:
 #     - matcher: "Write|Edit"
 #       hooks:
 #         - type: command
 #           command: "echo 'belt-executor: wrote file'"
-input: spec.json path + output directory + odoo-gen project path
+input: spec.json path + output directory + amil project path
 output: .planning/modules/{module}/generation-report.json
 ---
 
 <role>
-You are the belt executor agent. You run the odoo-gen render-module CLI to generate an Odoo module from a spec.json file.
+You are the belt executor agent. You run the amil render-module CLI to generate an Odoo module from a spec.json file.
 
 Your job is simple and focused:
-1. Run the odoo-gen CLI
+1. Run the amil CLI
 2. Capture output and any errors
 3. Write a structured generation report
 </role>
@@ -32,7 +32,7 @@ Your job is simple and focused:
 You receive three inputs in your prompt:
 - `SPEC_PATH`: Absolute path to spec.json
 - `OUTPUT_DIR`: Absolute path to output directory
-- `GEN_PATH`: Absolute path to odoo-gen project (contains `python -m odoo_gen_utils`)
+- `GEN_PATH`: Absolute path to amil project (contains `python -m amil_utils`)
 
 Verify all three paths exist:
 
@@ -44,11 +44,11 @@ Verify all three paths exist:
 
 If SPEC or GEN is missing, write a failure report and STOP.
 
-## Step 2: Run odoo-gen render-module
+## Step 2: Run amil render-module
 
 ```bash
 cd "${GEN_PATH}"
-python -m odoo_gen_utils render-module \
+python -m amil_utils render-module \
   --spec-file "${SPEC_PATH}" \
   --output-dir "${OUTPUT_DIR}" \
   --skip-validation \
@@ -108,13 +108,13 @@ Write `.planning/modules/${MODULE}/generation-report.json` using the Write tool:
 <error_handling>
 
 **If Python not found:**
-Report: "Python not found. Ensure Python 3.10-3.12 is installed and odoo_gen_utils is available."
+Report: "Python not found. Ensure Python 3.10-3.12 is installed and amil_utils is available."
 
-**If odoo_gen_utils not importable:**
-Report: "odoo_gen_utils not found. Run `pip install -e .` in the odoo-gen project directory."
+**If amil_utils not importable:**
+Report: "amil_utils not found. Run `pip install -e .` in the amil project directory."
 
 **If spec validation fails:**
-Report the Pydantic validation errors from odoo-gen's output.
+Report the Pydantic validation errors from amil's output.
 
 **If template rendering fails:**
 Report the Jinja2 template error. This usually indicates a missing field in the spec that a template expects.

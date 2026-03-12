@@ -1,5 +1,5 @@
 ---
-name: odoo-gen:research
+name: amil:research
 description: Research Odoo patterns and existing solutions for a module need
 argument-hint: "<research topic>"
 ---
@@ -8,7 +8,7 @@ Research Odoo 17.0 coding patterns, OCA standards, and existing solutions releva
 
 **This command is not yet available.** It will be implemented in Phase 2 (Knowledge Base).
 
-Run `/odoo-gen:help` to see currently available commands.
+Run `/amil:help` to see currently available commands.
 </objective>
 
 <planned_capabilities>

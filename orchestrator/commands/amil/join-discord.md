@@ -1,16 +1,16 @@
 ---
-name: gsd:join-discord
-description: Join the GSD Discord community
+name: amil:join-discord
+description: Join the Amil Discord community
 ---
 
 <objective>
-Display the Discord invite link for the GSD community server.
+Display the Discord invite link for the Amil community server.
 </objective>
 
 <output>
-# Join the GSD Discord
+# Join the Amil Discord
 
-Connect with other GSD users, get help, share what you're building, and stay updated.
+Connect with other Amil users, get help, share what you're building, and stay updated.
 
 **Invite link:** https://discord.gg/gsd
 

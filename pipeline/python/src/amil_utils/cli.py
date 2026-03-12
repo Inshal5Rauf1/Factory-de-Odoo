@@ -1,4 +1,4 @@
-"""Click CLI for odoo-gen-utils: render templates and scaffold Odoo modules."""
+"""Click CLI for amil-utils: render templates and scaffold Odoo modules."""
 
 from __future__ import annotations
 
@@ -11,13 +11,13 @@ _logger = logging.getLogger(__name__)
 
 import click
 
-from odoo_gen_utils import __version__
+from amil_utils import __version__
 
 
 @click.group()
 @click.version_option(version=__version__)
 def main() -> None:
-    """odoo-gen-utils: Python utilities for the odoo-gen GSD extension."""
+    """amil-utils: Python utilities for the amil Amil extension."""
 
 
 @main.command()
@@ -27,7 +27,7 @@ def main() -> None:
 @click.option("--var-file", type=click.Path(exists=True), help="JSON file with template variables")
 def render(template: str, output: str, var: tuple[str, ...], var_file: str | None) -> None:
     """Render a single Jinja2 template to a file."""
-    from odoo_gen_utils.renderer import (
+    from amil_utils.renderer import (
         create_renderer,
         create_versioned_renderer,
         get_template_dir,
@@ -86,7 +86,7 @@ def list_templates(odoo_version: str | None) -> None:
     Lists templates from shared/ plus version-specific directories. Use --version
     to filter to a specific Odoo version.
     """
-    from odoo_gen_utils.renderer import get_template_dir
+    from amil_utils.renderer import get_template_dir
 
     template_dir = get_template_dir()
 
@@ -179,7 +179,7 @@ main.add_command(registry)
 @click.option("--json", "json_output", is_flag=True, help="Output as JSON")
 def registry_list(json_output: bool) -> None:
     """List all registered modules and their models."""
-    from odoo_gen_utils.registry import ModelRegistry
+    from amil_utils.registry import ModelRegistry
 
     reg = ModelRegistry(_find_registry_path())
     reg.load()
@@ -203,7 +203,7 @@ def registry_list(json_output: bool) -> None:
 @click.argument("model_name")
 def registry_show(model_name: str) -> None:
     """Display details for a specific model."""
-    from odoo_gen_utils.registry import ModelRegistry
+    from amil_utils.registry import ModelRegistry
 
     reg = ModelRegistry(_find_registry_path())
     reg.load()
@@ -235,7 +235,7 @@ def registry_show(model_name: str) -> None:
 @click.argument("module_name")
 def registry_remove(module_name: str) -> None:
     """Remove a module from the registry."""
-    from odoo_gen_utils.registry import ModelRegistry
+    from amil_utils.registry import ModelRegistry
 
     reg = ModelRegistry(_find_registry_path())
     reg.load()
@@ -256,7 +256,7 @@ def registry_rebuild(scan_root: str) -> None:
     """Re-scan generated modules and rebuild registry from scratch."""
     import ast as ast_mod
 
-    from odoo_gen_utils.registry import ModelRegistry
+    from amil_utils.registry import ModelRegistry
 
     reg = ModelRegistry(_find_registry_path())
     # Start fresh
@@ -283,7 +283,7 @@ def registry_rebuild(scan_root: str) -> None:
 @registry.command("validate")
 def registry_validate() -> None:
     """Check for broken comodel references and dependency cycles."""
-    from odoo_gen_utils.registry import ModelRegistry
+    from amil_utils.registry import ModelRegistry
 
     reg = ModelRegistry(_find_registry_path())
     reg.load()
@@ -343,7 +343,7 @@ def registry_import(manifest_path: str) -> None:
     """Import an existing module into the registry from its manifest."""
     import ast as ast_mod
 
-    from odoo_gen_utils.registry import ModelRegistry
+    from amil_utils.registry import ModelRegistry
 
     manifest_file = Path(manifest_path).resolve()
     mod_dir = manifest_file.parent
@@ -460,9 +460,9 @@ def render_module_cmd(spec_file: str, output_dir: str, no_context7: bool, fresh_
     """Render a complete Odoo module from a JSON specification file."""
     from pydantic import ValidationError as PydanticValidationError
 
-    from odoo_gen_utils.renderer import get_template_dir, render_module
-    from odoo_gen_utils.spec_schema import format_validation_errors
-    from odoo_gen_utils.verifier import build_verifier_from_env
+    from amil_utils.renderer import get_template_dir, render_module
+    from amil_utils.spec_schema import format_validation_errors
+    from amil_utils.verifier import build_verifier_from_env
 
     try:
         spec = json.loads(Path(spec_file).read_text(encoding="utf-8"))
@@ -483,7 +483,7 @@ def render_module_cmd(spec_file: str, output_dir: str, no_context7: bool, fresh_
     # Phase 54: Load manifest for resume and instantiate hooks
     resume_manifest = None
     if resume:
-        from odoo_gen_utils.manifest import load_manifest
+        from amil_utils.manifest import load_manifest
 
         module_name = spec["module_name"]
         resume_manifest = load_manifest(output_path / module_name)
@@ -491,7 +491,7 @@ def render_module_cmd(spec_file: str, output_dir: str, no_context7: bool, fresh_
             click.echo("No previous manifest found. Running full generation.", err=True)
 
     try:
-        from odoo_gen_utils.hooks import LoggingHook, ManifestHook
+        from amil_utils.hooks import LoggingHook, ManifestHook
 
         module_name = spec["module_name"]
         render_hooks = [
@@ -514,7 +514,7 @@ def render_module_cmd(spec_file: str, output_dir: str, no_context7: bool, fresh_
                 click.echo(f"  Suggestion: {w.suggestion}", err=True)
 
         # Phase 60: Show pending conflicts summary
-        pending_dir = output_path / module_name / ".odoo-gen-pending"
+        pending_dir = output_path / module_name / ".amil-pending"
         if pending_dir.exists():
             pending_files = [
                 str(f.relative_to(pending_dir))
@@ -524,12 +524,12 @@ def render_module_cmd(spec_file: str, output_dir: str, no_context7: bool, fresh_
                 click.echo(f"\nPending conflicts ({len(pending_files)} files):", err=True)
                 for pf in pending_files:
                     click.echo(f"  {pf}", err=True)
-                click.echo("Use 'odoo-gen resolve' to manage pending files.", err=True)
+                click.echo("Use 'amil resolve' to manage pending files.", err=True)
 
         # Logic Writer: generate stub report
         try:
-            from odoo_gen_utils.logic_writer import generate_stub_report
-            from odoo_gen_utils.registry import ModelRegistry as _StubRegistry
+            from amil_utils.logic_writer import generate_stub_report
+            from amil_utils.registry import ModelRegistry as _StubRegistry
 
             module_name = spec["module_name"]
             stub_reg: _StubRegistry | None = None
@@ -560,7 +560,7 @@ def render_module_cmd(spec_file: str, output_dir: str, no_context7: bool, fresh_
 
         # Post-render semantic validation
         if not skip_validation:
-            from odoo_gen_utils.validation.semantic import (
+            from amil_utils.validation.semantic import (
                 print_validation_report,
                 semantic_validate,
             )
@@ -577,7 +577,7 @@ def render_module_cmd(spec_file: str, output_dir: str, no_context7: bool, fresh_
 
         # Post-render registry update
         try:
-            from odoo_gen_utils.registry import ModelRegistry
+            from amil_utils.registry import ModelRegistry
 
             reg_path = _find_registry_path()
             reg = ModelRegistry(reg_path)
@@ -602,7 +602,7 @@ def render_module_cmd(spec_file: str, output_dir: str, no_context7: bool, fresh_
             # Auto-generate mermaid diagrams (best-effort)
             if not skip_validation:
                 try:
-                    from odoo_gen_utils.mermaid import generate_module_diagrams
+                    from amil_utils.mermaid import generate_module_diagrams
 
                     module_name = spec["module_name"]
                     docs_dir = output_path / module_name / "docs"
@@ -637,7 +637,7 @@ def export_schema(output: str | None) -> None:
     """Export the module spec JSON Schema for IDE autocomplete."""
     import json as json_mod
 
-    from odoo_gen_utils.spec_schema import ModuleSpec
+    from amil_utils.spec_schema import ModuleSpec
 
     schema = ModuleSpec.model_json_schema()
     schema_json = json_mod.dumps(schema, indent=2)
@@ -652,7 +652,7 @@ def export_schema(output: str | None) -> None:
 def _resolve_kb_path() -> Path:
     """Resolve the knowledge base directory path.
 
-    Checks the installed location first (``~/.claude/odoo-gen/knowledge/``),
+    Checks the installed location first (``~/.claude/amil/knowledge/``),
     then falls back to a development location (``./knowledge/``).
 
     Returns:
@@ -661,7 +661,7 @@ def _resolve_kb_path() -> Path:
     Raises:
         click.ClickException: If no knowledge base directory is found.
     """
-    installed = Path.home() / ".claude" / "odoo-gen" / "knowledge"
+    installed = Path.home() / ".claude" / "amil" / "knowledge"
     if installed.is_dir():
         return installed
 
@@ -673,7 +673,7 @@ def _resolve_kb_path() -> Path:
         "Knowledge base not found. Checked:\n"
         f"  - {installed}\n"
         f"  - {dev}\n"
-        "Run install.sh or cd to the odoo-gen project directory."
+        "Run install.sh or cd to the amil project directory."
     )
 
 
@@ -700,7 +700,7 @@ def validate_kb(scope: str) -> None:
     Checks format only: headings, code blocks, line count. Does not validate
     the semantic correctness of rule content.
     """
-    from odoo_gen_utils.kb_validator import validate_kb_directory
+    from amil_utils.kb_validator import validate_kb_directory
 
     kb_path = _resolve_kb_path()
 
@@ -759,7 +759,7 @@ def extract_i18n(module_path: str) -> None:
     Scans Python files for _() calls and XML files for string= attributes.
     Writes MODULE_NAME.pot to MODULE_PATH/i18n/.
     """
-    from odoo_gen_utils.i18n_extractor import extract_translatable_strings, generate_pot
+    from amil_utils.i18n_extractor import extract_translatable_strings, generate_pot
 
     mod_path = Path(module_path).resolve()
     module_name = mod_path.name
@@ -790,7 +790,7 @@ def check_edition(spec_file: str, json_output: bool) -> None:
 
     Exit code is always 0 -- warnings are informational (Decision B).
     """
-    from odoo_gen_utils.edition import check_enterprise_dependencies
+    from amil_utils.edition import check_enterprise_dependencies
 
     try:
         spec = json.loads(Path(spec_file).read_text(encoding="utf-8"))
@@ -843,8 +843,8 @@ def validate(
     With --auto-fix, attempts to mechanically fix known pylint violations
     (up to 5 cycles) before reporting remaining issues.
     """
-    from odoo_gen_utils.auto_fix import format_escalation, run_docker_fix_loop, run_pylint_fix_loop
-    from odoo_gen_utils.validation import (
+    from amil_utils.auto_fix import format_escalation, run_docker_fix_loop, run_pylint_fix_loop
+    from amil_utils.validation import (
         ValidationReport,
         check_docker_available,
         diagnose_errors,
@@ -984,7 +984,7 @@ def _handle_auth_failure(no_wizard: bool) -> None:
             err=True,
         )
     else:
-        from odoo_gen_utils.search.wizard import check_github_auth, format_auth_guidance
+        from amil_utils.search.wizard import check_github_auth, format_auth_guidance
 
         status = check_github_auth()
         click.echo(format_auth_guidance(status), err=True)
@@ -993,7 +993,7 @@ def _handle_auth_failure(no_wizard: bool) -> None:
 
 @main.command("build-index")
 @click.option("--token", envvar="GITHUB_TOKEN", default=None, help="GitHub personal access token")
-@click.option("--db-path", default=None, help="ChromaDB storage path (default: ~/.local/share/odoo-gen/chromadb/)")
+@click.option("--db-path", default=None, help="ChromaDB storage path (default: ~/.local/share/amil/chromadb/)")
 @click.option("--update", is_flag=True, help="Only re-index repos pushed since last build")
 @click.option("--no-wizard", is_flag=True, help="Skip interactive setup guidance on auth failure")
 def build_index(token: str | None, db_path: str | None, update: bool, no_wizard: bool) -> None:
@@ -1003,8 +1003,8 @@ def build_index(token: str | None, db_path: str | None, update: bool, no_wizard:
     metadata from __manifest__.py files, and stores embeddings in a local
     ChromaDB database for semantic search.
     """
-    from odoo_gen_utils.search import build_oca_index, get_github_token
-    from odoo_gen_utils.search.index import DEFAULT_DB_PATH
+    from amil_utils.search import build_oca_index, get_github_token
+    from amil_utils.search.index import DEFAULT_DB_PATH
 
     if token is None:
         token = get_github_token()
@@ -1037,7 +1037,7 @@ def index_status(db_path: str | None, json_output: bool) -> None:
     Reports whether the index exists, how many modules are indexed,
     when it was last built, and the storage location.
     """
-    from odoo_gen_utils.search import get_index_status
+    from amil_utils.search import get_index_status
 
     status = get_index_status(db_path)
 
@@ -1055,7 +1055,7 @@ def index_status(db_path: str | None, json_output: bool) -> None:
         else:
             click.echo("Index exists: no")
             click.echo(f"Storage path: {status.db_path}")
-            click.echo("Run 'odoo-gen-utils build-index' to create the index.")
+            click.echo("Run 'amil-utils build-index' to create the index.")
 
 
 @main.command("search-modules")
@@ -1084,9 +1084,9 @@ def search_modules_cmd(
     With --github, falls back to live GitHub search when no OCA results found.
     Auto-builds the index on first use if it does not exist.
     """
-    from odoo_gen_utils.search import build_oca_index, get_github_token, get_index_status
-    from odoo_gen_utils.search.index import DEFAULT_DB_PATH
-    from odoo_gen_utils.search.query import (
+    from amil_utils.search import build_oca_index, get_github_token, get_index_status
+    from amil_utils.search.index import DEFAULT_DB_PATH
+    from amil_utils.search.query import (
         format_results_json,
         format_results_text,
         search_modules,
@@ -1181,9 +1181,9 @@ def extend_module_cmd(
     {module}_ext/spec.json and overwrites the original spec.json path
     (REFN-03: refined spec is the new source of truth).
     """
-    from odoo_gen_utils.search import get_github_token
-    from odoo_gen_utils.search.analyzer import analyze_module, format_analysis_text
-    from odoo_gen_utils.search.fork import clone_oca_module, setup_companion_dir
+    from amil_utils.search import get_github_token
+    from amil_utils.search.analyzer import analyze_module, format_analysis_text
+    from amil_utils.search.fork import clone_oca_module, setup_companion_dir
 
     out_path = Path(output_dir).resolve()
 
@@ -1261,7 +1261,7 @@ def show_state(module_path: str, json_output: bool) -> None:
     mod_path = Path(module_path).resolve()
 
     # Phase 54: Try new manifest format first
-    from odoo_gen_utils.manifest import MANIFEST_FILENAME, load_manifest
+    from amil_utils.manifest import MANIFEST_FILENAME, load_manifest
 
     manifest = load_manifest(mod_path)
 
@@ -1290,11 +1290,11 @@ def show_state(module_path: str, json_output: bool) -> None:
             click.echo(f"Models: {', '.join(manifest.models_registered)}")
         return
 
-    # Legacy .odoo-gen-state.json is no longer supported.
-    legacy_state = mod_path / ".odoo-gen-state.json"
+    # Legacy .amil-state.json is no longer supported.
+    legacy_state = mod_path / ".amil-state.json"
     if legacy_state.exists():
         click.echo(
-            "Legacy state file found (.odoo-gen-state.json). "
+            "Legacy state file found (.amil-state.json). "
             "Re-generate the module with the current version for manifest tracking."
         )
         return
@@ -1305,7 +1305,7 @@ def show_state(module_path: str, json_output: bool) -> None:
 @main.command("context7-status")
 def context7_status() -> None:
     """Check Context7 API configuration status."""
-    from odoo_gen_utils.context7 import build_context7_from_env
+    from amil_utils.context7 import build_context7_from_env
 
     client = build_context7_from_env()
 
@@ -1334,7 +1334,7 @@ def diff_spec(old_spec: str, new_spec: str, json_output: bool) -> None:
     Default: human-readable summary followed by JSON.
     With --json: JSON only, no human summary.
     """
-    from odoo_gen_utils.spec_differ import diff_specs, format_human_summary
+    from amil_utils.spec_differ import diff_specs, format_human_summary
 
     try:
         old_data = json.loads(Path(old_spec).read_text(encoding="utf-8"))
@@ -1381,8 +1381,8 @@ def gen_migration(old_spec: str, new_spec: str, migration_version: str, output_d
 
     Creates {output-dir}/migrations/{version}/ directory with the scripts.
     """
-    from odoo_gen_utils.migration_generator import generate_migration
-    from odoo_gen_utils.spec_differ import diff_specs
+    from amil_utils.migration_generator import generate_migration
+    from amil_utils.spec_differ import diff_specs
 
     try:
         old_data = json.loads(Path(old_spec).read_text(encoding="utf-8"))
@@ -1452,13 +1452,13 @@ def mermaid_cmd(
 
     Use --stdout to print diagram content to the console instead of writing files.
     """
-    from odoo_gen_utils.mermaid import (
+    from amil_utils.mermaid import (
         generate_dependency_dag,
         generate_er_diagram,
         generate_module_diagrams,
         generate_project_diagrams,
     )
-    from odoo_gen_utils.registry import ModelRegistry
+    from amil_utils.registry import ModelRegistry
 
     # Validate: exactly one of --module or --project must be specified
     if module and is_project:
@@ -1482,7 +1482,7 @@ def mermaid_cmd(
                 lines: list[str] = ["graph TD"]
                 all_nodes: set[str] = set()
                 all_edges: list[str] = []
-                from odoo_gen_utils.mermaid import _mermaid_id, _is_external_module, _EXTERNAL_CLASSDEF
+                from amil_utils.mermaid import _mermaid_id, _is_external_module, _EXTERNAL_CLASSDEF
                 for mod, deps in reg._dependency_graph.items():
                     mod_id = _mermaid_id(mod)
                     if mod_id not in all_nodes:
@@ -1501,7 +1501,7 @@ def mermaid_cmd(
                 lines.append(f"    {_EXTERNAL_CLASSDEF}")
                 click.echo("\n".join(lines))
             if diagram_type in ("er", "all"):
-                from odoo_gen_utils.mermaid import generate_er_diagram as _gen_er
+                from amil_utils.mermaid import generate_er_diagram as _gen_er
                 # Generate combined ER for all modules
                 all_models = dict(reg._models)
                 # Use first module as context -- pass all as a single "module"
@@ -1584,7 +1584,7 @@ def resolve_group() -> None:
 @click.option("--module-dir", required=True, type=click.Path(exists=True), help="Module directory")
 def resolve_status_cmd(module_dir: str) -> None:
     """Show pending conflict files."""
-    from odoo_gen_utils.iterative.resolve import resolve_status
+    from amil_utils.iterative.resolve import resolve_status
 
     pending = resolve_status(Path(module_dir))
     if not pending:
@@ -1600,7 +1600,7 @@ def resolve_status_cmd(module_dir: str) -> None:
 @click.option("--module-dir", required=True, type=click.Path(exists=True), help="Module directory")
 def resolve_accept_all_cmd(module_dir: str) -> None:
     """Accept all pending conflict files (overwrite current with new)."""
-    from odoo_gen_utils.iterative.resolve import resolve_accept_all
+    from amil_utils.iterative.resolve import resolve_accept_all
 
     count = resolve_accept_all(Path(module_dir))
     if count == 0:
@@ -1614,7 +1614,7 @@ def resolve_accept_all_cmd(module_dir: str) -> None:
 @click.argument("file_path")
 def resolve_accept_new_cmd(module_dir: str, file_path: str) -> None:
     """Accept the new version of a specific pending file."""
-    from odoo_gen_utils.iterative.resolve import resolve_accept_new
+    from amil_utils.iterative.resolve import resolve_accept_new
 
     result = resolve_accept_new(Path(module_dir), file_path)
     if result:
@@ -1629,7 +1629,7 @@ def resolve_accept_new_cmd(module_dir: str, file_path: str) -> None:
 @click.argument("file_path")
 def resolve_keep_mine_cmd(module_dir: str, file_path: str) -> None:
     """Keep the current version of a specific file, discard pending."""
-    from odoo_gen_utils.iterative.resolve import resolve_keep_mine
+    from amil_utils.iterative.resolve import resolve_keep_mine
 
     result = resolve_keep_mine(Path(module_dir), file_path)
     if result:
@@ -1662,7 +1662,7 @@ def factory_docker(
     state_dir: str,
 ) -> None:
     """Manage the persistent Docker factory instance for 90+ module generation."""
-    from odoo_gen_utils.validation.persistent_docker import PersistentDockerManager
+    from amil_utils.validation.persistent_docker import PersistentDockerManager
 
     manager = PersistentDockerManager()
     sd = Path(state_dir)

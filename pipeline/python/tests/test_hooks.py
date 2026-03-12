@@ -1,4 +1,4 @@
-"""Unit tests for odoo_gen_utils.hooks module.
+"""Unit tests for amil_utils.hooks module.
 
 Tests cover: RenderHook Protocol, LoggingHook, ManifestHook, CheckpointPause,
 notify_hooks helper, and zero-overhead when hooks list is empty.
@@ -22,7 +22,7 @@ class TestRenderHookProtocol:
 
     def test_class_with_all_methods_is_instance(self):
         """A class implementing all three methods is isinstance(RenderHook)."""
-        from odoo_gen_utils.hooks import RenderHook
+        from amil_utils.hooks import RenderHook
 
         class GoodHook:
             def on_preprocess_complete(self, module_name, models, preprocessors_run):
@@ -38,7 +38,7 @@ class TestRenderHookProtocol:
 
     def test_class_missing_method_is_not_instance(self):
         """A class missing a method is NOT isinstance(RenderHook)."""
-        from odoo_gen_utils.hooks import RenderHook
+        from amil_utils.hooks import RenderHook
 
         class BadHook:
             def on_preprocess_complete(self, module_name, models, preprocessors_run):
@@ -53,7 +53,7 @@ class TestRenderHookProtocol:
 
     def test_runtime_checkable(self):
         """RenderHook is runtime_checkable."""
-        from odoo_gen_utils.hooks import RenderHook
+        from amil_utils.hooks import RenderHook
 
         # runtime_checkable protocols allow isinstance() checks
         assert hasattr(RenderHook, "__protocol_attrs__") or hasattr(
@@ -71,8 +71,8 @@ class TestLoggingHook:
 
     def test_on_stage_complete_outputs_icon_and_name(self, capsys):
         """on_stage_complete with status='complete' outputs icon + stage name + duration."""
-        from odoo_gen_utils.hooks import LoggingHook
-        from odoo_gen_utils.manifest import StageResult
+        from amil_utils.hooks import LoggingHook
+        from amil_utils.manifest import StageResult
 
         hook = LoggingHook()
         result = StageResult(status="complete", duration_ms=42)
@@ -85,8 +85,8 @@ class TestLoggingHook:
 
     def test_on_stage_complete_failed_icon(self, capsys):
         """on_stage_complete with status='failed' uses [!!] icon."""
-        from odoo_gen_utils.hooks import LoggingHook
-        from odoo_gen_utils.manifest import StageResult
+        from amil_utils.hooks import LoggingHook
+        from amil_utils.manifest import StageResult
 
         hook = LoggingHook()
         result = StageResult(status="failed", error="Crash")
@@ -97,8 +97,8 @@ class TestLoggingHook:
 
     def test_on_stage_complete_skipped_icon(self, capsys):
         """on_stage_complete with status='skipped' uses [--] icon."""
-        from odoo_gen_utils.hooks import LoggingHook
-        from odoo_gen_utils.manifest import StageResult
+        from amil_utils.hooks import LoggingHook
+        from amil_utils.manifest import StageResult
 
         hook = LoggingHook()
         result = StageResult(status="skipped")
@@ -109,8 +109,8 @@ class TestLoggingHook:
 
     def test_on_stage_complete_pending_icon(self, capsys):
         """on_stage_complete with status='pending' uses [..] icon."""
-        from odoo_gen_utils.hooks import LoggingHook
-        from odoo_gen_utils.manifest import StageResult
+        from amil_utils.hooks import LoggingHook
+        from amil_utils.manifest import StageResult
 
         hook = LoggingHook()
         result = StageResult(status="pending")
@@ -121,7 +121,7 @@ class TestLoggingHook:
 
     def test_on_preprocess_complete_outputs_count(self, capsys):
         """on_preprocess_complete outputs preprocessor count."""
-        from odoo_gen_utils.hooks import LoggingHook
+        from amil_utils.hooks import LoggingHook
 
         hook = LoggingHook()
         hook.on_preprocess_complete(
@@ -134,8 +134,8 @@ class TestLoggingHook:
 
     def test_on_render_complete_outputs_summary(self, capsys):
         """on_render_complete outputs summary with file/line counts."""
-        from odoo_gen_utils.hooks import LoggingHook
-        from odoo_gen_utils.manifest import ArtifactInfo, GenerationManifest
+        from amil_utils.hooks import LoggingHook
+        from amil_utils.manifest import ArtifactInfo, GenerationManifest
 
         hook = LoggingHook()
         manifest = GenerationManifest(
@@ -153,7 +153,7 @@ class TestLoggingHook:
 
     def test_logging_hook_is_render_hook(self):
         """LoggingHook satisfies the RenderHook Protocol."""
-        from odoo_gen_utils.hooks import LoggingHook, RenderHook
+        from amil_utils.hooks import LoggingHook, RenderHook
 
         assert isinstance(LoggingHook(), RenderHook)
 
@@ -168,8 +168,8 @@ class TestManifestHook:
 
     def test_on_render_complete_calls_save_manifest(self, tmp_path: Path):
         """on_render_complete calls save_manifest with manifest and module_path."""
-        from odoo_gen_utils.hooks import ManifestHook
-        from odoo_gen_utils.manifest import GenerationManifest, MANIFEST_FILENAME
+        from amil_utils.hooks import ManifestHook
+        from amil_utils.manifest import GenerationManifest, MANIFEST_FILENAME
 
         hook = ManifestHook(module_path=tmp_path)
         manifest = GenerationManifest(
@@ -185,7 +185,7 @@ class TestManifestHook:
 
     def test_on_preprocess_complete_is_noop(self):
         """on_preprocess_complete is a no-op (doesn't raise)."""
-        from odoo_gen_utils.hooks import ManifestHook
+        from amil_utils.hooks import ManifestHook
 
         hook = ManifestHook(module_path=Path("/tmp"))
         # Should not raise
@@ -193,8 +193,8 @@ class TestManifestHook:
 
     def test_on_stage_complete_is_noop(self):
         """on_stage_complete is a no-op (doesn't raise)."""
-        from odoo_gen_utils.hooks import ManifestHook
-        from odoo_gen_utils.manifest import StageResult
+        from amil_utils.hooks import ManifestHook
+        from amil_utils.manifest import StageResult
 
         hook = ManifestHook(module_path=Path("/tmp"))
         result = StageResult(status="complete")
@@ -203,14 +203,14 @@ class TestManifestHook:
 
     def test_manifest_hook_is_render_hook(self):
         """ManifestHook satisfies the RenderHook Protocol."""
-        from odoo_gen_utils.hooks import ManifestHook, RenderHook
+        from amil_utils.hooks import ManifestHook, RenderHook
 
         assert isinstance(ManifestHook(module_path=Path("/tmp")), RenderHook)
 
     def test_on_render_complete_never_blocks_on_error(self, tmp_path: Path):
         """on_render_complete swallows errors and never blocks."""
-        from odoo_gen_utils.hooks import ManifestHook
-        from odoo_gen_utils.manifest import GenerationManifest
+        from amil_utils.hooks import ManifestHook
+        from amil_utils.manifest import GenerationManifest
 
         # Use a non-existent deeply nested path that can't be created
         hook = ManifestHook(module_path=tmp_path / "no" / "such" / "dir")
@@ -234,13 +234,13 @@ class TestCheckpointPause:
 
     def test_is_exception_subclass(self):
         """CheckpointPause is a subclass of Exception."""
-        from odoo_gen_utils.hooks import CheckpointPause
+        from amil_utils.hooks import CheckpointPause
 
         assert issubclass(CheckpointPause, Exception)
 
     def test_stores_attributes(self):
         """CheckpointPause stores stage_name, module_name, message."""
-        from odoo_gen_utils.hooks import CheckpointPause
+        from amil_utils.hooks import CheckpointPause
 
         exc = CheckpointPause(
             module_name="my_module",
@@ -253,7 +253,7 @@ class TestCheckpointPause:
 
     def test_default_message(self):
         """CheckpointPause generates a default message if none provided."""
-        from odoo_gen_utils.hooks import CheckpointPause
+        from amil_utils.hooks import CheckpointPause
 
         exc = CheckpointPause(module_name="my_module", stage_name="security")
         assert "security" in exc.message
@@ -261,7 +261,7 @@ class TestCheckpointPause:
 
     def test_can_be_raised_and_caught(self):
         """CheckpointPause can be raised and caught."""
-        from odoo_gen_utils.hooks import CheckpointPause
+        from amil_utils.hooks import CheckpointPause
 
         with pytest.raises(CheckpointPause) as exc_info:
             raise CheckpointPause(
@@ -281,20 +281,20 @@ class TestZeroOverhead:
 
     def test_notify_hooks_none_is_noop(self):
         """notify_hooks with None hooks is a no-op."""
-        from odoo_gen_utils.hooks import notify_hooks
+        from amil_utils.hooks import notify_hooks
 
         # Should not raise
         notify_hooks(None, "on_stage_complete", "mod", "stage", MagicMock(), [])
 
     def test_notify_hooks_empty_list_is_noop(self):
         """notify_hooks with empty list is a no-op."""
-        from odoo_gen_utils.hooks import notify_hooks
+        from amil_utils.hooks import notify_hooks
 
         notify_hooks([], "on_stage_complete", "mod", "stage", MagicMock(), [])
 
     def test_notify_hooks_calls_all_hooks(self):
         """notify_hooks calls the method on all hooks."""
-        from odoo_gen_utils.hooks import notify_hooks
+        from amil_utils.hooks import notify_hooks
 
         hook1 = MagicMock()
         hook2 = MagicMock()
@@ -305,7 +305,7 @@ class TestZeroOverhead:
 
     def test_notify_hooks_isolates_exceptions(self):
         """notify_hooks isolates regular exceptions from crashing the pipeline."""
-        from odoo_gen_utils.hooks import notify_hooks
+        from amil_utils.hooks import notify_hooks
 
         hook1 = MagicMock()
         hook1.on_stage_complete.side_effect = RuntimeError("boom")
@@ -317,7 +317,7 @@ class TestZeroOverhead:
 
     def test_notify_hooks_propagates_checkpoint_pause(self):
         """notify_hooks propagates CheckpointPause (intentional pause)."""
-        from odoo_gen_utils.hooks import CheckpointPause, notify_hooks
+        from amil_utils.hooks import CheckpointPause, notify_hooks
 
         hook = MagicMock()
         hook.on_stage_complete.side_effect = CheckpointPause(
@@ -340,9 +340,9 @@ class TestHookExceptionIsolation:
         """A hook raising ValueError in on_stage_complete does NOT crash render_module."""
         from unittest.mock import MagicMock
 
-        from odoo_gen_utils.hooks import RenderHook
-        from odoo_gen_utils.renderer import STAGE_NAMES, render_module
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.hooks import RenderHook
+        from amil_utils.renderer import STAGE_NAMES, render_module
+        from amil_utils.validation.types import Result
 
         module_name = "test_mod"
         spec = {"module_name": module_name, "models": [], "odoo_version": "17.0"}
@@ -353,13 +353,13 @@ class TestHookExceptionIsolation:
         for stage in STAGE_NAMES:
             fn_name = f"render_{stage}"
             mock_fn = MagicMock(return_value=Result(success=True, data=[]))
-            monkeypatch.setattr(f"odoo_gen_utils.renderer.{fn_name}", mock_fn)
+            monkeypatch.setattr(f"amil_utils.renderer.{fn_name}", mock_fn)
 
-        monkeypatch.setattr("odoo_gen_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
-        monkeypatch.setattr("odoo_gen_utils.renderer._validate_no_cycles", lambda s: None)
-        monkeypatch.setattr("odoo_gen_utils.renderer.run_preprocessors", lambda s: s)
-        monkeypatch.setattr("odoo_gen_utils.renderer.build_context7_from_env", lambda: MagicMock())
-        monkeypatch.setattr("odoo_gen_utils.renderer.context7_enrich", lambda *a, **kw: {})
+        monkeypatch.setattr("amil_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
+        monkeypatch.setattr("amil_utils.renderer._validate_no_cycles", lambda s: None)
+        monkeypatch.setattr("amil_utils.renderer.run_preprocessors", lambda s: s)
+        monkeypatch.setattr("amil_utils.renderer.build_context7_from_env", lambda: MagicMock())
+        monkeypatch.setattr("amil_utils.renderer.context7_enrich", lambda *a, **kw: {})
 
         # Create a hook that raises ValueError
         class BadHook:
@@ -384,9 +384,9 @@ class TestHookExceptionIsolation:
         """CheckpointPause from a hook DOES propagate through render_module."""
         from unittest.mock import MagicMock
 
-        from odoo_gen_utils.hooks import CheckpointPause
-        from odoo_gen_utils.renderer import STAGE_NAMES, render_module
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.hooks import CheckpointPause
+        from amil_utils.renderer import STAGE_NAMES, render_module
+        from amil_utils.validation.types import Result
 
         module_name = "test_mod"
         spec = {"module_name": module_name, "models": [], "odoo_version": "17.0"}
@@ -397,13 +397,13 @@ class TestHookExceptionIsolation:
         for stage in STAGE_NAMES:
             fn_name = f"render_{stage}"
             mock_fn = MagicMock(return_value=Result(success=True, data=[]))
-            monkeypatch.setattr(f"odoo_gen_utils.renderer.{fn_name}", mock_fn)
+            monkeypatch.setattr(f"amil_utils.renderer.{fn_name}", mock_fn)
 
-        monkeypatch.setattr("odoo_gen_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
-        monkeypatch.setattr("odoo_gen_utils.renderer._validate_no_cycles", lambda s: None)
-        monkeypatch.setattr("odoo_gen_utils.renderer.run_preprocessors", lambda s: s)
-        monkeypatch.setattr("odoo_gen_utils.renderer.build_context7_from_env", lambda: MagicMock())
-        monkeypatch.setattr("odoo_gen_utils.renderer.context7_enrich", lambda *a, **kw: {})
+        monkeypatch.setattr("amil_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
+        monkeypatch.setattr("amil_utils.renderer._validate_no_cycles", lambda s: None)
+        monkeypatch.setattr("amil_utils.renderer.run_preprocessors", lambda s: s)
+        monkeypatch.setattr("amil_utils.renderer.build_context7_from_env", lambda: MagicMock())
+        monkeypatch.setattr("amil_utils.renderer.context7_enrich", lambda *a, **kw: {})
 
         # Create a hook that raises CheckpointPause on first stage
         class PauseHook:
@@ -436,8 +436,8 @@ class TestZeroOverheadIntegration:
         """render_module() with hooks=None never calls notify_hooks with non-None hooks."""
         from unittest.mock import MagicMock
 
-        from odoo_gen_utils.renderer import STAGE_NAMES, render_module
-        from odoo_gen_utils.validation.types import Result
+        from amil_utils.renderer import STAGE_NAMES, render_module
+        from amil_utils.validation.types import Result
 
         module_name = "test_mod"
         spec = {"module_name": module_name, "models": [], "odoo_version": "17.0"}
@@ -447,13 +447,13 @@ class TestZeroOverheadIntegration:
         for stage in STAGE_NAMES:
             fn_name = f"render_{stage}"
             mock_fn = MagicMock(return_value=Result(success=True, data=[]))
-            monkeypatch.setattr(f"odoo_gen_utils.renderer.{fn_name}", mock_fn)
+            monkeypatch.setattr(f"amil_utils.renderer.{fn_name}", mock_fn)
 
-        monkeypatch.setattr("odoo_gen_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
-        monkeypatch.setattr("odoo_gen_utils.renderer._validate_no_cycles", lambda s: None)
-        monkeypatch.setattr("odoo_gen_utils.renderer.run_preprocessors", lambda s: s)
-        monkeypatch.setattr("odoo_gen_utils.renderer.build_context7_from_env", lambda: MagicMock())
-        monkeypatch.setattr("odoo_gen_utils.renderer.context7_enrich", lambda *a, **kw: {})
+        monkeypatch.setattr("amil_utils.renderer.validate_spec", lambda s: MagicMock(model_dump=lambda **kw: spec))
+        monkeypatch.setattr("amil_utils.renderer._validate_no_cycles", lambda s: None)
+        monkeypatch.setattr("amil_utils.renderer.run_preprocessors", lambda s: s)
+        monkeypatch.setattr("amil_utils.renderer.build_context7_from_env", lambda: MagicMock())
+        monkeypatch.setattr("amil_utils.renderer.context7_enrich", lambda *a, **kw: {})
 
         # Patch notify_hooks to track calls
         original_calls = []
@@ -464,7 +464,7 @@ class TestZeroOverheadIntegration:
             if not hooks:
                 return
 
-        monkeypatch.setattr("odoo_gen_utils.renderer.notify_hooks", spy_notify_hooks)
+        monkeypatch.setattr("amil_utils.renderer.notify_hooks", spy_notify_hooks)
 
         files, warnings = render_module(
             spec, tmp_path / "templates", tmp_path,

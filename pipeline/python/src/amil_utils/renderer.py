@@ -12,9 +12,9 @@ from typing import TYPE_CHECKING, Any, Callable
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
-from odoo_gen_utils.validation.types import Result
+from amil_utils.validation.types import Result
 
-from odoo_gen_utils.renderer_utils import (
+from amil_utils.renderer_utils import (
     _is_monetary_field,
     _model_ref,
     _to_class,
@@ -27,12 +27,12 @@ from odoo_gen_utils.renderer_utils import (
     SEQUENCE_FIELD_NAMES,
 )
 
-from odoo_gen_utils.preprocessors import run_preprocessors
-from odoo_gen_utils.preprocessors._registry import get_registered_preprocessors
-from odoo_gen_utils.preprocessors.validation import _validate_no_cycles
-from odoo_gen_utils.spec_schema import validate_spec
+from amil_utils.preprocessors import run_preprocessors
+from amil_utils.preprocessors._registry import get_registered_preprocessors
+from amil_utils.preprocessors.validation import _validate_no_cycles
+from amil_utils.spec_schema import validate_spec
 
-from odoo_gen_utils.manifest import (
+from amil_utils.manifest import (
     ArtifactEntry,
     ArtifactInfo,
     GenerationSession,
@@ -42,10 +42,10 @@ from odoo_gen_utils.manifest import (
     compute_spec_sha256,
     load_manifest,
 )
-from odoo_gen_utils.hooks import RenderHook, notify_hooks, CheckpointPause
+from amil_utils.hooks import RenderHook, notify_hooks, CheckpointPause
 
 # Backward-compatible re-exports: tests import these from renderer
-from odoo_gen_utils.preprocessors import (  # noqa: F401
+from amil_utils.preprocessors import (  # noqa: F401
     _process_computation_chains,
     _process_constraints,
     _process_performance,
@@ -54,9 +54,9 @@ from odoo_gen_utils.preprocessors import (  # noqa: F401
     _process_security_patterns,
 )
 
-from odoo_gen_utils.context7 import build_context7_from_env, context7_enrich
+from amil_utils.context7 import build_context7_from_env, context7_enrich
 
-from odoo_gen_utils.renderer_context import (
+from amil_utils.renderer_context import (
     _build_extension_context,
     _build_extension_view_context,
     _build_model_context,
@@ -66,10 +66,10 @@ from odoo_gen_utils.renderer_context import (
 )
 
 if TYPE_CHECKING:
-    from odoo_gen_utils.manifest import GenerationManifest
-    from odoo_gen_utils.verifier import EnvironmentVerifier, VerificationWarning
+    from amil_utils.manifest import GenerationManifest
+    from amil_utils.verifier import EnvironmentVerifier, VerificationWarning
 
-_logger = logging.getLogger("odoo-gen.renderer")
+_logger = logging.getLogger("amil.renderer")
 
 STAGE_NAMES: list[str] = [
     "manifest", "models", "extensions", "views", "security", "mail_templates",
@@ -1154,7 +1154,7 @@ def render_module(
     diff_summary: dict[str, Any] = {}
 
     if not force:
-        from odoo_gen_utils.iterative import (
+        from amil_utils.iterative import (
             compute_spec_diff,
             determine_affected_stages as _determine_affected,
             load_spec_stash,
@@ -1215,7 +1215,7 @@ def render_module(
         c7_hints: dict[str, str] = {}
     else:
         _c7_client = build_context7_from_env()
-        _c7_cache = Path(".odoo-gen-cache/context7")
+        _c7_cache = Path(".amil-cache/context7")
         c7_hints = context7_enrich(
             spec, _c7_client,
             cache_dir=_c7_cache,
@@ -1266,7 +1266,7 @@ def render_module(
         stages = all_stages
 
     # Phase 60: Load conflict detection tools when iterative mode is active
-    skeleton_dir = output_dir / ".odoo-gen-skeleton" / module_name
+    skeleton_dir = output_dir / ".amil-skeleton" / module_name
 
     for stage_name, stage_fn in stages:
         # Phase 54: Resume -- skip completed stages with intact artifacts
@@ -1303,7 +1303,7 @@ def render_module(
 
         # Phase 60: Conflict detection + stub merge for iterative mode
         if iterative_mode and existing_manifest is not None:
-            from odoo_gen_utils.iterative import (
+            from amil_utils.iterative import (
                 detect_conflicts,
                 extract_filled_stubs,
                 inject_stubs_into,
@@ -1327,8 +1327,8 @@ def render_module(
                     except Exception as exc:
                         _logger.warning("Stub merge failed for %s: %s", rel_path, exc)
 
-            # Handle conflict files: write to .odoo-gen-pending/
-            pending_dir = module_dir / ".odoo-gen-pending"
+            # Handle conflict files: write to .amil-pending/
+            pending_dir = module_dir / ".amil-pending"
             for rel_path in conflicts.conflicts:
                 file_path = module_dir / rel_path
                 if file_path.exists():
@@ -1336,7 +1336,7 @@ def render_module(
                     pending_path.parent.mkdir(parents=True, exist_ok=True)
                     # Copy the newly rendered version to pending
                     shutil.copy2(file_path, pending_path)
-                    _logger.info("Conflict: %s -> .odoo-gen-pending/%s", rel_path, rel_path)
+                    _logger.info("Conflict: %s -> .amil-pending/%s", rel_path, rel_path)
 
         stage_result = StageResult(
             status="complete", duration_ms=duration_ms, artifacts=stage_files,
@@ -1355,7 +1355,7 @@ def render_module(
 
     # Phase 58: Skeleton copy for E16 baseline comparison
     try:
-        skeleton_dir = output_dir / ".odoo-gen-skeleton" / module_name
+        skeleton_dir = output_dir / ".amil-skeleton" / module_name
         # Copy only .py files from the rendered module for E16 comparison
         if module_dir.exists():
             skeleton_dir.mkdir(parents=True, exist_ok=True)
@@ -1390,7 +1390,7 @@ def render_module(
     notify_hooks(hooks, "on_render_complete", module_name, manifest)
 
     # Phase 60: Save spec stash after successful generation
-    from odoo_gen_utils.iterative import save_spec_stash
+    from amil_utils.iterative import save_spec_stash
     try:
         save_spec_stash(spec_raw, module_dir)
     except Exception as exc:

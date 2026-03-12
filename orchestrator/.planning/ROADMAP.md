@@ -1,8 +1,8 @@
-# Roadmap: odoo-gsd
+# Roadmap: amil
 
 ## Overview
 
-Transform the GSD CLI framework into an Odoo ERP module orchestrator that decomposes a university ERP PRD into 20+ modules and drives the odoo-gen belt to generate them sequentially with cross-module coherence. The build progresses from fork renaming and state infrastructure, through PRD decomposition and module planning workflows, to belt integration and generation. Each phase delivers a complete, verifiable capability that unblocks the next.
+Transform the Amil CLI framework into an Odoo ERP module orchestrator that decomposes a university ERP PRD into 20+ modules and drives the amil belt to generate them sequentially with cross-module coherence. The build progresses from fork renaming and state infrastructure, through PRD decomposition and module planning workflows, to belt integration and generation. Each phase delivers a complete, verifiable capability that unblocks the next.
 
 ## Phases
 
@@ -21,11 +21,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Phase Details
 
 ### Phase 1: Fork Foundation and State Infrastructure
-**Goal**: A working odoo-gsd CLI with all references renamed, Odoo config management, model registry CRUD with atomic writes and rollback, module status tracking, dependency graph with topological sort, and tests proving it all works
+**Goal**: A working amil CLI with all references renamed, Odoo config management, model registry CRUD with atomic writes and rollback, module status tracking, dependency graph with topological sort, and tests proving it all works
 **Depends on**: Nothing (first phase)
 **Requirements**: FORK-01, FORK-02, FORK-03, FORK-04, FORK-05, FORK-06, FORK-07, FORK-08, FORK-09, FORK-10, CONF-01, CONF-02, REG-01, REG-02, REG-03, REG-04, REG-05, REG-06, REG-07, STAT-01, STAT-02, STAT-03, STAT-04, DEPG-01, DEPG-02, DEPG-03, DEPG-04, DEPG-05, TEST-01, TEST-02, TEST-05
 **Success Criteria** (what must be TRUE):
-  1. Running any `/odoo-gsd:` command routes correctly and zero references to `gsd:` or `get-shit-done` remain in the codebase (verified by grep)
+  1. Running any `/amil:` command routes correctly and zero references to `amil:` or `get-shit-done` remain in the codebase (verified by grep)
   2. User can run `registry read`, `registry validate`, `registry stats`, `registry rollback` and get correct JSON output from a populated model_registry.json
   3. Module status transitions enforce the planned->spec_approved->generated->checked->shipped lifecycle, rejecting invalid transitions
   4. Dependency graph produces a topological generation order and rejects circular dependencies with a clear error message
@@ -42,7 +42,7 @@ Plans:
 **Depends on**: Phase 1
 **Requirements**: CONF-03, REG-08, NWRP-01, NWRP-02, NWRP-03, NWRP-04, NWRP-05, NWRP-06, NWRP-07
 **Success Criteria** (what must be TRUE):
-  1. Running `/odoo-gsd:new-erp` asks Odoo-specific config questions and writes the `odoo` block to config.json
+  1. Running `/amil:new-erp` asks Odoo-specific config questions and writes the `odoo` block to config.json
   2. Four parallel research agents analyze the PRD and produce a merged module dependency graph with tier assignments
   3. Human is presented with the module decomposition for review and can approve or request changes before roadmap generation
   4. Tiered registry injection works (full models for direct depends, field-list for transitive, names-only for rest)
@@ -58,7 +58,7 @@ Plans:
 **Depends on**: Phase 2
 **Requirements**: DISC-01, DISC-02, DISC-03, DISC-04, DISC-05, AGNT-01
 **Success Criteria** (what must be TRUE):
-  1. Running `/odoo-gsd:discuss-module {module}` detects module type and loads type-specific question templates (fee, exam, student, etc.)
+  1. Running `/amil:discuss-module {module}` detects module type and loads type-specific question templates (fee, exam, student, etc.)
   2. Q&A session output is written to `.planning/modules/{module}/CONTEXT.md` with structured answers
   3. The `odoo-module-questioner` and `researcher` agents are Odoo-specialized and produce domain-relevant questions and research
 **Plans**: 3 plans
@@ -73,7 +73,7 @@ Plans:
 **Depends on**: Phase 3
 **Requirements**: SPEC-01, SPEC-02, SPEC-03, SPEC-04, SPEC-05, SPEC-06, SPEC-07, SPEC-08, AGNT-02, AGNT-04, TEST-03
 **Success Criteria** (what must be TRUE):
-  1. Running `/odoo-gsd:plan-module {module}` produces a spec.json with models, fields, business_rules, computation_chains, workflow, view_hints, reports, notifications, cron_jobs, security, portal, and api_endpoints
+  1. Running `/amil:plan-module {module}` produces a spec.json with models, fields, business_rules, computation_chains, workflow, view_hints, reports, notifications, cron_jobs, security, portal, and api_endpoints
   2. Registry context is injected into spec.json as `_available_models` using tiered injection from Phase 2
   3. Coherence checker validates Many2one targets exist, no duplicate model names, computed field chains have sources, and security groups are defined -- presenting a pass/fail report to the human
   4. Human approves the spec and module status transitions to "spec_approved"
@@ -86,14 +86,14 @@ Plans:
 - [ ] 04-03-PLAN.md — plan-module command and 10-step workflow wiring agents, coherence, and human approval
 
 ### Phase 5: Belt Integration and Generation Pipeline
-**Goal**: User can generate an Odoo module by invoking the odoo-gen belt via Task(), have the registry updated from the generation manifest, track progress across the entire ERP, and have end-to-end test coverage
+**Goal**: User can generate an Odoo module by invoking the amil belt via Task(), have the registry updated from the generation manifest, track progress across the entire ERP, and have end-to-end test coverage
 **Depends on**: Phase 4
 **Requirements**: BELT-01, BELT-02, BELT-03, BELT-04, BELT-05, BELT-06, BELT-07, AGNT-03, AGNT-05, PROG-01, PROG-02, PROG-03, TEST-04, TEST-06
 **Success Criteria** (what must be TRUE):
-  1. Running `/odoo-gsd:generate-module {module}` spawns the odoo-gen belt as a Task() subagent with spec.json and registry context, then parses the generation manifest on success
+  1. Running `/amil:generate-module {module}` spawns the amil belt as a Task() subagent with spec.json and registry context, then parses the generation manifest on success
   2. On successful generation, model registry is atomically updated with new models/fields from the manifest and module status transitions to "generated"
   3. On failure, a structured error report is presented with retry/revise-spec/skip options and the entire tier is blocked until resolution
-  4. Running `/odoo-gsd:progress` shows module status table, registry stats (models/fields/references), tier completion, and overall ERP readiness percentage
+  4. Running `/amil:progress` shows module status table, registry stats (models/fields/references), tier completion, and overall ERP readiness percentage
   5. Belt integration tests and 80%+ coverage across all new code (registry, module-status, coherence, belt-integration)
 **Plans**: TBD
 

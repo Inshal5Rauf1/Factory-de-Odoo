@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from odoo_gen_utils.validation.persistent_docker import (
+from amil_utils.validation.persistent_docker import (
     PersistentDockerManager,
     STATE_FILE,
 )
@@ -162,7 +162,7 @@ class TestPersistentDockerManagerUnit:
 
         with patch("subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-            with patch("odoo_gen_utils.validation.log_parser.parse_install_log",
+            with patch("amil_utils.validation.log_parser.parse_install_log",
                        return_value=(True, None)):
                 manager.install_module(tmp_path / "test_mod")
 

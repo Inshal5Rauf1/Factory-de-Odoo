@@ -19,7 +19,7 @@ tech-stack:
 
 key-files:
   created:
-    - odoo-gsd/references/module-questions.json
+    - amil/references/module-questions.json
     - tests/discuss-module.test.cjs
   modified: []
 
@@ -64,7 +64,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 - `tests/discuss-module.test.cjs` - Test scaffold with 6 test groups: TMPL schema, TYPE detection, CMD command, WF workflow, AGNT questioner, AGNT researcher
-- `odoo-gsd/references/module-questions.json` - 10 question templates with id/question/options/default/context fields and context_hints per type
+- `amil/references/module-questions.json` - 10 question templates with id/question/options/default/context fields and context_hints per type
 
 ## Decisions Made
 - Used 10 questions per domain type and 8 for generic to maximize coverage within the 8-12 constraint

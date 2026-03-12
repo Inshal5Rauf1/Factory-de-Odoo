@@ -2,7 +2,7 @@
 
 Tests that render_module correctly detects iterative mode via spec stash,
 filters stages based on diff, handles --force/--dry-run flags, routes
-conflicts to .odoo-gen-pending/, and auto-merges stub-mergeable files.
+conflicts to .amil-pending/, and auto-merges stub-mergeable files.
 """
 
 from __future__ import annotations
@@ -14,8 +14,8 @@ from unittest.mock import patch
 
 import pytest
 
-from odoo_gen_utils.iterative.diff import SPEC_STASH_FILENAME, save_spec_stash
-from odoo_gen_utils.manifest import (
+from amil_utils.iterative.diff import SPEC_STASH_FILENAME, save_spec_stash
+from amil_utils.manifest import (
     ArtifactEntry,
     ArtifactInfo,
     GenerationManifest,
@@ -38,8 +38,8 @@ def _do_full_render(spec: dict, output_dir: Path) -> list[Path]:
 
     Includes ManifestHook to save manifest (needed for conflict detection).
     """
-    from odoo_gen_utils.hooks import ManifestHook
-    from odoo_gen_utils.renderer import get_template_dir, render_module
+    from amil_utils.hooks import ManifestHook
+    from amil_utils.renderer import get_template_dir, render_module
 
     module_name = spec.get("module_name", "unknown")
     hooks = [ManifestHook(module_path=output_dir / module_name)]
@@ -62,7 +62,7 @@ def _do_iterative_render(
     dry_run: bool = False,
 ) -> tuple[list[Path], list]:
     """Run render_module with iterative mode kwargs."""
-    from odoo_gen_utils.renderer import get_template_dir, render_module
+    from amil_utils.renderer import get_template_dir, render_module
 
     return render_module(
         spec,
@@ -225,7 +225,7 @@ class TestDryRun:
 
 
 class TestSpecStashSaved:
-    """After any generation, .odoo-gen-spec.json should exist."""
+    """After any generation, .amil-spec.json should exist."""
 
     def test_stash_saved_after_full_render(self, tmp_path: Path) -> None:
         """Full render saves spec stash."""
@@ -258,10 +258,10 @@ class TestSpecStashSaved:
 
 
 class TestConflictDetection:
-    """Files edited outside stub zones should go to .odoo-gen-pending/."""
+    """Files edited outside stub zones should go to .amil-pending/."""
 
     def test_edited_file_goes_to_pending(self, tmp_path: Path) -> None:
-        """Edit a file outside stub zones -> file routed to .odoo-gen-pending/."""
+        """Edit a file outside stub zones -> file routed to .amil-pending/."""
         spec_v1 = _load_fixture("spec_v1_iterative.json")
         spec_v2 = _load_fixture("spec_v2_field_added.json")
 
@@ -277,8 +277,8 @@ class TestConflictDetection:
         # Iterative render with field added
         files, _ = _do_iterative_render(spec_v2, tmp_path)
 
-        # The conflicted file should be in .odoo-gen-pending/
-        pending_dir = module_dir / ".odoo-gen-pending"
+        # The conflicted file should be in .amil-pending/
+        pending_dir = module_dir / ".amil-pending"
         assert pending_dir.exists(), "Pending directory should be created for conflicts"
 
         # Check that pending has some files
@@ -326,7 +326,7 @@ class TestStubMerge:
             files, _ = _do_iterative_render(spec_v2, tmp_path)
 
             # The file should have been auto-merged (not in pending)
-            pending_dir = module_dir / ".odoo-gen-pending"
+            pending_dir = module_dir / ".amil-pending"
             if pending_dir.exists():
                 pending_files = [f.name for f in pending_dir.rglob("*") if f.is_file()]
                 assert "fee_invoice.py" not in pending_files, (

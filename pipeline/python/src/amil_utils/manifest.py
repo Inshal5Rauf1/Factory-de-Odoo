@@ -21,11 +21,11 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from odoo_gen_utils import __version__
+from amil_utils import __version__
 
-logger = logging.getLogger("odoo-gen.manifest")
+logger = logging.getLogger("amil.manifest")
 
-MANIFEST_FILENAME = ".odoo-gen-manifest.json"
+MANIFEST_FILENAME = ".amil-manifest.json"
 
 
 # ---------------------------------------------------------------------------
@@ -128,7 +128,7 @@ def compute_spec_sha256(spec: dict) -> str:
 
 
 def save_manifest(manifest: GenerationManifest, module_path: Path) -> Path:
-    """Write *manifest* as JSON to ``module_path / .odoo-gen-manifest.json``.
+    """Write *manifest* as JSON to ``module_path / .amil-manifest.json``.
 
     Uses ``exclude_none=True`` so that optional None fields are omitted.
     Returns the path to the written file.

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from odoo_gen_utils.preprocessors._registry import register_preprocessor
-from odoo_gen_utils.utils.copy import deep_copy_model, merge_override_source
+from amil_utils.preprocessors._registry import register_preprocessor
+from amil_utils.utils.copy import deep_copy_model, merge_override_source
 
 
 @register_preprocessor(order=50, name="production_patterns")
