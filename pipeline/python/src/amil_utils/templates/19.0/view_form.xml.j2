@@ -80,6 +80,18 @@
                 </header>
 {% endif %}
                 <sheet>
+{% if related_counts is defined and related_counts %}
+                    <div class="oe_button_box" name="button_box">
+{% for rc in related_counts %}
+                        <button name="action_view_{{ rc.field.replace('_count', '') }}"
+                                type="object" class="oe_stat_button"
+                                icon="{{ rc.icon }}">
+                            <field name="{{ rc.field }}" widget="statinfo"
+                                   string="{{ rc.label or rc.field.replace('_count', '').replace('_', ' ').title() }}"/>
+                        </button>
+{% endfor %}
+                    </div>
+{% endif %}
                     <div class="oe_title">
 {% for field in view_fields | default(fields) %}
 {% if field.name == 'name' %}
@@ -150,6 +162,16 @@
 {% endfor %}
                         </group>
                     </group>
+{# TMPL-11: View hints for conditional field visibility/readonly #}
+{% for hint in view_hints | default([]) %}
+{% if hint.type == 'field_invisible' %}
+                        <field name="{{ hint.field }}" invisible="{{ hint.condition }}"/>
+{% elif hint.type == 'field_readonly' %}
+                        <field name="{{ hint.field }}" readonly="{{ hint.condition }}"/>
+{% elif hint.type == 'field_required' %}
+                        <field name="{{ hint.field }}" required="{{ hint.condition }}"/>
+{% endif %}
+{% endfor %}
 {% set notebook_fields = [] %}
 {% for field in view_fields | default(fields) %}
 {% if field.type in ('One2many', 'Html') %}
@@ -198,7 +220,14 @@
         <field name="name">{{ model_name }}.view.list</field>
         <field name="model">{{ model_name }}</field>
         <field name="arch" type="xml">
-            <list string="{{ model_description }}">
+            <list string="{{ model_description }}"
+{% if state_field %}
+                  decoration-info="{{ state_field.name }} == 'draft'"
+                  decoration-success="{{ state_field.name }} in ('done', 'approved', 'active')"
+                  decoration-danger="{{ state_field.name }} in ('cancelled', 'refused', 'rejected')"
+                  decoration-muted="{{ state_field.name }} == 'archived'"
+{% endif %}
+            >
 {% for field in view_fields | default(fields) %}
 {% if field.type not in ('One2many', 'Html', 'Text') %}
 {% if loop.index0 < 6 %}
@@ -235,6 +264,23 @@
                         context="{'group_by': '{{ field.name }}'}"/>
 {% endif %}
 {% endfor %}
+{# TMPL-02: State filters #}
+{% if state_field %}
+                <separator/>
+{% for state_key, state_label in workflow_states %}
+                <filter string="{{ state_label }}" name="filter_{{ state_key }}" domain="[('{{ state_field.name }}','=','{{ state_key }}')]"/>
+{% endfor %}
+{% endif %}
+{# TMPL-02: Date filters #}
+{% for field in fields if field.type in ('Date', 'Datetime') %}
+                <separator/>
+                <filter string="This Month ({{ field.string | default(field.name) }})" name="this_month_{{ field.name }}" domain="[('{{ field.name }}','&gt;=', (context_today() - relativedelta(months=1)).strftime('%%Y-%%m-%%d'))]"/>
+{% endfor %}
+{# TMPL-02: Archived filter #}
+{% if is_archival or 'active' in fields | map(attribute='name') | list %}
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+{% endif %}
             </search>
         </field>
     </record>

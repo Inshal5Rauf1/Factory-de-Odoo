@@ -595,3 +595,33 @@ class {{ model_name | to_class }}(models.Model):
             records.write({'active': False})
             self.env.cr.commit()
 {% endif %}
+{% if related_counts is defined and related_counts %}
+{% for rc in related_counts %}
+
+    def _compute_{{ rc.field }}(self):
+        for record in self:
+            record.{{ rc.field }} = self.env["{{ rc.comodel }}"].search_count(
+                [("{{ rc.domain_field }}", "=", record.id)]
+            )
+
+    def action_view_{{ rc.field.replace('_count', '') }}(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": self.env._("{{ rc.label or rc.field.replace('_count', '').replace('_', ' ').title() }}"),
+            "res_model": "{{ rc.comodel }}",
+            "view_mode": "list,form",
+            "domain": [("{{ rc.domain_field }}", "=", self.id)],
+            "context": {"default_{{ rc.domain_field }}": self.id},
+        }
+{% endfor %}
+{% endif %}
+{% if display_name_pattern is defined and display_name_pattern %}
+
+    def name_get(self):
+        result = []
+        for record in self:
+            name = f"{{ display_name_pattern | replace('{', '{record.') }}"
+            result.append((record.id, name))
+        return result
+{% endif %}

@@ -6,6 +6,7 @@ contexts consumed by the render stage functions.
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from amil_utils.renderer_utils import (
@@ -385,6 +386,24 @@ def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[st
     ]
     ctx.update(_build_performance_context(spec, model, cron_methods))
     ctx.update(_compute_needs_api_and_translate(ctx, model))
+
+    # TMPL-01: Related count stat buttons
+    related_counts = model.get("related_counts", [])
+    for rc in related_counts:
+        ctx["computed_fields"].append({
+            "name": rc["field"],
+            "type": "Integer",
+            "compute": f"_compute_{rc['field']}",
+            "string": rc.get("label") or rc["field"].replace("_count", "").replace("_", " ").title(),
+            "store": False,
+        })
+    ctx["related_counts"] = related_counts
+
+    # TMPL-05: display_name_pattern -> _compute_display_name
+    if pattern := model.get("display_name_pattern"):
+        depends_fields = re.findall(r'\{(\w+)\}', pattern)
+        ctx["display_name_pattern"] = pattern
+        ctx["display_name_depends"] = depends_fields
 
     return ctx
 

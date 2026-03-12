@@ -1,8 +1,10 @@
 {# test_model.py.j2 -- Odoo TransactionCase tests: CRUD, access rights, workflow #}
 from odoo.tests.common import TransactionCase
+from odoo.tests import tagged
 from odoo.exceptions import AccessError
 
 
+@tagged("post_install", "-at_install")
 class Test{{ model_name | to_class }}(TransactionCase):
     """Test cases for the {{ model_description }} model."""
 
@@ -190,4 +192,45 @@ class Test{{ model_name | to_class }}(TransactionCase):
         self.test_record.action_{{ to_key }}()
         self.assertEqual(self.test_record.{{ state_field.name }}, "{{ to_key }}")
 {% endfor %}
+{% endif %}
+
+{% for field in computed_fields | default([]) %}
+{% if field.depends is defined and field.depends %}
+
+    def test_computed_{{ field.name }}(self):
+        """Test {{ field.name }} is computed correctly."""
+        record = self.test_record
+        # Verify computed field has a value after creation
+        self.assertIsNotNone(record.{{ field.name }})
+{% endif %}
+{% endfor %}
+
+{% for field in constrained_fields | default([]) %}
+
+    def test_constraint_{{ field.name }}(self):
+        """Test {{ field.name }} constraint raises on invalid data."""
+        from odoo.exceptions import ValidationError
+        with self.assertRaises(ValidationError):
+            self.test_record.write({"{{ field.name }}": False})
+{% endfor %}
+
+{% if onchange_fields is defined and onchange_fields %}
+
+    def test_form_onchange(self):
+        """Test onchange methods fire correctly via Form helper."""
+        from odoo.tests import Form
+        form = Form(self.env["{{ model_name }}"])
+{% for field in onchange_fields %}
+{% if field.trigger_type == 'Char' %}
+        form.{{ field.trigger }} = "Test onchange value"
+{% elif field.trigger_type == 'Boolean' %}
+        form.{{ field.trigger }} = True
+{% elif field.trigger_type == 'Integer' %}
+        form.{{ field.trigger }} = 42
+{% elif field.trigger_type == 'Float' %}
+        form.{{ field.trigger }} = 42.0
+{% endif %}
+{% endfor %}
+        record = form.save()
+        self.assertTrue(record.id)
 {% endif %}

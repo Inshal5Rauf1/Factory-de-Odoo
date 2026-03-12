@@ -52,3 +52,38 @@ class {{ wizard_class }}(models.TransientModel):
         self.ensure_one()
         # TODO: implement — perform action on target model {{ wizard.target_model }}
         return {"type": "ir.actions.act_window_close"}
+{% if wizard.steps is defined and wizard.steps %}
+
+    state = fields.Selection([
+{% for step in wizard.steps %}
+        ("{{ step.key }}", "{{ step.label }}"),
+{% endfor %}
+    ], default="{{ wizard.steps[0].key }}")
+
+    def action_next(self):
+        """Navigate to the next wizard step."""
+        steps = [{{ wizard.steps | map(attribute='key') | map('tojson') | join(', ') }}]
+        current_idx = steps.index(self.state)
+        if current_idx < len(steps) - 1:
+            self.state = steps[current_idx + 1]
+            return self._reopen_wizard()
+        return self.action_confirm()
+
+    def action_previous(self):
+        """Navigate to the previous wizard step."""
+        steps = [{{ wizard.steps | map(attribute='key') | map('tojson') | join(', ') }}]
+        current_idx = steps.index(self.state)
+        if current_idx > 0:
+            self.state = steps[current_idx - 1]
+            return self._reopen_wizard()
+
+    def _reopen_wizard(self):
+        """Re-open the wizard at the current step."""
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": self._name,
+            "res_id": self.id,
+            "view_mode": "form",
+            "target": "new",
+        }
+{% endif %}

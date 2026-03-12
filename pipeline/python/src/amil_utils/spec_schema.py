@@ -439,6 +439,23 @@ class ViewHintSpec(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Related count / stat button specs (TMPL-01)
+# ---------------------------------------------------------------------------
+
+
+class RelatedCountSpec(BaseModel):
+    """Specification for a related record count stat button."""
+
+    model_config = ConfigDict(extra="allow", protected_namespaces=())
+
+    field: str  # e.g., "invoice_count"
+    comodel: str  # e.g., "account.move"
+    domain_field: str  # e.g., "partner_id"
+    icon: str = "fa-list"
+    label: str = ""
+
+
+# ---------------------------------------------------------------------------
 # Model-level spec
 # ---------------------------------------------------------------------------
 
@@ -465,7 +482,10 @@ class ModelSpec(BaseModel):
     bulk: bool = False
     cacheable: bool = False
     archival: bool = False
+    no_active: bool = False
     record_rules: list[str] | None = None
+    related_counts: list[RelatedCountSpec] = []
+    display_name_pattern: str | None = None
 
 
 # ---------------------------------------------------------------------------

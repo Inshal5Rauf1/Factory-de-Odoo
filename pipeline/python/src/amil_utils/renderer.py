@@ -490,6 +490,10 @@ def render_tests(
             created.append(
                 render_template(env, "test_model.py.j2", module_dir / "tests" / f"test_{model_var}.py", model_ctx)
             )
+            if spec.get("has_portal"):
+                created.append(
+                    render_template(env, "test_portal.py.j2", module_dir / "tests" / f"test_portal_{model_var}.py", model_ctx)
+                )
         return Result.ok(created)
     except Exception as exc:
         return Result.fail(f"render_tests failed: {exc}")
