@@ -154,14 +154,9 @@ class ManifestHook:
         module_name: str,
         manifest: GenerationManifest,
     ) -> None:
-        try:
-            save_manifest(manifest, self.module_path)
-        except Exception:
-            logger.warning(
-                "ManifestHook.on_render_complete failed for %s",
-                module_name,
-                exc_info=True,
-            )
+        # PIPE-06: Let exceptions propagate — notify_hooks now re-raises for
+        # critical methods, so callers see the real failure.
+        save_manifest(manifest, self.module_path)
 
 
 # ---------------------------------------------------------------------------
@@ -183,12 +178,22 @@ def notify_hooks(
     """
     if not hooks:
         return
+    # PIPE-06: Critical hooks must not fail silently — re-raise after logging.
+    _CRITICAL_METHODS = frozenset({"on_render_complete", "on_stage_complete"})
     for hook in hooks:
         try:
             getattr(hook, method)(*args, **kwargs)
         except CheckpointPause:
             raise  # Intentional pause, propagate
         except Exception:
+            if method in _CRITICAL_METHODS:
+                logger.error(
+                    "Critical hook %s.%s failed",
+                    type(hook).__name__,
+                    method,
+                    exc_info=True,
+                )
+                raise
             logger.warning(
                 "Hook %s.%s failed",
                 type(hook).__name__,

@@ -10,12 +10,10 @@ from typing import Any
 
 import pytest
 
-from amil_utils.preprocessors import (
-    _process_audit_patterns,
-    _process_approval_patterns,
-    _process_notification_patterns,
-    _process_webhook_patterns,
-)
+from amil_utils.preprocessors.audit import _process_audit_patterns
+from amil_utils.preprocessors.approval import _process_approval_patterns
+from amil_utils.preprocessors.notifications import _process_notification_patterns
+from amil_utils.preprocessors.webhooks import _process_webhook_patterns
 from amil_utils.preprocessors.relationships import (
     _enrich_delegation,
     _enrich_hierarchical,

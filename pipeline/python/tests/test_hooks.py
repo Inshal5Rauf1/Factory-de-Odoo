@@ -207,8 +207,8 @@ class TestManifestHook:
 
         assert isinstance(ManifestHook(module_path=Path("/tmp")), RenderHook)
 
-    def test_on_render_complete_never_blocks_on_error(self, tmp_path: Path):
-        """on_render_complete swallows errors and never blocks."""
+    def test_on_render_complete_raises_on_error(self, tmp_path: Path):
+        """PIPE-06: on_render_complete now propagates errors (critical hook)."""
         from amil_utils.hooks import ManifestHook
         from amil_utils.manifest import GenerationManifest
 
@@ -220,8 +220,9 @@ class TestManifestHook:
             generated_at="2026-01-01T00:00:00Z",
             generator_version="0.1.0",
         )
-        # Should not raise even though the path doesn't exist
-        hook.on_render_complete("test", manifest)
+        # PIPE-06: Critical hooks must raise, not swallow
+        with pytest.raises(Exception):
+            hook.on_render_complete("test", manifest)
 
 
 # ---------------------------------------------------------------------------
@@ -303,17 +304,38 @@ class TestZeroOverhead:
         hook1.on_stage_complete.assert_called_once_with("mod", "stage")
         hook2.on_stage_complete.assert_called_once_with("mod", "stage")
 
-    def test_notify_hooks_isolates_exceptions(self):
-        """notify_hooks isolates regular exceptions from crashing the pipeline."""
+    def test_notify_hooks_isolates_non_critical_exceptions(self):
+        """notify_hooks isolates exceptions from non-critical hooks."""
         from amil_utils.hooks import notify_hooks
 
         hook1 = MagicMock()
-        hook1.on_stage_complete.side_effect = RuntimeError("boom")
+        hook1.on_preprocess_complete.side_effect = RuntimeError("boom")
         hook2 = MagicMock()
 
-        # Should not raise; hook2 still gets called
-        notify_hooks([hook1, hook2], "on_stage_complete", "mod", "stage")
-        hook2.on_stage_complete.assert_called_once()
+        # Non-critical method: should not raise; hook2 still gets called
+        notify_hooks([hook1, hook2], "on_preprocess_complete", "mod", [], [])
+        hook2.on_preprocess_complete.assert_called_once()
+
+    def test_notify_hooks_escalates_critical_exceptions(self):
+        """PIPE-06: notify_hooks re-raises exceptions from critical hooks."""
+        from amil_utils.hooks import notify_hooks
+
+        hook = MagicMock()
+        hook.on_stage_complete.side_effect = RuntimeError("critical failure")
+
+        # Critical method: must propagate
+        with pytest.raises(RuntimeError, match="critical failure"):
+            notify_hooks([hook], "on_stage_complete", "mod", "stage")
+
+    def test_notify_hooks_escalates_on_render_complete(self):
+        """PIPE-06: notify_hooks re-raises on_render_complete failures."""
+        from amil_utils.hooks import notify_hooks
+
+        hook = MagicMock()
+        hook.on_render_complete.side_effect = OSError("disk full")
+
+        with pytest.raises(OSError, match="disk full"):
+            notify_hooks([hook], "on_render_complete", "mod")
 
     def test_notify_hooks_propagates_checkpoint_pause(self):
         """notify_hooks propagates CheckpointPause (intentional pause)."""
@@ -334,10 +356,10 @@ class TestZeroOverhead:
 
 
 class TestHookExceptionIsolation:
-    """Hook exceptions do NOT kill the pipeline; CheckpointPause DOES propagate."""
+    """Non-critical hook exceptions do NOT kill the pipeline; critical ones DO."""
 
-    def test_value_error_in_hook_does_not_kill_pipeline(self, tmp_path, monkeypatch):
-        """A hook raising ValueError in on_stage_complete does NOT crash render_module."""
+    def test_value_error_in_non_critical_hook_does_not_kill_pipeline(self, tmp_path, monkeypatch):
+        """A hook raising ValueError in on_preprocess_complete does NOT crash render_module."""
         from unittest.mock import MagicMock
 
         from amil_utils.hooks import RenderHook
@@ -361,21 +383,21 @@ class TestHookExceptionIsolation:
         monkeypatch.setattr("amil_utils.renderer.build_context7_from_env", lambda: MagicMock())
         monkeypatch.setattr("amil_utils.renderer.context7_enrich", lambda *a, **kw: {})
 
-        # Create a hook that raises ValueError
-        class BadHook:
+        # PIPE-06: Only non-critical hooks are isolated. Critical hooks propagate.
+        class NonCriticalBadHook:
             def on_preprocess_complete(self, module_name, models, preprocessors_run):
                 raise ValueError("I am broken!")
 
             def on_stage_complete(self, module_name, stage_name, result, artifacts):
-                raise ValueError("I am broken!")
+                pass  # Critical — must not raise
 
             def on_render_complete(self, module_name, manifest):
-                raise ValueError("I am broken!")
+                pass  # Critical — must not raise
 
         files, warnings = render_module(
             spec, tmp_path / "templates", tmp_path,
             no_context7=True,
-            hooks=[BadHook()],
+            hooks=[NonCriticalBadHook()],
         )
         # Pipeline should complete without error
         assert isinstance(files, list)

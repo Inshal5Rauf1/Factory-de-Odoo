@@ -15,17 +15,16 @@ from amil_utils.renderer import (
     _build_model_context,
     _build_module_context,
     _is_monetary_field,
-    _process_computation_chains,
-    _process_constraints,
-    _process_performance,
-    _process_production_patterns,
-    _process_security_patterns,
     _topologically_sort_fields,
-    _validate_no_cycles,
     get_template_dir,
     render_module,
 )
-from amil_utils.preprocessors import _parse_crud
+from amil_utils.preprocessors.computation_chains import _process_computation_chains
+from amil_utils.preprocessors.constraints import _process_constraints
+from amil_utils.preprocessors.performance import _process_performance
+from amil_utils.preprocessors.production import _process_production_patterns
+from amil_utils.preprocessors.security import _process_security_patterns, _parse_crud
+from amil_utils.preprocessors.validation import _validate_no_cycles
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -1924,7 +1923,7 @@ class TestProcessRelationshipsM2MThrough:
         }
 
     def test_synthesizes_through_model(self):
-        from amil_utils.renderer import _process_relationships
+        from amil_utils.preprocessors.relationships import _process_relationships
 
         spec = self._make_through_spec()
         result = _process_relationships(spec)
@@ -1954,7 +1953,7 @@ class TestProcessRelationshipsM2MThrough:
         assert student_fk["comodel_name"] == "test_university.student"
 
     def test_injects_one2many_on_parents(self):
-        from amil_utils.renderer import _process_relationships
+        from amil_utils.preprocessors.relationships import _process_relationships
 
         spec = self._make_through_spec()
         result = _process_relationships(spec)
@@ -1968,7 +1967,7 @@ class TestProcessRelationshipsM2MThrough:
         assert "enrollment_ids" in student_field_names
 
     def test_no_duplicate_injection(self):
-        from amil_utils.renderer import _process_relationships
+        from amil_utils.preprocessors.relationships import _process_relationships
 
         spec = self._make_through_spec()
         # Pre-add enrollment_ids on course model
@@ -1984,7 +1983,7 @@ class TestProcessRelationshipsM2MThrough:
         assert len(enrollment_fields) == 1
 
     def test_fk_name_collision_with_through_fields(self):
-        from amil_utils.renderer import _process_relationships
+        from amil_utils.preprocessors.relationships import _process_relationships
 
         spec = self._make_through_spec()
         # Add a through_field that collides with auto-generated FK name
@@ -1995,7 +1994,7 @@ class TestProcessRelationshipsM2MThrough:
             _process_relationships(spec)
 
     def test_through_model_has_synthesized_flag(self):
-        from amil_utils.renderer import _process_relationships
+        from amil_utils.preprocessors.relationships import _process_relationships
 
         spec = self._make_through_spec()
         result = _process_relationships(spec)
@@ -2003,7 +2002,7 @@ class TestProcessRelationshipsM2MThrough:
         assert through.get("_synthesized") is True
 
     def test_immutability(self):
-        from amil_utils.renderer import _process_relationships
+        from amil_utils.preprocessors.relationships import _process_relationships
         import copy
 
         spec = self._make_through_spec()
@@ -2045,7 +2044,7 @@ class TestProcessRelationshipsSelfM2M:
         }
 
     def test_enriches_primary_field(self):
-        from amil_utils.renderer import _process_relationships
+        from amil_utils.preprocessors.relationships import _process_relationships
 
         spec = self._make_self_m2m_spec()
         result = _process_relationships(spec)
@@ -2058,7 +2057,7 @@ class TestProcessRelationshipsSelfM2M:
         assert "column2" in prereq
 
     def test_enriches_inverse_field(self):
-        from amil_utils.renderer import _process_relationships
+        from amil_utils.preprocessors.relationships import _process_relationships
 
         spec = self._make_self_m2m_spec(with_inverse=True)
         result = _process_relationships(spec)
@@ -2072,7 +2071,7 @@ class TestProcessRelationshipsSelfM2M:
         assert dep["relation"] == prereq["relation"]
 
     def test_relation_table_naming(self):
-        from amil_utils.renderer import _process_relationships
+        from amil_utils.preprocessors.relationships import _process_relationships
 
         spec = self._make_self_m2m_spec()
         result = _process_relationships(spec)
@@ -2081,7 +2080,7 @@ class TestProcessRelationshipsSelfM2M:
         assert prereq["relation"] == "test_university_course_prerequisite_ids_rel"
 
     def test_no_inverse_when_not_specified(self):
-        from amil_utils.renderer import _process_relationships
+        from amil_utils.preprocessors.relationships import _process_relationships
 
         spec = self._make_self_m2m_spec(with_inverse=False)
         result = _process_relationships(spec)
@@ -2091,7 +2090,7 @@ class TestProcessRelationshipsSelfM2M:
         assert "dependent_ids" not in field_names
 
     def test_replaces_existing_field(self):
-        from amil_utils.renderer import _process_relationships
+        from amil_utils.preprocessors.relationships import _process_relationships
 
         spec = self._make_self_m2m_spec(with_inverse=False)
         # Pre-add a placeholder prerequisite_ids field
@@ -4263,7 +4262,8 @@ class TestAuditIntegration:
 
     def test_audit_context_keys_on_audit_model(self):
         """Audit model gets has_audit=True and populated audit_fields from context builder."""
-        from amil_utils.preprocessors import _process_audit_patterns, _process_security_patterns
+        from amil_utils.preprocessors.audit import _process_audit_patterns
+        from amil_utils.preprocessors.security import _process_security_patterns
         spec = self._make_audit_spec()
         spec = _process_security_patterns(spec)
         spec = _process_audit_patterns(spec)
@@ -4277,7 +4277,8 @@ class TestAuditIntegration:
 
     def test_module_context_has_audit_log_key(self):
         """Module context includes has_audit_log=True when audit models present."""
-        from amil_utils.preprocessors import _process_audit_patterns, _process_security_patterns
+        from amil_utils.preprocessors.audit import _process_audit_patterns
+        from amil_utils.preprocessors.security import _process_security_patterns
         spec = self._make_audit_spec()
         spec = _process_security_patterns(spec)
         spec = _process_audit_patterns(spec)
@@ -4581,7 +4582,8 @@ class TestAuditTemplateRendering:
 
     def test_audit_model_has_needs_api_true(self):
         """Audited model sets needs_api=True (for @api.model on _audit_tracked_fields)."""
-        from amil_utils.preprocessors import _process_audit_patterns, _process_security_patterns
+        from amil_utils.preprocessors.audit import _process_audit_patterns
+        from amil_utils.preprocessors.security import _process_security_patterns
         spec = self._make_audit_spec()
         spec = _process_security_patterns(spec)
         spec = _process_audit_patterns(spec)
@@ -4779,7 +4781,8 @@ class TestApprovalIntegration:
 
     def test_approval_model_context_propagates_enriched_keys(self):
         """Approval model context propagates all enriched keys from preprocessor."""
-        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
+        from amil_utils.preprocessors.approval import _process_approval_patterns
+        from amil_utils.preprocessors.security import _process_security_patterns
         spec = self._make_approval_spec()
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -4800,7 +4803,8 @@ class TestApprovalIntegration:
 
     def test_needs_translate_true_when_has_approval(self):
         """needs_translate is True when has_approval is True."""
-        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
+        from amil_utils.preprocessors.approval import _process_approval_patterns
+        from amil_utils.preprocessors.security import _process_security_patterns
         spec = self._make_approval_spec()
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -4810,7 +4814,8 @@ class TestApprovalIntegration:
 
     def test_module_context_has_approval_models_true(self):
         """Module context has has_approval_models=True when any model has approval."""
-        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
+        from amil_utils.preprocessors.approval import _process_approval_patterns
+        from amil_utils.preprocessors.security import _process_security_patterns
         spec = self._make_approval_spec()
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -4829,7 +4834,8 @@ class TestApprovalIntegration:
 
     def test_module_context_has_record_rules_with_approval(self):
         """Module context has_record_rules is True when approval models have record_rule_scopes."""
-        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
+        from amil_utils.preprocessors.approval import _process_approval_patterns
+        from amil_utils.preprocessors.security import _process_security_patterns
         spec = self._make_approval_spec()
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -4889,8 +4895,11 @@ class TestApprovalTemplateRendering:
 
     def _render_model(self, spec: dict) -> str:
         """Preprocess spec and render model.py.j2 template for the approval model."""
-        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
-        from amil_utils.renderer import create_versioned_renderer, _process_constraints, _process_production_patterns
+        from amil_utils.preprocessors.approval import _process_approval_patterns
+        from amil_utils.preprocessors.constraints import _process_constraints
+        from amil_utils.preprocessors.production import _process_production_patterns
+        from amil_utils.preprocessors.security import _process_security_patterns
+        from amil_utils.renderer import create_versioned_renderer
 
         spec = _process_security_patterns(spec)
         spec = _process_approval_patterns(spec)
@@ -4902,7 +4911,8 @@ class TestApprovalTemplateRendering:
 
     def _render_view(self, spec: dict) -> str:
         """Preprocess spec and render view_form.xml.j2 template for the approval model."""
-        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
+        from amil_utils.preprocessors.approval import _process_approval_patterns
+        from amil_utils.preprocessors.security import _process_security_patterns
         from amil_utils.renderer import create_versioned_renderer
 
         spec = _process_security_patterns(spec)
@@ -4915,7 +4925,8 @@ class TestApprovalTemplateRendering:
 
     def _render_record_rules(self, spec: dict) -> str:
         """Preprocess spec and render record_rules.xml.j2 template."""
-        from amil_utils.preprocessors import _process_approval_patterns, _process_security_patterns
+        from amil_utils.preprocessors.approval import _process_approval_patterns
+        from amil_utils.preprocessors.security import _process_security_patterns
         from amil_utils.renderer import create_versioned_renderer
 
         spec = _process_security_patterns(spec)
@@ -5417,12 +5428,10 @@ class TestNotificationTemplateRendering:
 
     def _render_model(self, spec: dict, version: str = "17.0") -> str:
         """Preprocess spec and render model.py.j2 template for the notification model."""
-        from amil_utils.preprocessors import (
-            _process_approval_patterns,
-            _process_notification_patterns,
-            _process_security_patterns,
-            _process_webhook_patterns,
-        )
+        from amil_utils.preprocessors.approval import _process_approval_patterns
+        from amil_utils.preprocessors.notifications import _process_notification_patterns
+        from amil_utils.preprocessors.security import _process_security_patterns
+        from amil_utils.preprocessors.webhooks import _process_webhook_patterns
         from amil_utils.renderer import create_versioned_renderer
 
         spec = _process_security_patterns(spec)
@@ -5437,11 +5446,9 @@ class TestNotificationTemplateRendering:
 
     def _render_mail_template(self, spec: dict) -> str:
         """Preprocess spec and render mail_template_data.xml.j2 template."""
-        from amil_utils.preprocessors import (
-            _process_approval_patterns,
-            _process_notification_patterns,
-            _process_security_patterns,
-        )
+        from amil_utils.preprocessors.approval import _process_approval_patterns
+        from amil_utils.preprocessors.notifications import _process_notification_patterns
+        from amil_utils.preprocessors.security import _process_security_patterns
         from amil_utils.renderer import create_versioned_renderer
 
         spec = _process_security_patterns(spec)
@@ -5609,18 +5616,14 @@ class TestWebhookTemplateRendering:
 
     def _render_model(self, spec: dict, version: str = "17.0") -> str:
         """Preprocess spec and render model.py.j2 template for webhook model."""
-        from amil_utils.preprocessors import (
-            _process_approval_patterns,
-            _process_audit_patterns,
-            _process_notification_patterns,
-            _process_security_patterns,
-            _process_webhook_patterns,
-        )
-        from amil_utils.renderer import (
-            _process_constraints,
-            _process_production_patterns,
-            create_versioned_renderer,
-        )
+        from amil_utils.preprocessors.approval import _process_approval_patterns
+        from amil_utils.preprocessors.audit import _process_audit_patterns
+        from amil_utils.preprocessors.constraints import _process_constraints
+        from amil_utils.preprocessors.notifications import _process_notification_patterns
+        from amil_utils.preprocessors.production import _process_production_patterns
+        from amil_utils.preprocessors.security import _process_security_patterns
+        from amil_utils.preprocessors.webhooks import _process_webhook_patterns
+        from amil_utils.renderer import create_versioned_renderer
         from collections import defaultdict
 
         spec = _process_security_patterns(spec)

@@ -961,7 +961,7 @@ class TestMermaidCli:
     ) -> None:
         """mermaid --module uni_fee --type deps writes dependencies.mmd."""
         output_dir = tmp_path / "output" / "uni_fee" / "docs"
-        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.commands.mermaid._find_registry_path", return_value=cli_registry):
             result = runner.invoke(
                 main, ["mermaid", "--module", "uni_fee", "--type", "deps"]
             )
@@ -972,7 +972,7 @@ class TestMermaidCli:
         self, runner: click.testing.CliRunner, cli_registry: Path, tmp_path: Path
     ) -> None:
         """mermaid --module uni_fee --type er writes er_diagram.mmd."""
-        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.commands.mermaid._find_registry_path", return_value=cli_registry):
             result = runner.invoke(
                 main, ["mermaid", "--module", "uni_fee", "--type", "er"]
             )
@@ -982,7 +982,7 @@ class TestMermaidCli:
         self, runner: click.testing.CliRunner, cli_registry: Path, tmp_path: Path
     ) -> None:
         """mermaid --module uni_fee --type all writes both .mmd files."""
-        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.commands.mermaid._find_registry_path", return_value=cli_registry):
             result = runner.invoke(
                 main, ["mermaid", "--module", "uni_fee", "--type", "all"]
             )
@@ -994,7 +994,7 @@ class TestMermaidCli:
         self, runner: click.testing.CliRunner, cli_registry: Path, tmp_path: Path
     ) -> None:
         """mermaid --module uni_fee (no --type) defaults to all."""
-        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.commands.mermaid._find_registry_path", return_value=cli_registry):
             result = runner.invoke(main, ["mermaid", "--module", "uni_fee"])
         assert result.exit_code == 0, f"CLI failed: {result.output}"
         assert "dependencies.mmd" in result.output
@@ -1004,7 +1004,7 @@ class TestMermaidCli:
         self, runner: click.testing.CliRunner, cli_registry: Path, tmp_path: Path
     ) -> None:
         """mermaid --project --type deps writes project_dependencies.mmd."""
-        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.commands.mermaid._find_registry_path", return_value=cli_registry):
             result = runner.invoke(
                 main, ["mermaid", "--project", "--type", "deps"]
             )
@@ -1015,7 +1015,7 @@ class TestMermaidCli:
         self, runner: click.testing.CliRunner, cli_registry: Path, tmp_path: Path
     ) -> None:
         """mermaid --project --type er writes project_er.mmd."""
-        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.commands.mermaid._find_registry_path", return_value=cli_registry):
             result = runner.invoke(
                 main, ["mermaid", "--project", "--type", "er"]
             )
@@ -1026,7 +1026,7 @@ class TestMermaidCli:
         self, runner: click.testing.CliRunner, cli_registry: Path, tmp_path: Path
     ) -> None:
         """mermaid --module uni_fee --stdout prints diagram to stdout."""
-        with patch("amil_utils.cli._find_registry_path", return_value=cli_registry):
+        with patch("amil_utils.commands.mermaid._find_registry_path", return_value=cli_registry):
             result = runner.invoke(
                 main, ["mermaid", "--module", "uni_fee", "--type", "deps", "--stdout"]
             )
@@ -1087,7 +1087,7 @@ class TestAutoGeneration:
         output_dir.mkdir()
 
         with (
-            patch("amil_utils.cli._find_registry_path", return_value=cli_registry),
+            patch("amil_utils.commands.render._find_registry_path", return_value=cli_registry),
             patch(
                 "amil_utils.renderer.render_module",
                 return_value=(["file1.py"], []),
@@ -1125,7 +1125,7 @@ class TestAutoGeneration:
         output_dir.mkdir()
 
         with (
-            patch("amil_utils.cli._find_registry_path", return_value=cli_registry),
+            patch("amil_utils.commands.render._find_registry_path", return_value=cli_registry),
             patch(
                 "amil_utils.renderer.render_module",
                 return_value=(["file1.py"], []),
@@ -1167,7 +1167,7 @@ class TestAutoGeneration:
         output_dir.mkdir()
 
         with (
-            patch("amil_utils.cli._find_registry_path", return_value=cli_registry),
+            patch("amil_utils.commands.render._find_registry_path", return_value=cli_registry),
             patch(
                 "amil_utils.renderer.render_module",
                 return_value=(["file1.py"], []),

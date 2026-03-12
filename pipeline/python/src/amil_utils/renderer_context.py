@@ -17,53 +17,69 @@ from amil_utils.renderer_utils import (
     SEQUENCE_FIELD_NAMES,
 )
 
+# PIPE-07: Module-level constant for Odoo version-conditional model renames.
+_VERSION_GATES: dict[str, dict[str, str]] = {
+    "18.0": {
+        "mail.channel": "discuss.channel",
+        "mail.channel_all_employees": "discuss.channel_general",
+    },
+    "19.0": {
+        "mail.channel": "discuss.channel",
+        "mail.channel_all_employees": "discuss.channel_general",
+        # Add any 19.0-specific renames here
+    },
+}
 
-def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[str, Any]:
-    """Build the template context for a single model from the module spec.
 
-    Extends the base context with Phase 5 keys:
-    - computed_fields: fields with compute= key
-    - onchange_fields: fields with onchange= key
-    - constrained_fields: fields with constrains= key
-    - sequence_fields: Char fields with sequence names and required=True
-    - sequence_field_names: list version of SEQUENCE_FIELD_NAMES for template use
-    - state_field: the state/status Selection field or None
-    - wizards: list of wizard specs from spec root
-    - has_computed: bool
-    - has_sequence_fields: bool
-
-    Args:
-        spec: Full module specification dictionary.
-        model: Single model dictionary from spec["models"].
-
-    Returns:
-        Context dictionary suitable for rendering model-related templates.
-    """
-    model_var = _to_python_var(model["name"])
-    model_xml_id = _to_xml_id(model["name"])
-
-    fields = model.get("fields", [])
-    # BUG-04: Wire sensitive flag to groups attribute
+def _build_base_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[str, Any]:
+    """Build base context: module metadata, model identity, and basic field lists."""
     module_name = spec.get("module_name", "")
+    fields = model.get("fields", [])
+
+    # BUG-04: Wire sensitive flag to groups attribute
     for f in fields:
         if f.get("sensitive") and not f.get("groups"):
             f["groups"] = f"{module_name}.group_{module_name}_manager"
-    required_fields = [f for f in fields if f.get("required")]
-    # Phase 29: complex constraints from preprocessor
-    complex_constraints = model.get("complex_constraints", [])
-    create_constraints = model.get("create_constraints", [])
-    write_constraints = model.get("write_constraints", [])
-    has_create_override = bool(model.get("override_sources", {}).get("create"))
-    has_write_override = bool(model.get("override_sources", {}).get("write"))
-    needs_translate = bool(complex_constraints)
 
-    has_constraints = any(
-        f.get("constraints") for f in fields
-    ) or bool(model.get("sql_constraints")) or bool(complex_constraints)
+    return {
+        "module_name": spec["module_name"],
+        "module_title": spec.get("module_title", spec["module_name"].replace("_", " ").title()),
+        "summary": spec.get("summary", ""),
+        "author": spec.get("author", ""),
+        "website": spec.get("website", ""),
+        "license": spec.get("license", "LGPL-3"),
+        "category": spec.get("category", "Uncategorized"),
+        "odoo_version": spec.get("odoo_version", "19.0"),
+        "depends": spec.get("depends", ["base"]),
+        "application": spec.get("application", True),
+        "models": spec.get("models", []),
+        "model_name": model["name"],
+        "model_description": model.get("description", model["name"]),
+        "model_var": _to_python_var(model["name"]),
+        "model_xml_id": _to_xml_id(model["name"]),
+        "fields": fields,
+        "required_fields": [f for f in fields if f.get("required")],
+        "sql_constraints": model.get("sql_constraints", []),
+        "inherit": model.get("inherit"),
+        "wizards": spec.get("wizards", []),
+        # Phase 33 keys
+        "model_order": model.get("model_order", ""),
+        "is_transient": model.get("transient", False),
+        "transient_max_hours": model.get("transient_max_hours"),
+        "transient_max_count": model.get("transient_max_count"),
+        # Integration keys
+        "model_workflow": next(
+            (w for w in spec.get("workflow", [])
+             if isinstance(w, dict) and w.get("model") == model["name"]),
+            None,
+        ),
+        "composite_indexes": model.get("composite_indexes", []),
+    }
 
-    # Phase 5 extensions ---------------------------------------------------
+
+def _build_field_context(model: dict[str, Any], fields: list[dict[str, Any]]) -> dict[str, Any]:
+    """Build field-analysis context: computed, constrained, sequence, monetary, etc."""
     computed_fields = [f for f in fields if f.get("compute")]
-    # Phase 28: topologically sort computed fields by dependency order
     if len(computed_fields) > 1:
         computed_fields = _topologically_sort_fields(computed_fields)
     onchange_fields = [f for f in fields if f.get("onchange")]
@@ -75,13 +91,10 @@ def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[st
         and f.get("required")
     ]
     state_field = next(
-        (
-            f for f in fields
-            if f.get("name") in ("state", "status") and f.get("type") == "Selection"
-        ),
+        (f for f in fields
+         if f.get("name") in ("state", "status") and f.get("type") == "Selection"),
         None,
     )
-    wizards = spec.get("wizards", [])
 
     # Phase 26: monetary field detection (immutable rewrite)
     has_monetary = any(_is_monetary_field(f) for f in fields)
@@ -91,7 +104,6 @@ def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[st
             for f in fields
         ]
     has_currency_id = any(f.get("name") == "currency_id" for f in fields)
-    needs_currency_id = has_monetary and not has_currency_id
 
     # Phase 6: multi-company field detection
     has_company_field = any(
@@ -99,8 +111,38 @@ def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[st
         for f in fields
     )
 
-    # Phase 12 + 21: mail.thread auto-inheritance (TMPL-01)
-    # Smart injection: skip line items, honor chatter flag, avoid duplicates on in-module parents
+    # Phase 29: complex constraints from preprocessor
+    complex_constraints = model.get("complex_constraints", [])
+    has_constraints = any(
+        f.get("constraints") for f in fields
+    ) or bool(model.get("sql_constraints")) or bool(complex_constraints)
+
+    return {
+        "fields": fields,  # may be updated with monetary rewrites
+        "computed_fields": computed_fields,
+        "onchange_fields": onchange_fields,
+        "constrained_fields": constrained_fields,
+        "sequence_fields": sequence_fields,
+        "sequence_field_names": list(SEQUENCE_FIELD_NAMES),
+        "state_field": state_field,
+        "has_computed": bool(computed_fields),
+        "has_sequence_fields": bool(sequence_fields),
+        "has_company_field": has_company_field,
+        "workflow_states": model.get("workflow_states", []),
+        "needs_currency_id": has_monetary and not has_currency_id,
+        "has_constraints": has_constraints,
+        "complex_constraints": complex_constraints,
+        "create_constraints": model.get("create_constraints", []),
+        "write_constraints": model.get("write_constraints", []),
+        "has_create_override": bool(model.get("override_sources", {}).get("create")),
+        "has_write_override": bool(model.get("override_sources", {}).get("write")),
+    }
+
+
+def _build_workflow_context(
+    spec: dict[str, Any], model: dict[str, Any], fields: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Build inheritance and chatter context: mail.thread injection, hierarchy."""
     explicit_inherit = model.get("inherit")
     if isinstance(explicit_inherit, list):
         inherit_list = list(explicit_inherit)
@@ -109,10 +151,8 @@ def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[st
     else:
         inherit_list = []
 
-    # Collect all model names in this module for line item & parent detection
     module_model_names = {m["name"] for m in spec.get("models", [])}
 
-    # Detect if this model is a line item (has required Many2one _id to in-module model)
     is_line_item = any(
         f.get("type") == "Many2one"
         and f.get("required")
@@ -121,12 +161,10 @@ def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[st
         for f in fields
     )
 
-    # Read explicit chatter flag: None=auto, True=force, False=skip
     chatter = model.get("chatter")
     if chatter is None:
         chatter = not is_line_item
 
-    # Detect if parent (explicit_inherit) is another model in the same module
     if isinstance(explicit_inherit, list):
         parent_is_in_module = any(inh in module_model_names for inh in explicit_inherit)
     elif explicit_inherit:
@@ -146,45 +184,128 @@ def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[st
         hierarchical_injections: list[dict[str, Any]] = []
         if "parent_id" not in field_names_set:
             hierarchical_injections.append({
-                "name": "parent_id",
-                "type": "Many2one",
-                "comodel_name": model["name"],
-                "string": "Parent",
-                "index": True,
-                "ondelete": "cascade",
+                "name": "parent_id", "type": "Many2one",
+                "comodel_name": model["name"], "string": "Parent",
+                "index": True, "ondelete": "cascade",
             })
         if "child_ids" not in field_names_set:
             hierarchical_injections.append({
-                "name": "child_ids",
-                "type": "One2many",
-                "comodel_name": model["name"],
-                "inverse_name": "parent_id",
+                "name": "child_ids", "type": "One2many",
+                "comodel_name": model["name"], "inverse_name": "parent_id",
                 "string": "Children",
             })
         if "parent_path" not in field_names_set:
             hierarchical_injections.append({
-                "name": "parent_path",
-                "type": "Char",
-                "index": True,
-                "internal": True,
+                "name": "parent_path", "type": "Char",
+                "index": True, "internal": True,
             })
         if hierarchical_injections:
             fields = [*fields, *hierarchical_injections]
 
-    # Phase 27: view_fields excludes internal fields (e.g. parent_path)
     view_fields = [f for f in fields if not f.get("internal")]
 
-    # Phase 30: cron methods targeting this model
-    cron_methods = [
-        c for c in spec.get("cron_jobs", [])
-        if c.get("model_name") == model["name"]
-    ]
+    return {
+        "fields": fields,  # may be extended with hierarchy injections
+        "chatter": chatter,
+        "inherit_list": inherit_list,
+        "is_hierarchical": is_hierarchical,
+        "view_fields": view_fields,
+    }
 
-    # Phase 31: reports and dashboards targeting this model
-    model_reports = [
-        r for r in spec.get("reports", [])
-        if r.get("model_name") == model["name"]
-    ]
+
+def _build_approval_context(model: dict[str, Any]) -> dict[str, Any]:
+    """Build approval workflow context keys."""
+    return {
+        "has_approval": model.get("has_approval", False),
+        "approval_levels": model.get("approval_levels", []),
+        "approval_action_methods": model.get("approval_action_methods", []),
+        "approval_submit_action": model.get("approval_submit_action", None),
+        "approval_reject_action": model.get("approval_reject_action", None),
+        "approval_reset_action": model.get("approval_reset_action", None),
+        "approval_state_field_name": model.get("approval_state_field_name", "state"),
+        "lock_after": model.get("lock_after", "draft"),
+        "editable_fields": model.get("editable_fields", []),
+        "approval_record_rules": model.get("approval_record_rules", []),
+        "on_reject": model.get("on_reject", "draft"),
+        "reject_allowed_from": model.get("reject_allowed_from", []),
+    }
+
+
+def _build_audit_context(model: dict[str, Any]) -> dict[str, Any]:
+    """Build audit trail context keys."""
+    audit_fields = model.get("audit_fields", [])
+    return {
+        "has_audit": model.get("has_audit", False),
+        "audit_fields": audit_fields,
+        "audit_field_names": {f["name"] for f in audit_fields},
+        "audit_exclude": model.get("audit_exclude", []),
+    }
+
+
+def _build_webhook_context(model: dict[str, Any]) -> dict[str, Any]:
+    """Build webhook and notification context keys."""
+    webhook_watched_fields = model.get("webhook_watched_fields", [])
+    return {
+        "has_notifications": model.get("has_notifications", False),
+        "notification_templates": model.get("notification_templates", []),
+        "needs_logger": model.get("needs_logger", False),
+        "has_webhooks": model.get("has_webhooks", False),
+        "webhook_config": model.get("webhook_config", None),
+        "webhook_watched_fields": webhook_watched_fields,
+        "webhook_on_create": model.get("webhook_on_create", False),
+        "webhook_on_write": bool(webhook_watched_fields),
+        "webhook_on_unlink": model.get("webhook_on_unlink", False),
+    }
+
+
+def _build_document_context(
+    spec: dict[str, Any], model: dict[str, Any], complex_constraints: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Build document verification/versioning context keys."""
+    has_document_verification = model.get("has_document_verification", False)
+    document_verification_actions: list[dict[str, Any]] = model.get(
+        "document_verification_actions", []
+    )
+    if has_document_verification and not document_verification_actions:
+        module_name = spec.get("module_name", "module")
+        _doc_action_map = {
+            "doc_action_verify": {
+                "name": "doc_action_verify", "button_label": "Verify",
+                "button_class": "btn-primary", "visible_when": "pending",
+                "group_xml_id": f"group_{module_name}_verifier",
+            },
+            "doc_action_reject": {
+                "name": "doc_action_reject", "button_label": "Reject",
+                "button_class": "btn-danger", "visible_when": "pending",
+                "group_xml_id": f"group_{module_name}_verifier",
+            },
+            "doc_action_reset": {
+                "name": "doc_action_reset", "button_label": "Reset to Pending",
+                "button_class": "btn-secondary", "visible_when": "rejected",
+                "group_xml_id": f"group_{module_name}_manager",
+            },
+        }
+        for cc in complex_constraints:
+            cc_name = cc.get("name", "")
+            if cc_name in _doc_action_map:
+                document_verification_actions.append(_doc_action_map[cc_name])
+
+    return {
+        "has_document_verification": has_document_verification,
+        "document_verification_actions": document_verification_actions,
+        "has_document_versioning": model.get("has_document_versioning", False),
+        "document_version_action": model.get("document_version_action", None),
+    }
+
+
+def _build_performance_context(
+    spec: dict[str, Any], model: dict[str, Any], cron_methods: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Build caching, archival, bulk, reporting, and dashboard context keys."""
+    is_archival = model.get("is_archival", False)
+    if is_archival:
+        cron_methods = [c for c in cron_methods if c.get("method") != "_cron_archive_old_records"]
+
     has_dashboard = any(
         d.get("model_name") == model["name"]
         for d in spec.get("dashboards", [])
@@ -194,107 +315,36 @@ def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[st
         and d.get("model_name") == model["name"]
         for d in spec.get("dashboards", [])
     )
+    model_reports = [
+        r for r in spec.get("reports", [])
+        if r.get("model_name") == model["name"]
+    ]
 
-    # Phase 34: production pattern keys
-    is_bulk = model.get("is_bulk", False)
-    is_cacheable = model.get("is_cacheable", False)
-    cache_lookup_field = model.get("cache_lookup_field", "name")
-    needs_tools = model.get("needs_tools", False)
-    is_archival = model.get("is_archival", False)
-    archival_batch_size = model.get("archival_batch_size", 100)
-    archival_days = model.get("archival_days", 365)
+    return {
+        "cron_methods": cron_methods,
+        "model_reports": model_reports,
+        "has_dashboard": has_dashboard,
+        "has_kanban": has_kanban,
+        "is_bulk": model.get("is_bulk", False),
+        "bulk_post_processing_batch_size": model.get("bulk_post_processing_batch_size"),
+        "is_cacheable": model.get("is_cacheable", False),
+        "cache_lookup_field": model.get("cache_lookup_field", "name"),
+        "needs_tools": model.get("needs_tools", False),
+        "is_archival": is_archival,
+        "archival_batch_size": model.get("archival_batch_size", 100),
+        "archival_days": model.get("archival_days", 365),
+    }
 
-    # Phase 34-02: filter archival cron from generic cron_methods
-    # (archival has a dedicated template block, not a stub)
-    if is_archival:
-        cron_methods = [c for c in cron_methods if c.get("method") != "_cron_archive_old_records"]
 
-    # Phase 38: audit trail context keys (defaults prevent StrictUndefined crashes)
-    has_audit = model.get("has_audit", False)
-    audit_fields = model.get("audit_fields", [])
-    audit_field_names = {f["name"] for f in audit_fields}
-    audit_exclude = model.get("audit_exclude", [])
+def _compute_needs_api_and_translate(ctx: dict[str, Any], model: dict[str, Any]) -> dict[str, Any]:
+    """Compute cross-cutting needs_api and needs_translate flags from assembled context."""
+    complex_constraints = ctx["complex_constraints"]
+    needs_translate = bool(complex_constraints)
 
-    # Phase 39: approval workflow context keys (defaults prevent StrictUndefined crashes)
-    has_approval = model.get("has_approval", False)
-    approval_levels = model.get("approval_levels", [])
-    approval_action_methods = model.get("approval_action_methods", [])
-    approval_submit_action = model.get("approval_submit_action", None)
-    approval_reject_action = model.get("approval_reject_action", None)
-    approval_reset_action = model.get("approval_reset_action", None)
-    approval_state_field_name = model.get("approval_state_field_name", "state")
-    lock_after = model.get("lock_after", "draft")
-    editable_fields = model.get("editable_fields", [])
-    approval_record_rules = model.get("approval_record_rules", [])
-    on_reject = model.get("on_reject", "draft")
-    reject_allowed_from = model.get("reject_allowed_from", [])
-
-    # Phase 40: notification and webhook context keys (defaults prevent StrictUndefined crashes)
-    has_notifications = model.get("has_notifications", False)
-    notification_templates = model.get("notification_templates", [])
-    needs_logger = model.get("needs_logger", False)
-    has_webhooks = model.get("has_webhooks", False)
-    webhook_config = model.get("webhook_config", None)
-    webhook_watched_fields = model.get("webhook_watched_fields", [])
-    webhook_on_create = model.get("webhook_on_create", False)
-    webhook_on_write = bool(webhook_watched_fields)
-    webhook_on_unlink = model.get("webhook_on_unlink", False)
-
-    # Phase 52: document management context keys (defaults prevent StrictUndefined crashes)
-    has_document_verification = model.get("has_document_verification", False)
-    has_document_versioning = model.get("has_document_versioning", False)
-    document_version_action = model.get("document_version_action", None)
-
-    # Build document_verification_actions from complex_constraints for view buttons
-    document_verification_actions: list[dict[str, Any]] = model.get(
-        "document_verification_actions", []
-    )
-    if has_document_verification and not document_verification_actions:
-        # Auto-build from doc_action_* constraints
-        module_name = spec.get("module_name", "module")
-        _doc_action_map = {
-            "doc_action_verify": {
-                "name": "doc_action_verify",
-                "button_label": "Verify",
-                "button_class": "btn-primary",
-                "visible_when": "pending",
-                "group_xml_id": f"group_{module_name}_verifier",
-            },
-            "doc_action_reject": {
-                "name": "doc_action_reject",
-                "button_label": "Reject",
-                "button_class": "btn-danger",
-                "visible_when": "pending",
-                "group_xml_id": f"group_{module_name}_verifier",
-            },
-            "doc_action_reset": {
-                "name": "doc_action_reset",
-                "button_label": "Reset to Pending",
-                "button_class": "btn-secondary",
-                "visible_when": "rejected",
-                "group_xml_id": f"group_{module_name}_manager",
-            },
-        }
-        for cc in complex_constraints:
-            cc_name = cc.get("name", "")
-            if cc_name in _doc_action_map:
-                document_verification_actions.append(_doc_action_map[cc_name])
-
-    # Phase 39: approval models need translate for UserError messages in action methods
-    # Phase 52: document verification models also need translate for UserError
-    if has_approval or has_document_verification:
+    if ctx.get("has_approval") or ctx.get("has_document_verification"):
         needs_translate = True
 
-    # Phase 12: conditional api import (TMPL-02)
-    # Phase 29: also need api when temporal constraints exist (@api.constrains)
-    # or create/write overrides exist (@api.model_create_multi)
-    # Phase 30: also need api when cron methods exist (@api.model)
-    # Phase 34: also need api when bulk or cacheable (for @api.model_create_multi)
-    # Phase 38: also need api when audit (for @api.model on _audit_tracked_fields)
     has_temporal = any(c.get("type") == "temporal" for c in complex_constraints)
-    # Phase 49: pk_* constraints need @api.constrains decorator
-    # Phase 50: ac_year_*/ac_term_* constraints also need @api.constrains
-    # Phase 52: doc_file_* constraints also need @api.constrains
     has_domain_constraints = any(
         c.get("type", "").startswith("pk_")
         or c.get("type", "").startswith("ac_year_")
@@ -303,125 +353,40 @@ def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[st
         for c in complex_constraints
     )
     needs_api = bool(
-        computed_fields or onchange_fields or constrained_fields
-        or sequence_fields or has_temporal or has_create_override
-        or cron_methods or is_bulk or is_cacheable or is_archival
-        or has_audit or has_domain_constraints
+        ctx["computed_fields"] or ctx["onchange_fields"] or ctx["constrained_fields"]
+        or ctx["sequence_fields"] or has_temporal or ctx["has_create_override"]
+        or ctx["cron_methods"] or ctx.get("is_bulk") or ctx.get("is_cacheable")
+        or ctx.get("is_archival") or ctx.get("has_audit") or has_domain_constraints
     )
 
-    return {
-        "module_name": spec["module_name"],
-        "module_title": spec.get("module_title", spec["module_name"].replace("_", " ").title()),
-        "summary": spec.get("summary", ""),
-        "author": spec.get("author", ""),
-        "website": spec.get("website", ""),
-        "license": spec.get("license", "LGPL-3"),
-        "category": spec.get("category", "Uncategorized"),
-        "odoo_version": spec.get("odoo_version", "19.0"),
-        "depends": spec.get("depends", ["base"]),
-        "application": spec.get("application", True),
-        "models": spec.get("models", []),
-        "model_name": model["name"],
-        "model_description": model.get("description", model["name"]),
-        "model_var": model_var,
-        "model_xml_id": model_xml_id,
-        "fields": fields,
-        "required_fields": required_fields,
-        "has_constraints": has_constraints,
-        "sql_constraints": model.get("sql_constraints", []),
-        "inherit": model.get("inherit"),
-        # Phase 5 keys
-        "computed_fields": computed_fields,
-        "onchange_fields": onchange_fields,
-        "constrained_fields": constrained_fields,
-        "sequence_fields": sequence_fields,
-        "sequence_field_names": list(SEQUENCE_FIELD_NAMES),
-        "state_field": state_field,
-        "wizards": wizards,
-        "has_computed": bool(computed_fields),
-        "has_sequence_fields": bool(sequence_fields),
-        # Phase 6 keys
-        "has_company_field": has_company_field,
-        "workflow_states": model.get("workflow_states", []),
-        # Phase 12 keys
-        "chatter": chatter,
-        "inherit_list": inherit_list,
-        "needs_api": needs_api,
-        # Phase 26 keys
-        "needs_currency_id": needs_currency_id,
-        # Phase 27 keys
-        "is_hierarchical": is_hierarchical,
-        "view_fields": view_fields,
-        # Phase 29 keys
-        "complex_constraints": complex_constraints,
-        "create_constraints": create_constraints,
-        "write_constraints": write_constraints,
-        "has_create_override": has_create_override,
-        "has_write_override": has_write_override,
-        "needs_translate": needs_translate,
-        # Phase 30 keys
-        "cron_methods": cron_methods,
-        # Phase 31 keys
-        "model_reports": model_reports,
-        "has_dashboard": has_dashboard,
-        "has_kanban": has_kanban,
-        # Phase 33 keys
-        "model_order": model.get("model_order", ""),
-        "is_transient": model.get("transient", False),
-        "transient_max_hours": model.get("transient_max_hours"),
-        "transient_max_count": model.get("transient_max_count"),
-        # Phase 34 keys
-        "is_bulk": is_bulk,
-        # Phase 63: bulk post-processing batch size (set by bulk_operations preprocessor)
-        "bulk_post_processing_batch_size": model.get("bulk_post_processing_batch_size"),
-        "is_cacheable": is_cacheable,
-        "cache_lookup_field": cache_lookup_field,
-        "needs_tools": needs_tools,
-        "is_archival": is_archival,
-        "archival_batch_size": archival_batch_size,
-        "archival_days": archival_days,
-        # Phase 38 keys
-        "has_audit": has_audit,
-        "audit_fields": audit_fields,
-        "audit_field_names": audit_field_names,
-        "audit_exclude": audit_exclude,
-        # Phase 39 keys
-        "has_approval": has_approval,
-        "approval_levels": approval_levels,
-        "approval_action_methods": approval_action_methods,
-        "approval_submit_action": approval_submit_action,
-        "approval_reject_action": approval_reject_action,
-        "approval_reset_action": approval_reset_action,
-        "approval_state_field_name": approval_state_field_name,
-        "lock_after": lock_after,
-        "editable_fields": editable_fields,
-        "approval_record_rules": approval_record_rules,
-        "on_reject": on_reject,
-        "reject_allowed_from": reject_allowed_from,
-        # Phase 40 keys
-        "has_notifications": has_notifications,
-        "notification_templates": notification_templates,
-        "needs_logger": needs_logger,
-        "has_webhooks": has_webhooks,
-        "webhook_config": webhook_config,
-        "webhook_watched_fields": webhook_watched_fields,
-        "webhook_on_create": webhook_on_create,
-        "webhook_on_write": webhook_on_write,
-        "webhook_on_unlink": webhook_on_unlink,
-        # Phase 52 keys
-        "has_document_verification": has_document_verification,
-        "document_verification_actions": document_verification_actions,
-        "has_document_versioning": has_document_versioning,
-        "document_version_action": document_version_action,
-        # Integration keys (amil schema alignment)
-        "model_workflow": next(
-            (w for w in spec.get("workflow", [])
-             if isinstance(w, dict) and w.get("model") == model["name"]),
-            None,
-        ),
-        # Performance preprocessor enrichments
-        "composite_indexes": model.get("composite_indexes", []),
-    }
+    return {"needs_api": needs_api, "needs_translate": needs_translate}
+
+
+def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[str, Any]:
+    """Build the template context for a single model from the module spec.
+
+    PIPE-02: Delegates to focused sub-builders, then merges results.
+    Order matters: field_ctx may update 'fields', workflow_ctx may extend it further.
+    """
+    ctx: dict[str, Any] = {}
+
+    ctx.update(_build_base_context(spec, model))
+    ctx.update(_build_field_context(model, ctx["fields"]))
+    # workflow_ctx may extend fields (hierarchy injections) — use updated fields
+    ctx.update(_build_workflow_context(spec, model, ctx["fields"]))
+    ctx.update(_build_approval_context(model))
+    ctx.update(_build_audit_context(model))
+    ctx.update(_build_webhook_context(model))
+    ctx.update(_build_document_context(spec, model, ctx["complex_constraints"]))
+
+    cron_methods = [
+        c for c in spec.get("cron_jobs", [])
+        if c.get("model_name") == model["name"]
+    ]
+    ctx.update(_build_performance_context(spec, model, cron_methods))
+    ctx.update(_compute_needs_api_and_translate(ctx, model))
+
+    return ctx
 
 
 def _build_extension_context(
@@ -752,17 +717,6 @@ def _build_module_context(spec: dict[str, Any], module_name: str) -> dict[str, A
         "view_hints": spec.get("view_hints", []),
     }
     # Phase 52: VERSION_GATES for Odoo version-conditional template rendering (DOMN-04)
-    _VERSION_GATES: dict[str, dict[str, str]] = {
-        "18.0": {
-            "mail.channel": "discuss.channel",
-            "mail.channel_all_employees": "discuss.channel_general",
-        },
-        "19.0": {
-            "mail.channel": "discuss.channel",
-            "mail.channel_all_employees": "discuss.channel_general",
-            # Add any 19.0-specific renames here
-        },
-    }
     ctx["version_gates"] = _VERSION_GATES
     if has_import_export:
         ctx["external_dependencies"] = {"python": ["openpyxl"]}

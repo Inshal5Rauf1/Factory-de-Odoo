@@ -44,16 +44,6 @@ from amil_utils.manifest import (
 )
 from amil_utils.hooks import RenderHook, notify_hooks, CheckpointPause
 
-# Backward-compatible re-exports: tests import these from renderer
-from amil_utils.preprocessors import (  # noqa: F401
-    _process_computation_chains,
-    _process_constraints,
-    _process_performance,
-    _process_production_patterns,
-    _process_relationships,
-    _process_security_patterns,
-)
-
 from amil_utils.context7 import build_context7_from_env, context7_enrich
 
 from amil_utils.renderer_context import (
@@ -1117,6 +1107,7 @@ def render_module(
     resume_from: "GenerationManifest | None" = None,
     force: bool = False,
     dry_run: bool = False,
+    skip_semantic_validation: bool = False,
 ) -> "tuple[list[Path], list[VerificationWarning]]":
     """Orchestrate rendering of a complete Odoo module via 11 named stage functions.
 
@@ -1130,6 +1121,7 @@ def render_module(
             stages with intact artifacts are skipped.
         force: Force full regeneration, ignore spec stash.
         dry_run: Show what would change without writing files.
+        skip_semantic_validation: Skip post-render semantic validation (default False).
 
     Returns:
         Tuple of (created_files, verification_warnings).
@@ -1139,8 +1131,9 @@ def render_module(
     spec_raw = copy.deepcopy(spec)
 
     # Phase 47: Validate spec against Pydantic schema BEFORE any processing
+    # PIPE-01: Keep typed ModuleSpec — defer model_dump() to preprocessor boundary.
     validated = validate_spec(spec)
-    spec = validated.model_dump(exclude_none=True)  # Convert back to dict for preprocessor pipeline
+    spec = validated.model_dump(exclude_none=True)
 
     # Phase 28: validate no circular dependencies BEFORE any preprocessing
     _validate_no_cycles(spec)
@@ -1205,6 +1198,8 @@ def render_module(
         resume_from = None  # Force full re-run
 
     # Phase 45: single call replaces 10 individual preprocessor calls + override_sources loop
+    # PIPE-01: run_preprocessors accepts both dict and ModuleSpec (converts internally).
+    # Pass original dict so monkeypatched lambdas in tests still return a dict.
     t0_pre = time.perf_counter_ns()
     spec = run_preprocessors(spec)
     pre_duration_ms = (time.perf_counter_ns() - t0_pre) // 1_000_000
@@ -1388,6 +1383,29 @@ def render_module(
         models_registered=[m.get("model_name", "") for m in spec.get("models", [])],
     )
     notify_hooks(hooks, "on_render_complete", module_name, manifest)
+
+    # PIPE-04: Run semantic validation so programmatic callers get it by default
+    if not skip_semantic_validation and created_files:
+        try:
+            from amil_utils.validation.semantic import semantic_validate
+            from amil_utils.verifier import VerificationWarning as _VW
+            sem_result = semantic_validate(module_dir)
+            if sem_result.has_errors:
+                for err in sem_result.errors:
+                    all_warnings.append(
+                        _VW(
+                            check_type=f"semantic:{err.code}",
+                            subject=err.file or module_name,
+                            message=err.message,
+                        )
+                    )
+                _logger.warning(
+                    "Semantic validation found %d error(s) in %s",
+                    len(sem_result.errors),
+                    module_name,
+                )
+        except Exception as exc:
+            _logger.warning("Semantic validation failed: %s", exc)
 
     # Phase 60: Save spec stash after successful generation
     from amil_utils.iterative import save_spec_stash
