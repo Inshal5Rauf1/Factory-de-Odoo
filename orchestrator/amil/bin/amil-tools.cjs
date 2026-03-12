@@ -698,4 +698,7 @@ async function main() {
   }
 }
 
-main();
+main().catch(err => {
+  process.stderr.write(`Error: ${err.message || err}\n`);
+  process.exit(1);
+});

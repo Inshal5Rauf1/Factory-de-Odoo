@@ -6,12 +6,12 @@ build-backend = "hatchling.build"
 name = "amil-utils"
 version = "0.1.0"
 description = "Python utilities for Amil Odoo module generation"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.12,<3.14"
 dependencies = [
-    "jinja2>=3.1",
-    "click>=8.0",
-    "pylint-odoo>=10.0",
-    "deepdiff>=8.0",
+    "jinja2>=3.1,<4.0",
+    "click>=8.0,<9.0",
+    "pylint-odoo>=10.0,<11.0",
+    "deepdiff>=8.0,<9.0",
     "pydantic>=2.10,<3.0",
 ]
 
@@ -22,6 +22,7 @@ mcp = [
 test = [
     "pytest>=8.0",
     "pytest-asyncio>=1.0,<2.0",
+    "pytest-cov>=6.0",
 ]
 pakistan = [
     "phonenumbers>=8.13,<10.0",
@@ -53,4 +54,17 @@ markers = [
     "e2e: End-to-end tests hitting real external services (GitHub API, ChromaDB). Skipped without GITHUB_TOKEN.",
     "e2e_slow: Full OCA index build (200+ repos, 3-5 min). Requires GITHUB_TOKEN.",
     "docker: Integration tests requiring Docker daemon. Skipped when Docker is unavailable.",
+]
+
+[tool.coverage.run]
+source = ["src/amil_utils"]
+omit = ["*/tests/*", "*/.venv/*", "*/fixtures/*"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
 ]
