@@ -151,7 +151,7 @@ AskUserQuestion([
 If "Yes": write the same config object (minus project-specific fields like `brave_search`) to `~/.amil/defaults.json`:
 
 ```bash
-mkdir -p ~/.gsd
+mkdir -p ~/.amil
 ```
 
 Write `~/.amil/defaults.json` with:

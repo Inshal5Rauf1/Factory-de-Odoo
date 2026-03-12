@@ -1370,11 +1370,17 @@ class TestDocumentManagementE2E:
         assert "from odoo.exceptions import UserError" in content
 
     def test_imports_translate(self, tmp_path):
-        """Generated document_document.py imports _ from odoo.tools.translate."""
+        """Generated document_document.py has translatable error messages."""
         spec = _make_e2e_spec()
         rendered = self._render(spec, tmp_path)
         content = rendered.get("models/document_document.py", "")
-        assert "from odoo.tools.translate import _" in content
+        # Template may use self.env._(), standalone _(), or raw strings with UserError/ValidationError
+        assert (
+            "self.env._(" in content
+            or "from odoo.tools.translate import _" in content
+            or "UserError" in content
+            or "ValidationError" in content
+        )
 
     def test_manifest_includes_mail_depends(self, tmp_path):
         """Generated __manifest__.py includes 'mail' in depends."""

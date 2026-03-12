@@ -334,6 +334,7 @@ def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[st
         "has_company_field": has_company_field,
         "workflow_states": model.get("workflow_states", []),
         # Phase 12 keys
+        "chatter": chatter,
         "inherit_list": inherit_list,
         "needs_api": needs_api,
         # Phase 26 keys

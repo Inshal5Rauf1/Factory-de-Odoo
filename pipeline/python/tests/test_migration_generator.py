@@ -1032,7 +1032,7 @@ class TestComputeMigrationVersion:
         diff["old_version"] = "unknown"
         diff["new_version"] = "unknown"
         version = compute_migration_version(diff)
-        assert version == "17.0.1.0.1"  # default fallback
+        assert version == "19.0.1.0.1"  # default fallback
 
 
 # ---------------------------------------------------------------------------

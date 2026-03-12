@@ -4,7 +4,7 @@ const { describe, it, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
+const { runAmilTools, createTempProject, cleanup } = require('./helpers.cjs');
 
 describe('module-status', () => {
   let tmpDir;
@@ -21,7 +21,7 @@ describe('module-status', () => {
 
   describe('read', () => {
     it('returns empty structure when no module_status.json exists', () => {
-      const r = runGsdTools(['module-status', 'read', '--raw'], tmpDir);
+      const r = runAmilTools(['module-status', 'read', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const data = JSON.parse(r.output);
       assert.deepEqual(data.modules, {});
@@ -34,7 +34,7 @@ describe('module-status', () => {
 
   describe('init', () => {
     it('creates module entry with status "planned"', () => {
-      const r = runGsdTools(
+      const r = runAmilTools(
         ['module-status', 'init', 'university_student', 'foundation', '[]', '--raw'],
         tmpDir
       );
@@ -46,7 +46,7 @@ describe('module-status', () => {
     });
 
     it('creates artifact directory with CONTEXT.md placeholder', () => {
-      runGsdTools(
+      runAmilTools(
         ['module-status', 'init', 'university_student', 'foundation', '[]', '--raw'],
         tmpDir
       );
@@ -57,11 +57,11 @@ describe('module-status', () => {
     });
 
     it('returns error when module already exists', () => {
-      runGsdTools(
+      runAmilTools(
         ['module-status', 'init', 'university_student', 'foundation', '[]', '--raw'],
         tmpDir
       );
-      const r = runGsdTools(
+      const r = runAmilTools(
         ['module-status', 'init', 'university_student', 'foundation', '[]', '--raw'],
         tmpDir
       );
@@ -74,14 +74,14 @@ describe('module-status', () => {
 
   describe('transitions', () => {
     beforeEach(() => {
-      runGsdTools(
+      runAmilTools(
         ['module-status', 'init', 'test_mod', 'foundation', '[]', '--raw'],
         tmpDir
       );
     });
 
     it('planned -> spec_approved succeeds', () => {
-      const r = runGsdTools(
+      const r = runAmilTools(
         ['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'],
         tmpDir
       );
@@ -91,7 +91,7 @@ describe('module-status', () => {
     });
 
     it('planned -> generated throws invalid transition', () => {
-      const r = runGsdTools(
+      const r = runAmilTools(
         ['module-status', 'transition', 'test_mod', 'generated', '--raw'],
         tmpDir
       );
@@ -100,8 +100,8 @@ describe('module-status', () => {
     });
 
     it('spec_approved -> generated succeeds', () => {
-      runGsdTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
-      const r = runGsdTools(
+      runAmilTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
+      const r = runAmilTools(
         ['module-status', 'transition', 'test_mod', 'generated', '--raw'],
         tmpDir
       );
@@ -111,8 +111,8 @@ describe('module-status', () => {
     });
 
     it('spec_approved -> planned succeeds (re-plan allowed)', () => {
-      runGsdTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
-      const r = runGsdTools(
+      runAmilTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
+      const r = runAmilTools(
         ['module-status', 'transition', 'test_mod', 'planned', '--raw'],
         tmpDir
       );
@@ -122,9 +122,9 @@ describe('module-status', () => {
     });
 
     it('generated -> checked succeeds', () => {
-      runGsdTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'test_mod', 'generated', '--raw'], tmpDir);
-      const r = runGsdTools(
+      runAmilTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'test_mod', 'generated', '--raw'], tmpDir);
+      const r = runAmilTools(
         ['module-status', 'transition', 'test_mod', 'checked', '--raw'],
         tmpDir
       );
@@ -134,9 +134,9 @@ describe('module-status', () => {
     });
 
     it('generated -> spec_approved succeeds (revise allowed)', () => {
-      runGsdTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'test_mod', 'generated', '--raw'], tmpDir);
-      const r = runGsdTools(
+      runAmilTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'test_mod', 'generated', '--raw'], tmpDir);
+      const r = runAmilTools(
         ['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'],
         tmpDir
       );
@@ -146,10 +146,10 @@ describe('module-status', () => {
     });
 
     it('checked -> shipped succeeds', () => {
-      runGsdTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'test_mod', 'generated', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'test_mod', 'checked', '--raw'], tmpDir);
-      const r = runGsdTools(
+      runAmilTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'test_mod', 'generated', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'test_mod', 'checked', '--raw'], tmpDir);
+      const r = runAmilTools(
         ['module-status', 'transition', 'test_mod', 'shipped', '--raw'],
         tmpDir
       );
@@ -159,11 +159,11 @@ describe('module-status', () => {
     });
 
     it('shipped -> anything throws invalid transition', () => {
-      runGsdTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'test_mod', 'generated', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'test_mod', 'checked', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'test_mod', 'shipped', '--raw'], tmpDir);
-      const r = runGsdTools(
+      runAmilTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'test_mod', 'generated', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'test_mod', 'checked', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'test_mod', 'shipped', '--raw'], tmpDir);
+      const r = runAmilTools(
         ['module-status', 'transition', 'test_mod', 'planned', '--raw'],
         tmpDir
       );
@@ -172,7 +172,7 @@ describe('module-status', () => {
     });
 
     it('nonexistent module defaults to planned status on read', () => {
-      const r = runGsdTools(
+      const r = runAmilTools(
         ['module-status', 'get', 'nonexistent', '--raw'],
         tmpDir
       );
@@ -186,38 +186,38 @@ describe('module-status', () => {
 
   describe('tiers', () => {
     it('tier with all modules shipped has status "complete"', () => {
-      runGsdTools(['module-status', 'init', 'mod_a', 'foundation', '[]', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'mod_a', 'spec_approved', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'mod_a', 'generated', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'mod_a', 'checked', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'mod_a', 'shipped', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'init', 'mod_a', 'foundation', '[]', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'mod_a', 'spec_approved', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'mod_a', 'generated', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'mod_a', 'checked', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'mod_a', 'shipped', '--raw'], tmpDir);
 
-      const r = runGsdTools(['module-status', 'tiers', '--raw'], tmpDir);
+      const r = runAmilTools(['module-status', 'tiers', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const data = JSON.parse(r.output);
       assert.equal(data.tiers.foundation.status, 'complete');
     });
 
     it('tier with any module not shipped has status "incomplete"', () => {
-      runGsdTools(['module-status', 'init', 'mod_a', 'foundation', '[]', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'init', 'mod_b', 'foundation', '[]', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'mod_a', 'spec_approved', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'mod_a', 'generated', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'mod_a', 'checked', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'mod_a', 'shipped', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'init', 'mod_a', 'foundation', '[]', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'init', 'mod_b', 'foundation', '[]', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'mod_a', 'spec_approved', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'mod_a', 'generated', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'mod_a', 'checked', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'mod_a', 'shipped', '--raw'], tmpDir);
 
-      const r = runGsdTools(['module-status', 'tiers', '--raw'], tmpDir);
+      const r = runAmilTools(['module-status', 'tiers', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const data = JSON.parse(r.output);
       assert.equal(data.tiers.foundation.status, 'incomplete');
     });
 
     it('tier reports count by status', () => {
-      runGsdTools(['module-status', 'init', 'mod_a', 'core', '[]', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'init', 'mod_b', 'core', '[]', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'mod_a', 'spec_approved', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'init', 'mod_a', 'core', '[]', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'init', 'mod_b', 'core', '[]', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'mod_a', 'spec_approved', '--raw'], tmpDir);
 
-      const r = runGsdTools(['module-status', 'tiers', '--raw'], tmpDir);
+      const r = runAmilTools(['module-status', 'tiers', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const data = JSON.parse(r.output);
       assert.equal(data.tiers.core.counts.planned, 1);
@@ -229,19 +229,19 @@ describe('module-status', () => {
 
   describe('atomic writes', () => {
     it('status transition creates .bak before writing', () => {
-      runGsdTools(['module-status', 'init', 'test_mod', 'foundation', '[]', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'init', 'test_mod', 'foundation', '[]', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
       const bakPath = path.join(tmpDir, '.planning', 'module_status.json.bak');
       assert.equal(fs.existsSync(bakPath), true);
     });
 
     it('version increments on each transition', () => {
-      runGsdTools(['module-status', 'init', 'test_mod', 'foundation', '[]', '--raw'], tmpDir);
-      const r1 = runGsdTools(['module-status', 'read', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'init', 'test_mod', 'foundation', '[]', '--raw'], tmpDir);
+      const r1 = runAmilTools(['module-status', 'read', '--raw'], tmpDir);
       const v1 = JSON.parse(r1.output)._meta.version;
 
-      runGsdTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
-      const r2 = runGsdTools(['module-status', 'read', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'test_mod', 'spec_approved', '--raw'], tmpDir);
+      const r2 = runAmilTools(['module-status', 'read', '--raw'], tmpDir);
       const v2 = JSON.parse(r2.output)._meta.version;
 
       assert.ok(v2 > v1, `Expected version ${v2} > ${v1}`);

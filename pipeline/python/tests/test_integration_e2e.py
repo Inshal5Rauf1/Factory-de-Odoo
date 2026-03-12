@@ -55,7 +55,7 @@ class TestSchemaAcceptance:
         """All metadata fields from aligned schema should be preserved."""
         spec = ModuleSpec(**integration_spec)
         assert spec.module_name == "integration_test"
-        assert spec.odoo_version == "17.0"
+        assert spec.odoo_version == "19.0"
         # extra="allow" preserves these even if not explicit Pydantic fields
         dumped = spec.model_dump()
         assert dumped.get("module_title") or integration_spec.get("module_title")

@@ -16,11 +16,11 @@ You: "I need a module to track employee training courses and sessions"
      Fork & Extend     Build from Scratch
               |              |
         +-----v--------------v-----+
-        |   8 Specialized Agents   |  Model, View, Security, Test, i18n...
+        |   9 Specialized Agents   |  Model, View, Security, Test, i18n...
         +-----+--------------------+
               |
         +-----v--------------------+
-        |   Jinja2 Template Engine |  24 templates (17.0 / 18.0 / shared)
+        |   Jinja2 Template Engine |  51 templates (17.0 / 18.0 / 19.0 / shared)
         +-----+--------------------+
               |
         +-----v--------------------+
@@ -38,11 +38,11 @@ You: "I need a module to track employee training courses and sessions"
 
 - **Natural Language to Module** — Describe what you need; the system asks follow-up questions, generates a structured spec, and produces a complete Odoo module
 - **Semantic Search** — ChromaDB-powered vector search across 200+ OCA repositories to find and fork existing modules
-- **8 Specialized AI Agents** — Model generation, view generation, security patterns, test generation, validation, search, scaffolding, fork-and-extend
-- **24 Jinja2 Templates** — Version-aware templates for Odoo 17.0, 18.0, and 19.0 with shared fallback
+- **9 Specialized AI Agents** — Model generation, view generation, security patterns, test generation, validation, search, scaffolding, fork-and-extend, business logic
+- **51 Jinja2 Templates** — Version-aware templates for Odoo 17.0, 18.0, and 19.0 with shared fallback
 - **Validation Pipeline** — pylint-odoo linting + Docker-based Odoo installation + test execution
 - **Auto-Fix** — Automatically fixes pylint violations, missing `mail.thread` inheritance, unused imports (AST-based), XML parse errors, missing ACLs, manifest load order — with configurable 5-iteration caps
-- **Knowledge Base** — 13 domain files with 80+ WRONG/CORRECT example pairs preventing AI hallucinations
+- **Knowledge Base** — 12 domain files with 80+ WRONG/CORRECT example pairs preventing AI hallucinations
 - **Context7 Integration** — Live Odoo documentation queries via Context7 REST API with graceful fallback
 - **Artifact State Tracking** — Generation pipeline observability with JSON sidecar persistence and CLI display
 - **MCP Server** — 6 tools for live Odoo introspection (list_models, get_model_fields, check_module_dependency, etc.)
@@ -61,21 +61,15 @@ You: "I need a module to track employee training courses and sessions"
 
 ```bash
 # Clone the repository
-git clone git@github.com:Inshal5Rauf1/Odoo-Development-Automation.git ~/.claude/amil
+git clone https://github.com/TIFAQM/Factory-de-Odoo.git
+cd Factory-de-Odoo/pipeline/python
 
-# Run the installer
-cd ~/.claude/amil
-bash install.sh
+# Install the Python package
+uv venv --python 3.12
+uv pip install -e ".[dev]"
 ```
 
-The installer:
-1. Verifies Python 3.12 is available
-2. Creates a Python virtual environment with `uv`
-3. Installs the `amil-utils` package (editable)
-4. Registers 13 commands as `/amil:*` in your AI assistant
-5. Symlinks 8 agent definitions
-6. Installs the knowledge base
-7. Writes an installation manifest at `~/.claude/amil-manifest.json`
+This installs `amil-utils` as an editable package with all development dependencies.
 
 ## Quick Start
 
@@ -158,8 +152,8 @@ Layer 1: Orchestrator (Factory de Odoo)
   phase/wave execution, checkpoint-based human review, Git integration
 
 Layer 2: Pipeline (THIS COMPONENT)
-  8 specialized agents, 13 commands, Jinja2 templates,
-  knowledge base, workflows
+  9 specialized agents, 51 Jinja2 templates,
+  knowledge base — pure library, no user-facing commands
 
 Layer 3: Python Utilities (amil-utils)
   Jinja2 rendering engine, pylint-odoo integration,
@@ -175,7 +169,7 @@ Layer 4: AI Coding Assistant (USER'S ENVIRONMENT)
 amil/
 ├── install.sh              # 10-step installer
 ├── defaults.json           # Default config (Odoo 17.0, Community, LGPL-3)
-├── agents/                 # 8 AI agent definitions
+├── agents/                 # 9 AI agent definitions
 │   ├── amil-scaffold.md
 │   ├── amil-model-gen.md
 │   ├── amil-view-gen.md
@@ -183,8 +177,9 @@ amil/
 │   ├── amil-security-gen.md
 │   ├── amil-validator.md
 │   ├── amil-search.md
-│   └── amil-extend.md
-├── commands/               # 13 command definitions
+│   ├── amil-extend.md
+│   └── amil-logic-writer.md
+├── workflows/              # Workflow configs
 ├── knowledge/              # Odoo domain knowledge base
 │   ├── MASTER.md           # Integration guide
 │   ├── models.md           # ORM models, fields, computed
@@ -218,7 +213,7 @@ amil/
     │   ├── kb_validator.py
     │   ├── search/         # ChromaDB, GitHub, fork
     │   └── validation/     # Docker, pylint, reports
-    └── tests/              # 444 tests (pytest)
+    └── tests/              # 2,244 tests (pytest)
 ```
 
 ## Python Utilities (amil-utils)
@@ -248,9 +243,9 @@ amil-utils extract-i18n /path/to/module
 ## Testing
 
 ```bash
-cd python/
+cd pipeline/python
 
-# Run all unit tests (494 tests, ~3s)
+# Run all tests (2,244 tests)
 uv run pytest tests/ -v
 
 # Skip Docker tests (when Docker unavailable)
@@ -352,7 +347,7 @@ Override via `/amil:config` or environment variables:
 
 ## Knowledge Base
 
-The knowledge base contains 13 domain files covering Odoo development patterns. Each file uses WRONG/CORRECT example pairs to guide AI agents:
+The knowledge base contains 12 domain files covering Odoo development patterns. Each file uses WRONG/CORRECT example pairs to guide AI agents:
 
 ```markdown
 ## WRONG
@@ -375,7 +370,7 @@ Extend the knowledge base by adding files to `knowledge/custom/`. These are auto
 | v2.1 | Auto-Fix & Enhancements | 18-19 | Shipped 2026-03-04 |
 | v3.0 | Bug Fixes & Tech Debt | 20-25 | Shipped 2026-03-05 |
 
-**Stats:** 25 phases, 56 plans, 325+ commits, 18,400 LOC Python, 494 tests
+**Stats:** 25 phases, 56 plans, 325+ commits, 24,300+ LOC Python, 2,244 tests
 
 ## License
 

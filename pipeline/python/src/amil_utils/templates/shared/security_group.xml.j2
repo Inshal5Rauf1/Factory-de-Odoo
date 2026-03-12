@@ -8,12 +8,20 @@
         <field name="sequence">100</field>
     </record>
 
+{% if odoo_version is defined and odoo_version >= "19.0" %}
+    <!-- Privilege record (Odoo 19+: res.groups.privilege sits between category and groups) -->
+    <record id="res_groups_privilege_{{ module_name }}" model="res.groups.privilege">
+        <field name="name">{{ module_title }}</field>
+        <field name="category_id" ref="module_category_{{ module_name }}"/>
+    </record>
+
+{% endif %}
 {% for role in security_roles %}
     <!-- {{ role.label }} Group{% if role.is_highest %} (highest){% endif %} -->
     <record id="{{ role.xml_id }}" model="res.groups">
         <field name="name">{{ role.label }}</field>
 {% if odoo_version is defined and odoo_version >= "19.0" %}
-        <field name="privilege_id" ref="module_category_{{ module_name }}"/>
+        <field name="privilege_id" ref="res_groups_privilege_{{ module_name }}"/>
 {% else %}
         <field name="category_id" ref="module_category_{{ module_name }}"/>
 {% endif %}

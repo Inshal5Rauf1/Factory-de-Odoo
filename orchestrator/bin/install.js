@@ -14,7 +14,7 @@ const dim = '\x1b[2m';
 const reset = '\x1b[0m';
 
 // Codex config.toml constants
-const GSD_CODEX_MARKER = '# Amil Agent Configuration \u2014 managed by amil installer';
+const AMIL_CODEX_MARKER = '# Amil Agent Configuration \u2014 managed by amil installer';
 
 const CODEX_AGENT_SANDBOX = {
   'amil-executor': 'workspace-write',
@@ -462,7 +462,7 @@ function convertSlashCommandsToCodexSkillMentions(content) {
 
 function convertClaudeToCodexMarkdown(content) {
   let converted = convertSlashCommandsToCodexSkillMentions(content);
-  converted = converted.replace(/\$ARGUMENTS\b/g, '{{GSD_ARGS}}');
+  converted = converted.replace(/\$ARGUMENTS\b/g, '{{AMIL_ARGS}}');
   return converted;
 }
 
@@ -471,8 +471,8 @@ function getCodexSkillAdapterHeader(skillName) {
   return `<codex_skill_adapter>
 ## A. Skill Invocation
 - This skill is invoked by mentioning \`${invocation}\`.
-- Treat all user text after \`${invocation}\` as \`{{GSD_ARGS}}\`.
-- If no arguments are present, treat \`{{GSD_ARGS}}\` as empty.
+- Treat all user text after \`${invocation}\` as \`{{AMIL_ARGS}}\`.
+- If no arguments are present, treat \`{{AMIL_ARGS}}\` as empty.
 
 ## B. AskUserQuestion → request_user_input Mapping
 Amil workflows use \`AskUserQuestion\` (Claude Code syntax). Translate to Codex \`request_user_input\`:
@@ -576,7 +576,7 @@ function generateCodexAgentToml(agentName, agentContent) {
  */
 function generateCodexConfigBlock(agents) {
   const lines = [
-    GSD_CODEX_MARKER,
+    AMIL_CODEX_MARKER,
     '[features]',
     'multi_agent = true',
     'default_mode_request_user_input = true',
@@ -601,8 +601,8 @@ function generateCodexConfigBlock(agents) {
  * Strip Amil sections from Codex config.toml content.
  * Returns cleaned content, or null if file would be empty.
  */
-function stripGsdFromCodexConfig(content) {
-  const markerIndex = content.indexOf(GSD_CODEX_MARKER);
+function stripAmilFromCodexConfig(content) {
+  const markerIndex = content.indexOf(AMIL_CODEX_MARKER);
 
   if (markerIndex !== -1) {
     // Has Amil marker — remove everything from marker to EOF
@@ -641,15 +641,15 @@ function stripGsdFromCodexConfig(content) {
  * Merge Amil config block into an existing or new config.toml.
  * Three cases: new file, existing with Amil marker, existing without marker.
  */
-function mergeCodexConfig(configPath, gsdBlock) {
+function mergeCodexConfig(configPath, amilBlock) {
   // Case 1: No config.toml — create fresh
   if (!fs.existsSync(configPath)) {
-    fs.writeFileSync(configPath, gsdBlock + '\n');
+    fs.writeFileSync(configPath, amilBlock + '\n');
     return;
   }
 
   const existing = fs.readFileSync(configPath, 'utf8');
-  const markerIndex = existing.indexOf(GSD_CODEX_MARKER);
+  const markerIndex = existing.indexOf(AMIL_CODEX_MARKER);
 
   // Case 2: Has Amil marker — truncate and re-append
   if (markerIndex !== -1) {
@@ -670,13 +670,13 @@ function mergeCodexConfig(configPath, gsdBlock) {
           before = before.replace(/^\[features\].*$/m, '$&\ndefault_mode_request_user_input = true');
         }
       }
-      // Skip [features] from gsdBlock if user already has it
+      // Skip [features] from amilBlock if user already has it
       const block = hasFeatures
-        ? GSD_CODEX_MARKER + '\n' + gsdBlock.substring(gsdBlock.indexOf('[agents]'))
-        : gsdBlock;
+        ? AMIL_CODEX_MARKER + '\n' + amilBlock.substring(amilBlock.indexOf('[agents]'))
+        : amilBlock;
       fs.writeFileSync(configPath, before + '\n\n' + block + '\n');
     } else {
-      fs.writeFileSync(configPath, gsdBlock + '\n');
+      fs.writeFileSync(configPath, amilBlock + '\n');
     }
     return;
   }
@@ -693,11 +693,11 @@ function mergeCodexConfig(configPath, gsdBlock) {
     if (!content.includes('default_mode_request_user_input')) {
       content = content.replace(/^\[features\].*$/m, '$&\ndefault_mode_request_user_input = true');
     }
-    // Append agents block (skip the [features] section from gsdBlock)
-    const agentsBlock = gsdBlock.substring(gsdBlock.indexOf('[agents]'));
-    content = content.trimEnd() + '\n\n' + GSD_CODEX_MARKER + '\n' + agentsBlock + '\n';
+    // Append agents block (skip the [features] section from amilBlock)
+    const agentsBlock = amilBlock.substring(amilBlock.indexOf('[agents]'));
+    content = content.trimEnd() + '\n\n' + AMIL_CODEX_MARKER + '\n' + agentsBlock + '\n';
   } else {
-    content = content.trimEnd() + '\n\n' + gsdBlock + '\n';
+    content = content.trimEnd() + '\n\n' + amilBlock + '\n';
   }
 
   fs.writeFileSync(configPath, content);
@@ -733,8 +733,8 @@ function installCodexConfig(targetDir, agentsSrc) {
     fs.writeFileSync(path.join(agentsTomlDir, `${name}.toml`), tomlContent);
   }
 
-  const gsdBlock = generateCodexConfigBlock(agents);
-  mergeCodexConfig(configPath, gsdBlock);
+  const amilBlock = generateCodexConfigBlock(agents);
+  mergeCodexConfig(configPath, amilBlock);
 
   return agents.length;
 }
@@ -1335,7 +1335,7 @@ function uninstall(isGlobal, runtime = 'claude') {
     const configPath = path.join(targetDir, 'config.toml');
     if (fs.existsSync(configPath)) {
       const content = fs.readFileSync(configPath, 'utf8');
-      const cleaned = stripGsdFromCodexConfig(content);
+      const cleaned = stripAmilFromCodexConfig(content);
       if (cleaned === null) {
         // File is empty after stripping — delete it
         fs.unlinkSync(configPath);
@@ -1349,18 +1349,18 @@ function uninstall(isGlobal, runtime = 'claude') {
     }
   } else {
     // Claude Code & Gemini: remove commands/amil/ directory
-    const gsdCommandsDir = path.join(targetDir, 'commands', 'amil');
-    if (fs.existsSync(gsdCommandsDir)) {
-      fs.rmSync(gsdCommandsDir, { recursive: true });
+    const amilCommandsDir = path.join(targetDir, 'commands', 'amil');
+    if (fs.existsSync(amilCommandsDir)) {
+      fs.rmSync(amilCommandsDir, { recursive: true });
       removedCount++;
       console.log(`  ${green}✓${reset} Removed commands/amil/`);
     }
   }
 
   // 2. Remove amil directory
-  const gsdDir = path.join(targetDir, 'amil');
-  if (fs.existsSync(gsdDir)) {
-    fs.rmSync(gsdDir, { recursive: true });
+  const amilDir = path.join(targetDir, 'amil');
+  if (fs.existsSync(amilDir)) {
+    fs.rmSync(amilDir, { recursive: true });
     removedCount++;
     console.log(`  ${green}✓${reset} Removed amil/`);
   }
@@ -1385,9 +1385,9 @@ function uninstall(isGlobal, runtime = 'claude') {
   // 4. Remove Amil hooks
   const hooksDir = path.join(targetDir, 'hooks');
   if (fs.existsSync(hooksDir)) {
-    const gsdHooks = ['amil-statusline.js', 'amil-check-update.js', 'amil-check-update.sh', 'amil-context-monitor.js'];
+    const amilHooks = ['amil-statusline.js', 'amil-check-update.js', 'amil-check-update.sh', 'amil-context-monitor.js'];
     let hookCount = 0;
-    for (const hook of gsdHooks) {
+    for (const hook of amilHooks) {
       const hookPath = path.join(hooksDir, hook);
       if (fs.existsSync(hookPath)) {
         fs.unlinkSync(hookPath);
@@ -1436,10 +1436,10 @@ function uninstall(isGlobal, runtime = 'claude') {
       settings.hooks.SessionStart = settings.hooks.SessionStart.filter(entry => {
         if (entry.hooks && Array.isArray(entry.hooks)) {
           // Filter out Amil hooks
-          const hasGsdHook = entry.hooks.some(h =>
+          const hasAmilHook = entry.hooks.some(h =>
             h.command && (h.command.includes('amil-check-update') || h.command.includes('amil-statusline'))
           );
-          return !hasGsdHook;
+          return !hasAmilHook;
         }
         return true;
       });
@@ -1459,10 +1459,10 @@ function uninstall(isGlobal, runtime = 'claude') {
         const before = settings.hooks[eventName].length;
         settings.hooks[eventName] = settings.hooks[eventName].filter(entry => {
           if (entry.hooks && Array.isArray(entry.hooks)) {
-            const hasGsdHook = entry.hooks.some(h =>
+            const hasAmilHook = entry.hooks.some(h =>
               h.command && h.command.includes('amil-context-monitor')
             );
-            return !hasGsdHook;
+            return !hasAmilHook;
           }
           return true;
         });
@@ -1643,7 +1643,7 @@ function configureOpencodePermissions(isGlobal = true) {
   // Build the Amil path using the actual config directory
   // Use ~ shorthand if it's in the default location, otherwise use full path
   const defaultConfigDir = path.join(os.homedir(), '.config', 'opencode');
-  const gsdPath = opencodeConfigDir === defaultConfigDir
+  const amilPath = opencodeConfigDir === defaultConfigDir
     ? '~/.config/opencode/amil/*'
     : `${opencodeConfigDir.replace(/\\/g, '/')}/amil/*`;
   
@@ -1653,8 +1653,8 @@ function configureOpencodePermissions(isGlobal = true) {
   if (!config.permission.read || typeof config.permission.read !== 'object') {
     config.permission.read = {};
   }
-  if (config.permission.read[gsdPath] !== 'allow') {
-    config.permission.read[gsdPath] = 'allow';
+  if (config.permission.read[amilPath] !== 'allow') {
+    config.permission.read[amilPath] = 'allow';
     modified = true;
   }
 
@@ -1662,8 +1662,8 @@ function configureOpencodePermissions(isGlobal = true) {
   if (!config.permission.external_directory || typeof config.permission.external_directory !== 'object') {
     config.permission.external_directory = {};
   }
-  if (config.permission.external_directory[gsdPath] !== 'allow') {
-    config.permission.external_directory[gsdPath] = 'allow';
+  if (config.permission.external_directory[amilPath] !== 'allow') {
+    config.permission.external_directory[amilPath] = 'allow';
     modified = true;
   }
 
@@ -1755,15 +1755,15 @@ function generateManifest(dir, baseDir) {
 function writeManifest(configDir, runtime = 'claude') {
   const isOpencode = runtime === 'opencode';
   const isCodex = runtime === 'codex';
-  const gsdDir = path.join(configDir, 'amil');
+  const amilDir = path.join(configDir, 'amil');
   const commandsDir = path.join(configDir, 'commands', 'amil');
   const opencodeCommandDir = path.join(configDir, 'command');
   const codexSkillsDir = path.join(configDir, 'skills');
   const agentsDir = path.join(configDir, 'agents');
   const manifest = { version: pkg.version, timestamp: new Date().toISOString(), files: {} };
 
-  const gsdHashes = generateManifest(gsdDir);
-  for (const [rel, hash] of Object.entries(gsdHashes)) {
+  const amilHashes = generateManifest(amilDir);
+  for (const [rel, hash] of Object.entries(amilHashes)) {
     manifest.files['amil/' + rel] = hash;
   }
   if (!isOpencode && !isCodex && fs.existsSync(commandsDir)) {
@@ -1918,8 +1918,8 @@ function install(isGlobal, runtime = 'claude') {
     fs.mkdirSync(commandDir, { recursive: true });
     
     // Copy commands/amil/*.md as command/amil-*.md (flatten structure)
-    const gsdSrc = path.join(src, 'commands', 'amil');
-    copyFlattenedCommands(gsdSrc, commandDir, 'amil', pathPrefix, runtime);
+    const amilSrc = path.join(src, 'commands', 'amil');
+    copyFlattenedCommands(amilSrc, commandDir, 'amil', pathPrefix, runtime);
     if (verifyInstalled(commandDir, 'command/amil-*')) {
       const count = fs.readdirSync(commandDir).filter(f => f.startsWith('amil-')).length;
       console.log(`  ${green}✓${reset} Installed ${count} commands to command/`);
@@ -1928,8 +1928,8 @@ function install(isGlobal, runtime = 'claude') {
     }
   } else if (isCodex) {
     const skillsDir = path.join(targetDir, 'skills');
-    const gsdSrc = path.join(src, 'commands', 'amil');
-    copyCommandsAsCodexSkills(gsdSrc, skillsDir, 'amil', pathPrefix, runtime);
+    const amilSrc = path.join(src, 'commands', 'amil');
+    copyCommandsAsCodexSkills(amilSrc, skillsDir, 'amil', pathPrefix, runtime);
     const installedSkillNames = listCodexSkillNames(skillsDir);
     if (installedSkillNames.length > 0) {
       console.log(`  ${green}✓${reset} Installed ${installedSkillNames.length} skills to skills/`);
@@ -1941,10 +1941,10 @@ function install(isGlobal, runtime = 'claude') {
     const commandsDir = path.join(targetDir, 'commands');
     fs.mkdirSync(commandsDir, { recursive: true });
     
-    const gsdSrc = path.join(src, 'commands', 'amil');
-    const gsdDest = path.join(commandsDir, 'amil');
-    copyWithPathReplacement(gsdSrc, gsdDest, pathPrefix, runtime, true);
-    if (verifyInstalled(gsdDest, 'commands/amil')) {
+    const amilSrc = path.join(src, 'commands', 'amil');
+    const amilDest = path.join(commandsDir, 'amil');
+    copyWithPathReplacement(amilSrc, amilDest, pathPrefix, runtime, true);
+    if (verifyInstalled(amilDest, 'commands/amil')) {
       console.log(`  ${green}✓${reset} Installed commands/amil`);
     } else {
       failures.push('commands/amil');
@@ -2152,11 +2152,11 @@ function install(isGlobal, runtime = 'claude') {
       settings.hooks.SessionStart = [];
     }
 
-    const hasGsdUpdateHook = settings.hooks.SessionStart.some(entry =>
+    const hasAmilUpdateHook = settings.hooks.SessionStart.some(entry =>
       entry.hooks && entry.hooks.some(h => h.command && h.command.includes('amil-check-update'))
     );
 
-    if (!hasGsdUpdateHook) {
+    if (!hasAmilUpdateHook) {
       settings.hooks.SessionStart.push({
         hooks: [
           {
@@ -2229,7 +2229,7 @@ function finishInstall(settingsPath, settings, statuslineCommand, shouldInstallS
   console.log(`
   ${green}Done!${reset} Open a blank directory in ${program} and run ${cyan}${command}${reset}.
 
-  ${cyan}Join the community:${reset} https://discord.gg/gsd
+  ${cyan}Repository:${reset} https://github.com/TIFAQM/Factory-de-Odoo
 `);
 }
 
@@ -2409,17 +2409,17 @@ function installAllRuntimes(runtimes, isGlobal, isInteractive) {
 }
 
 // Test-only exports — skip main logic when loaded as a module for testing
-if (process.env.GSD_TEST_MODE) {
+if (process.env.AMIL_TEST_MODE) {
   module.exports = {
     getCodexSkillAdapterHeader,
     convertClaudeAgentToCodexAgent,
     generateCodexAgentToml,
     generateCodexConfigBlock,
-    stripGsdFromCodexConfig,
+    stripAmilFromCodexConfig,
     mergeCodexConfig,
     installCodexConfig,
     convertClaudeCommandToCodexSkill,
-    GSD_CODEX_MARKER,
+    AMIL_CODEX_MARKER,
     CODEX_AGENT_SANDBOX,
   };
 } else {
@@ -2461,4 +2461,4 @@ if (hasGlobal && hasLocal) {
   }
 }
 
-} // end of else block for GSD_TEST_MODE
+} // end of else block for AMIL_TEST_MODE

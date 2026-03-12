@@ -102,13 +102,13 @@ process.stdin.on('end', () => {
 
     // Detect if Amil is active (has .planning/STATE.md in working directory)
     const cwd = data.cwd || process.cwd();
-    const isGsdActive = fs.existsSync(path.join(cwd, '.planning', 'STATE.md'));
+    const isAmilActive = fs.existsSync(path.join(cwd, '.planning', 'STATE.md'));
 
     // Build advisory warning message (never use imperative commands that
     // override user preferences — see #884)
     let message;
     if (isCritical) {
-      message = isGsdActive
+      message = isAmilActive
         ? `CONTEXT CRITICAL: Usage at ${usedPct}%. Remaining: ${remaining}%. ` +
           'Context is nearly exhausted. Do NOT start new complex work or write handoff files — ' +
           'Amil state is already tracked in STATE.md. Inform the user so they can run ' +
@@ -117,7 +117,7 @@ process.stdin.on('end', () => {
           'Context is nearly exhausted. Inform the user that context is low and ask how they ' +
           'want to proceed. Do NOT autonomously save state or write handoff files unless the user asks.';
     } else {
-      message = isGsdActive
+      message = isAmilActive
         ? `CONTEXT WARNING: Usage at ${usedPct}%. Remaining: ${remaining}%. ` +
           'Context is getting limited. Avoid starting new complex work. If not between ' +
           'defined plan steps, inform the user so they can prepare to pause.'

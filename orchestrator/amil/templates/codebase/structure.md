@@ -126,7 +126,7 @@ Template for `.planning/codebase/STRUCTURE.md` - captures physical file organiza
 amil/
 ├── bin/                # Executable entry points
 ├── commands/           # Slash command definitions
-│   └── gsd/           # Amil-specific commands
+│   └── amil/          # Amil-specific commands
 ├── amil/     # Skill resources
 │   ├── references/    # Principle documents
 │   ├── templates/     # File templates

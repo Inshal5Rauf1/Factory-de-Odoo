@@ -28,7 +28,6 @@ const reset = '\x1b[0m';
 
 const CLAUDE_CONFIG_DIR = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 const AMIL_DIR = 'amil';
-const AMIL_DIR = 'amil';
 const COMMANDS_DIR = 'commands/amil';
 const AGENTS_DIR = 'agents';
 const HOOKS_DIR = 'hooks';
@@ -177,17 +176,17 @@ function installGlobal() {
   heading('Installing amil to Claude Code...');
 
   // 1. Copy amil/ (core tools, workflows, templates, references)
-  const odooGsdSrc = path.join(sourceRoot, AMIL_DIR);
-  const odooGsdDest = path.join(targetBase, AMIL_DIR);
+  const amilSrc = path.join(sourceRoot, AMIL_DIR);
+  const amilDest = path.join(targetBase, AMIL_DIR);
 
-  if (!fs.existsSync(odooGsdSrc)) {
-    fail(`Source directory not found: ${odooGsdSrc}`);
+  if (!fs.existsSync(amilSrc)) {
+    fail(`Source directory not found: ${amilSrc}`);
     process.exit(1);
   }
 
-  removeDirSync(odooGsdDest);
-  copyDirSync(odooGsdSrc, odooGsdDest);
-  success(`Installed ${AMIL_DIR}/ to ${odooGsdDest}`);
+  removeDirSync(amilDest);
+  copyDirSync(amilSrc, amilDest);
+  success(`Installed ${AMIL_DIR}/ to ${amilDest}`);
 
   // 2. Register slash commands from commands/amil/
   const commandsSrc = path.join(sourceRoot, COMMANDS_DIR);
@@ -241,17 +240,17 @@ function installLocal() {
 
   heading('Installing amil locally...');
 
-  const odooGsdSrc = path.join(sourceRoot, AMIL_DIR);
-  const odooGsdDest = path.join(targetBase, AMIL_DIR);
+  const amilSrc = path.join(sourceRoot, AMIL_DIR);
+  const amilDest = path.join(targetBase, AMIL_DIR);
 
-  if (!fs.existsSync(odooGsdSrc)) {
-    fail(`Source directory not found: ${odooGsdSrc}`);
+  if (!fs.existsSync(amilSrc)) {
+    fail(`Source directory not found: ${amilSrc}`);
     process.exit(1);
   }
 
-  removeDirSync(odooGsdDest);
-  copyDirSync(odooGsdSrc, odooGsdDest);
-  success(`Installed ${AMIL_DIR}/ to ${odooGsdDest}`);
+  removeDirSync(amilDest);
+  copyDirSync(amilSrc, amilDest);
+  success(`Installed ${AMIL_DIR}/ to ${amilDest}`);
 
   return true;
 }

@@ -1,6 +1,6 @@
 """Live Docker integration tests for Odoo module validation.
 
-These tests run against a real Docker daemon with real Odoo 17.0 + PostgreSQL 16
+These tests run against a real Docker daemon with real Odoo 19.0 + PostgreSQL 16
 containers. They validate that docker_install_module() and docker_run_tests() work
 end-to-end without mocking.
 
@@ -40,7 +40,7 @@ def test_check_docker_available() -> None:
 
 @skip_no_docker
 def test_docker_install_real_module() -> None:
-    """Install the fixture module in a live Odoo 17.0 + PostgreSQL 16 container.
+    """Install the fixture module in a live Odoo 19.0 + PostgreSQL 16 container.
 
     Validates that docker_install_module() returns InstallResult(success=True)
     with non-empty log output when given a valid Odoo module. No mocking used.
@@ -59,7 +59,7 @@ def test_docker_install_real_module() -> None:
 
 @skip_no_docker
 def test_docker_run_tests_real_module() -> None:
-    """Run the fixture module's tests in a live Odoo 17.0 + PostgreSQL 16 container.
+    """Run the fixture module's tests in a live Odoo 19.0 + PostgreSQL 16 container.
 
     Validates that docker_run_tests() returns at least one TestResult with
     passed=True. No mocking used.

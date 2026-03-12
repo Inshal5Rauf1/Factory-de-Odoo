@@ -1,6 +1,6 @@
 {
     "name": "Docker Test Module",
-    "version": "17.0.1.0.0",
+    "version": "19.0.1.0.0",
     "category": "Hidden",
     "summary": "Minimal module for Docker integration testing",
     "depends": ["base"],

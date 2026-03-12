@@ -110,7 +110,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - Improved onboarding UX: installer now suggests `/amil:new-project` instead of `/amil:help`
-- Updated Discord invite to vanity URL (discord.gg/gsd)
+- Updated installer success message to point to GitHub repository
 - Compressed Nyquist validation layer to align with Amil meta-prompt conventions
 - Requirements propagation now includes `phase_req_ids` from ROADMAP to workflow agents
 - Debug sessions require human verification before resolution
@@ -203,7 +203,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [1.19.2] - 2026-02-15
 
 ### Added
-- User-level default settings via `~/.gsd/defaults.json` — set Amil defaults across all projects
+- User-level default settings via `~/.amil/defaults.json` — set Amil defaults across all projects
 - Per-agent model overrides — customize which Claude model each agent uses
 
 ### Changed
@@ -380,8 +380,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 - Git branching strategy configuration with three options:
   - `none` (default): commit to current branch
-  - `phase`: create branch per phase (`gsd/phase-{N}-{slug}`)
-  - `milestone`: create branch per milestone (`gsd/{version}-{slug}`)
+  - `phase`: create branch per phase (`amil/phase-{N}-{slug}`)
+  - `milestone`: create branch per milestone (`amil/{version}-{slug}`)
 - Squash merge option at milestone completion (recommended) with merge-with-history alternative
 - Context compliance verification dimension in plan checker — flags if plans contradict user decisions
 

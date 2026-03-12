@@ -4,7 +4,7 @@
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
-Instead, please report them via email to: **security@gsd.build** (or DM @glittercowboy on Discord/Twitter if email bounces)
+Instead, please report them via the [GitHub Security Advisories](https://github.com/TIFAQM/Factory-de-Odoo/security/advisories) page or by opening a private vulnerability report.
 
 Include:
 - Description of the vulnerability

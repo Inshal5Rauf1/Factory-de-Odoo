@@ -94,6 +94,7 @@ class TestCLILazyImportsInProcess:
         allowed = {
             "__future__",
             "json",
+            "logging",
             "sys",
             "pathlib",
             "click",

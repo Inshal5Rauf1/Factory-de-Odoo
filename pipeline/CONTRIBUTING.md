@@ -23,17 +23,17 @@ Thank you for your interest in contributing! This guide covers development setup
 - **[uv](https://docs.astral.sh/uv/)** package manager
 - **Docker** (for validation tests)
 - **Git**
-- **Amil** installed at `~/.claude/get-shit-done/` (for full integration testing)
+- **Amil** orchestrator installed (for full integration testing)
 
 ### Clone and Install
 
 ```bash
 # Clone the repository
-git clone git@github.com:Inshal5Rauf1/Odoo-Development-Automation.git
-cd Odoo-Development-Automation
+git clone https://github.com/TIFAQM/Factory-de-Odoo.git
+cd Factory-de-Odoo
 
 # Create virtual environment and install dependencies
-cd python
+cd pipeline/python
 uv venv --python 3.12
 uv pip install -e ".[test,search]"
 
@@ -170,9 +170,9 @@ All contributions must follow TDD:
 ### Running Tests
 
 ```bash
-cd python/
+cd pipeline/python
 
-# All tests (~3 seconds)
+# All tests
 uv run pytest tests/ -v
 
 # Unit tests only (no Docker, no GitHub)
@@ -411,7 +411,7 @@ docs: update knowledge base with mail.thread rules
 4. **Implement** the minimal code to pass tests
 5. **Run the full test suite:**
    ```bash
-   cd python && uv run pytest tests/ -v
+   cd pipeline/python && uv run pytest tests/ -v
    ```
 6. **Verify golden path** (if templates/rendering changed):
    ```bash
@@ -441,4 +441,4 @@ docs: update knowledge base with mail.thread rules
 
 ## Questions?
 
-Open an issue on [GitHub](https://github.com/Inshal5Rauf1/Odoo-Development-Automation/issues) or reach out through the repository discussions.
+Open an issue on [GitHub](https://github.com/TIFAQM/Factory-de-Odoo/issues) or reach out through the repository discussions.

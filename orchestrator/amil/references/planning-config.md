@@ -130,7 +130,7 @@ To use uncommitted mode:
 
 **When `git.branching_strategy: "milestone"`:**
 - First `execute-phase` of milestone creates the milestone branch
-- Branch name from `milestone_branch_template` (e.g., `gsd/v1.0-mvp`)
+- Branch name from `milestone_branch_template` (e.g., `amil/v1.0-mvp`)
 - All phases in milestone commit to same branch
 - `complete-milestone` offers to merge milestone branch to main
 

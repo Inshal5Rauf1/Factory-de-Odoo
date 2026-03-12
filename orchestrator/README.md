@@ -10,7 +10,7 @@ amil (this repo)
   │  cross-module state (model registry), human checkpoints
   │
   └── amil (separate repo — single-module generation pipeline)
-        │  8 agents, 13 knowledge files, Jinja2 templates, Docker validation
+        │  9 agents, 12 knowledge files, 51 Jinja2 templates, Docker validation
         │
         └── amil-utils (Python CLI)
               AST analysis, ChromaDB search, MCP server, Docker ops

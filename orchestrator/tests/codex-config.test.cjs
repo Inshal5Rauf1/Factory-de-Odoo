@@ -6,7 +6,7 @@
  */
 
 // Enable test exports from install.js (skips main CLI logic)
-process.env.GSD_TEST_MODE = '1';
+process.env.AMIL_TEST_MODE = '1';
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert');
@@ -19,9 +19,9 @@ const {
   convertClaudeAgentToCodexAgent,
   generateCodexAgentToml,
   generateCodexConfigBlock,
-  stripGsdFromCodexConfig,
+  stripAmilFromCodexConfig,
   mergeCodexConfig,
-  GSD_CODEX_MARKER,
+  AMIL_CODEX_MARKER,
   CODEX_AGENT_SANDBOX,
 } = require('../bin/install.js');
 
@@ -40,7 +40,7 @@ describe('getCodexSkillAdapterHeader', () => {
   test('includes correct invocation syntax', () => {
     const result = getCodexSkillAdapterHeader('amil-plan-phase');
     assert.ok(result.includes('`$amil-plan-phase`'), 'has $skillName invocation');
-    assert.ok(result.includes('{{GSD_ARGS}}'), 'has GSD_ARGS variable');
+    assert.ok(result.includes('{{AMIL_ARGS}}'), 'has AMIL_ARGS variable');
   });
 
   test('section B maps AskUserQuestion parameters', () => {
@@ -203,7 +203,7 @@ describe('generateCodexConfigBlock', () => {
 
   test('starts with Amil marker', () => {
     const result = generateCodexConfigBlock(agents);
-    assert.ok(result.startsWith(GSD_CODEX_MARKER), 'starts with marker');
+    assert.ok(result.startsWith(AMIL_CODEX_MARKER), 'starts with marker');
   });
 
   test('includes feature flags', () => {
@@ -229,27 +229,27 @@ describe('generateCodexConfigBlock', () => {
   });
 });
 
-// ─── stripGsdFromCodexConfig ────────────────────────────────────────────────────
+// ─── stripAmilFromCodexConfig ────────────────────────────────────────────────────
 
-describe('stripGsdFromCodexConfig', () => {
+describe('stripAmilFromCodexConfig', () => {
   test('returns null for Amil-only config', () => {
-    const content = `${GSD_CODEX_MARKER}\n[features]\nmulti_agent = true\n`;
-    const result = stripGsdFromCodexConfig(content);
+    const content = `${AMIL_CODEX_MARKER}\n[features]\nmulti_agent = true\n`;
+    const result = stripAmilFromCodexConfig(content);
     assert.strictEqual(result, null, 'returns null when Amil-only');
   });
 
   test('preserves user content before marker', () => {
-    const content = `[model]\nname = "o3"\n\n${GSD_CODEX_MARKER}\n[features]\nmulti_agent = true\n`;
-    const result = stripGsdFromCodexConfig(content);
+    const content = `[model]\nname = "o3"\n\n${AMIL_CODEX_MARKER}\n[features]\nmulti_agent = true\n`;
+    const result = stripAmilFromCodexConfig(content);
     assert.ok(result.includes('[model]'), 'preserves user section');
     assert.ok(result.includes('name = "o3"'), 'preserves user values');
     assert.ok(!result.includes('multi_agent'), 'removes Amil content');
-    assert.ok(!result.includes(GSD_CODEX_MARKER), 'removes marker');
+    assert.ok(!result.includes(AMIL_CODEX_MARKER), 'removes marker');
   });
 
   test('strips injected feature keys without marker', () => {
     const content = `[features]\nmulti_agent = true\ndefault_mode_request_user_input = true\nother_feature = false\n`;
-    const result = stripGsdFromCodexConfig(content);
+    const result = stripAmilFromCodexConfig(content);
     assert.ok(!result.includes('multi_agent'), 'removes multi_agent');
     assert.ok(!result.includes('default_mode_request_user_input'), 'removes request_user_input');
     assert.ok(result.includes('other_feature = false'), 'preserves user features');
@@ -257,25 +257,25 @@ describe('stripGsdFromCodexConfig', () => {
 
   test('removes empty [features] section', () => {
     const content = `[features]\nmulti_agent = true\n[model]\nname = "o3"\n`;
-    const result = stripGsdFromCodexConfig(content);
+    const result = stripAmilFromCodexConfig(content);
     assert.ok(!result.includes('[features]'), 'removes empty features section');
     assert.ok(result.includes('[model]'), 'preserves other sections');
   });
 
   test('strips injected keys above marker on uninstall', () => {
     // Case 3 install injects keys into [features] AND appends marker block
-    const content = `[model]\nname = "o3"\n\n[features]\nmulti_agent = true\ndefault_mode_request_user_input = true\nsome_custom_flag = true\n\n${GSD_CODEX_MARKER}\n[agents]\nmax_threads = 4\n`;
-    const result = stripGsdFromCodexConfig(content);
+    const content = `[model]\nname = "o3"\n\n[features]\nmulti_agent = true\ndefault_mode_request_user_input = true\nsome_custom_flag = true\n\n${AMIL_CODEX_MARKER}\n[agents]\nmax_threads = 4\n`;
+    const result = stripAmilFromCodexConfig(content);
     assert.ok(result.includes('[model]'), 'preserves user model section');
     assert.ok(result.includes('some_custom_flag = true'), 'preserves user feature');
     assert.ok(!result.includes('multi_agent'), 'strips injected multi_agent');
     assert.ok(!result.includes('default_mode_request_user_input'), 'strips injected request_user_input');
-    assert.ok(!result.includes(GSD_CODEX_MARKER), 'strips marker');
+    assert.ok(!result.includes(AMIL_CODEX_MARKER), 'strips marker');
   });
 
   test('removes [agents.amil-*] sections', () => {
     const content = `[agents.amil-executor]\ndescription = "test"\nconfig_file = "agents/amil-executor.toml"\n\n[agents.custom-agent]\ndescription = "user agent"\n`;
-    const result = stripGsdFromCodexConfig(content);
+    const result = stripAmilFromCodexConfig(content);
     assert.ok(!result.includes('[agents.amil-executor]'), 'removes Amil agent section');
     assert.ok(result.includes('[agents.custom-agent]'), 'preserves user agent section');
   });
@@ -304,7 +304,7 @@ describe('mergeCodexConfig', () => {
 
     assert.ok(fs.existsSync(configPath), 'file created');
     const content = fs.readFileSync(configPath, 'utf8');
-    assert.ok(content.includes(GSD_CODEX_MARKER), 'has marker');
+    assert.ok(content.includes(AMIL_CODEX_MARKER), 'has marker');
     assert.ok(content.includes('multi_agent = true'), 'has feature flag');
     assert.ok(content.includes('[agents.amil-executor]'), 'has agent');
   });
@@ -326,7 +326,7 @@ describe('mergeCodexConfig', () => {
     assert.ok(content.includes('Updated description'), 'has new description');
     assert.ok(content.includes('[agents.amil-planner]'), 'has new agent');
     // Verify no duplicate markers
-    const markerCount = (content.match(new RegExp(GSD_CODEX_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+    const markerCount = (content.match(new RegExp(AMIL_CODEX_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
     assert.strictEqual(markerCount, 1, 'exactly one marker');
   });
 
@@ -338,7 +338,7 @@ describe('mergeCodexConfig', () => {
 
     const content = fs.readFileSync(configPath, 'utf8');
     assert.ok(content.includes('[model]'), 'preserves user content');
-    assert.ok(content.includes(GSD_CODEX_MARKER), 'adds marker');
+    assert.ok(content.includes(AMIL_CODEX_MARKER), 'adds marker');
     assert.ok(content.includes('multi_agent = true'), 'has features');
   });
 
@@ -352,7 +352,7 @@ describe('mergeCodexConfig', () => {
     assert.ok(content.includes('other_feature = true'), 'preserves existing feature');
     assert.ok(content.includes('multi_agent = true'), 'injects multi_agent');
     assert.ok(content.includes('default_mode_request_user_input = true'), 'injects request_user_input');
-    assert.ok(content.includes(GSD_CODEX_MARKER), 'adds marker for agents block');
+    assert.ok(content.includes(AMIL_CODEX_MARKER), 'adds marker for agents block');
   });
 
   test('idempotent: re-merge produces same result', () => {
@@ -385,7 +385,7 @@ describe('mergeCodexConfig', () => {
 
   test('case 2 re-injects missing feature keys', () => {
     const configPath = path.join(tmpDir, 'config.toml');
-    const manualContent = '[features]\nother_feature = true\n\n' + GSD_CODEX_MARKER + '\n[agents]\nmax_threads = 4\n';
+    const manualContent = '[features]\nother_feature = true\n\n' + AMIL_CODEX_MARKER + '\n[agents]\nmax_threads = 4\n';
     fs.writeFileSync(configPath, manualContent);
 
     mergeCodexConfig(configPath, sampleBlock);
@@ -412,7 +412,7 @@ describe('mergeCodexConfig', () => {
       'description = "old"',
       'config_file = "agents/amil-executor.toml"',
       '',
-      GSD_CODEX_MARKER,
+      AMIL_CODEX_MARKER,
       '[agents]',
       'max_threads = 4',
       '',

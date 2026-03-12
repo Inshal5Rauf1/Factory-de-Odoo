@@ -12,7 +12,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
+const { runAmilTools, createTempProject, cleanup } = require('./helpers.cjs');
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -40,7 +40,7 @@ describe('config-ensure-section command', () => {
   });
 
   test('creates config.json with expected structure and types', () => {
-    const result = runGsdTools('config-ensure-section', tmpDir);
+    const result = runAmilTools('config-ensure-section', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -64,12 +64,12 @@ describe('config-ensure-section command', () => {
   });
 
   test('is idempotent — returns already_exists on second call', () => {
-    const first = runGsdTools('config-ensure-section', tmpDir);
+    const first = runAmilTools('config-ensure-section', tmpDir);
     assert.ok(first.success, `First call failed: ${first.error}`);
     const firstOutput = JSON.parse(first.output);
     assert.strictEqual(firstOutput.created, true);
 
-    const second = runGsdTools('config-ensure-section', tmpDir);
+    const second = runAmilTools('config-ensure-section', tmpDir);
     assert.ok(second.success, `Second call failed: ${second.error}`);
     const secondOutput = JSON.parse(second.output);
     assert.strictEqual(secondOutput.created, false);
@@ -80,8 +80,8 @@ describe('config-ensure-section command', () => {
   // try/finally and skips if the file already exists to avoid corrupting user config.
   test('detects Brave Search from file-based key', () => {
     const homedir = os.homedir();
-    const gsdDir = path.join(homedir, '.amil');
-    const braveKeyFile = path.join(gsdDir, 'brave_api_key');
+    const amilDir = path.join(homedir, '.amil');
+    const braveKeyFile = path.join(amilDir, 'brave_api_key');
 
     // Skip if file already exists (don't mess with user's real config)
     if (fs.existsSync(braveKeyFile)) {
@@ -89,14 +89,14 @@ describe('config-ensure-section command', () => {
     }
 
     // Create .amil dir and brave_api_key file
-    const gsdDirExisted = fs.existsSync(gsdDir);
+    const amilDirExisted = fs.existsSync(amilDir);
     try {
-      if (!gsdDirExisted) {
-        fs.mkdirSync(gsdDir, { recursive: true });
+      if (!amilDirExisted) {
+        fs.mkdirSync(amilDir, { recursive: true });
       }
       fs.writeFileSync(braveKeyFile, 'test-key', 'utf-8');
 
-      const result = runGsdTools('config-ensure-section', tmpDir);
+      const result = runAmilTools('config-ensure-section', tmpDir);
       assert.ok(result.success, `Command failed: ${result.error}`);
 
       const config = readConfig(tmpDir);
@@ -104,8 +104,8 @@ describe('config-ensure-section command', () => {
     } finally {
       // Clean up
       try { fs.unlinkSync(braveKeyFile); } catch { /* ignore */ }
-      if (!gsdDirExisted) {
-        try { fs.rmdirSync(gsdDir); } catch { /* ignore if not empty */ }
+      if (!amilDirExisted) {
+        try { fs.rmdirSync(amilDir); } catch { /* ignore if not empty */ }
       }
     }
   });
@@ -114,26 +114,26 @@ describe('config-ensure-section command', () => {
   // try/finally and skips if the file already exists to avoid corrupting user config.
   test('merges user defaults from defaults.json', () => {
     const homedir = os.homedir();
-    const gsdDir = path.join(homedir, '.amil');
-    const defaultsFile = path.join(gsdDir, 'defaults.json');
+    const amilDir = path.join(homedir, '.amil');
+    const defaultsFile = path.join(amilDir, 'defaults.json');
 
     // Save existing defaults if present
     let existingDefaults = null;
-    const gsdDirExisted = fs.existsSync(gsdDir);
+    const amilDirExisted = fs.existsSync(amilDir);
     if (fs.existsSync(defaultsFile)) {
       existingDefaults = fs.readFileSync(defaultsFile, 'utf-8');
     }
 
     try {
-      if (!gsdDirExisted) {
-        fs.mkdirSync(gsdDir, { recursive: true });
+      if (!amilDirExisted) {
+        fs.mkdirSync(amilDir, { recursive: true });
       }
       fs.writeFileSync(defaultsFile, JSON.stringify({
         model_profile: 'quality',
         commit_docs: false,
       }), 'utf-8');
 
-      const result = runGsdTools('config-ensure-section', tmpDir);
+      const result = runAmilTools('config-ensure-section', tmpDir);
       assert.ok(result.success, `Command failed: ${result.error}`);
 
       const config = readConfig(tmpDir);
@@ -147,8 +147,8 @@ describe('config-ensure-section command', () => {
       } else {
         try { fs.unlinkSync(defaultsFile); } catch { /* ignore */ }
       }
-      if (!gsdDirExisted) {
-        try { fs.rmdirSync(gsdDir); } catch { /* ignore */ }
+      if (!amilDirExisted) {
+        try { fs.rmdirSync(amilDir); } catch { /* ignore */ }
       }
     }
   });
@@ -157,24 +157,24 @@ describe('config-ensure-section command', () => {
   // try/finally and skips if the file already exists to avoid corrupting user config.
   test('merges nested workflow keys from defaults.json preserving unset keys', () => {
     const homedir = os.homedir();
-    const gsdDir = path.join(homedir, '.amil');
-    const defaultsFile = path.join(gsdDir, 'defaults.json');
+    const amilDir = path.join(homedir, '.amil');
+    const defaultsFile = path.join(amilDir, 'defaults.json');
 
     let existingDefaults = null;
-    const gsdDirExisted = fs.existsSync(gsdDir);
+    const amilDirExisted = fs.existsSync(amilDir);
     if (fs.existsSync(defaultsFile)) {
       existingDefaults = fs.readFileSync(defaultsFile, 'utf-8');
     }
 
     try {
-      if (!gsdDirExisted) {
-        fs.mkdirSync(gsdDir, { recursive: true });
+      if (!amilDirExisted) {
+        fs.mkdirSync(amilDir, { recursive: true });
       }
       fs.writeFileSync(defaultsFile, JSON.stringify({
         workflow: { research: false },
       }), 'utf-8');
 
-      const result = runGsdTools('config-ensure-section', tmpDir);
+      const result = runAmilTools('config-ensure-section', tmpDir);
       assert.ok(result.success, `Command failed: ${result.error}`);
 
       const config = readConfig(tmpDir);
@@ -187,8 +187,8 @@ describe('config-ensure-section command', () => {
       } else {
         try { fs.unlinkSync(defaultsFile); } catch { /* ignore */ }
       }
-      if (!gsdDirExisted) {
-        try { fs.rmdirSync(gsdDir); } catch { /* ignore */ }
+      if (!amilDirExisted) {
+        try { fs.rmdirSync(amilDir); } catch { /* ignore */ }
       }
     }
   });
@@ -202,7 +202,7 @@ describe('config-set command', () => {
   beforeEach(() => {
     tmpDir = createTempProject();
     // Create initial config
-    runGsdTools('config-ensure-section', tmpDir);
+    runAmilTools('config-ensure-section', tmpDir);
   });
 
   afterEach(() => {
@@ -210,7 +210,7 @@ describe('config-set command', () => {
   });
 
   test('sets a top-level string value', () => {
-    const result = runGsdTools('config-set model_profile quality', tmpDir);
+    const result = runAmilTools('config-set model_profile quality', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -223,7 +223,7 @@ describe('config-set command', () => {
   });
 
   test('coerces true to boolean', () => {
-    const result = runGsdTools('config-set commit_docs true', tmpDir);
+    const result = runAmilTools('config-set commit_docs true', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const config = readConfig(tmpDir);
@@ -232,7 +232,7 @@ describe('config-set command', () => {
   });
 
   test('coerces false to boolean', () => {
-    const result = runGsdTools('config-set commit_docs false', tmpDir);
+    const result = runAmilTools('config-set commit_docs false', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const config = readConfig(tmpDir);
@@ -241,7 +241,7 @@ describe('config-set command', () => {
   });
 
   test('coerces numeric strings to numbers', () => {
-    const result = runGsdTools('config-set some_number 42', tmpDir);
+    const result = runAmilTools('config-set some_number 42', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const config = readConfig(tmpDir);
@@ -250,7 +250,7 @@ describe('config-set command', () => {
   });
 
   test('preserves plain strings', () => {
-    const result = runGsdTools('config-set some_string hello', tmpDir);
+    const result = runAmilTools('config-set some_string hello', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const config = readConfig(tmpDir);
@@ -259,7 +259,7 @@ describe('config-set command', () => {
   });
 
   test('sets nested values via dot-notation', () => {
-    const result = runGsdTools('config-set workflow.research false', tmpDir);
+    const result = runAmilTools('config-set workflow.research false', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const config = readConfig(tmpDir);
@@ -270,7 +270,7 @@ describe('config-set command', () => {
     // Start with empty config
     writeConfig(tmpDir, {});
 
-    const result = runGsdTools('config-set a.b.c deep_value', tmpDir);
+    const result = runAmilTools('config-set a.b.c deep_value', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const config = readConfig(tmpDir);
@@ -280,7 +280,7 @@ describe('config-set command', () => {
   });
 
   test('errors when no key path provided', () => {
-    const result = runGsdTools('config-set', tmpDir);
+    const result = runAmilTools('config-set', tmpDir);
     assert.strictEqual(result.success, false);
   });
 });
@@ -293,7 +293,7 @@ describe('config-get command', () => {
   beforeEach(() => {
     tmpDir = createTempProject();
     // Create config with known values
-    runGsdTools('config-ensure-section', tmpDir);
+    runAmilTools('config-ensure-section', tmpDir);
   });
 
   afterEach(() => {
@@ -301,7 +301,7 @@ describe('config-get command', () => {
   });
 
   test('gets a top-level value', () => {
-    const result = runGsdTools('config-get model_profile', tmpDir);
+    const result = runAmilTools('config-get model_profile', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -309,7 +309,7 @@ describe('config-get command', () => {
   });
 
   test('gets a nested value via dot-notation', () => {
-    const result = runGsdTools('config-get workflow.research', tmpDir);
+    const result = runAmilTools('config-get workflow.research', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -317,7 +317,7 @@ describe('config-get command', () => {
   });
 
   test('errors for nonexistent key', () => {
-    const result = runGsdTools('config-get nonexistent_key', tmpDir);
+    const result = runAmilTools('config-get nonexistent_key', tmpDir);
     assert.strictEqual(result.success, false);
     assert.ok(
       result.error.includes('Key not found'),
@@ -326,7 +326,7 @@ describe('config-get command', () => {
   });
 
   test('errors for deeply nested nonexistent key', () => {
-    const result = runGsdTools('config-get workflow.nonexistent', tmpDir);
+    const result = runAmilTools('config-get workflow.nonexistent', tmpDir);
     assert.strictEqual(result.success, false);
     assert.ok(
       result.error.includes('Key not found'),
@@ -337,7 +337,7 @@ describe('config-get command', () => {
   test('errors when config.json does not exist', () => {
     const emptyTmpDir = createTempProject();
     try {
-      const result = runGsdTools('config-get model_profile', emptyTmpDir);
+      const result = runAmilTools('config-get model_profile', emptyTmpDir);
       assert.strictEqual(result.success, false);
       assert.ok(
         result.error.includes('No config.json'),
@@ -349,7 +349,7 @@ describe('config-get command', () => {
   });
 
   test('errors when no key path provided', () => {
-    const result = runGsdTools('config-get', tmpDir);
+    const result = runAmilTools('config-get', tmpDir);
     assert.strictEqual(result.success, false);
   });
 });
@@ -361,7 +361,7 @@ describe('odoo config extensions (CONF-03)', () => {
 
   beforeEach(() => {
     tmpDir = createTempProject();
-    runGsdTools('config-ensure-section', tmpDir);
+    runAmilTools('config-ensure-section', tmpDir);
   });
 
   afterEach(() => {
@@ -371,61 +371,61 @@ describe('odoo config extensions (CONF-03)', () => {
   // ── odoo.multi_company (boolean) ──
 
   test('odoo.multi_company accepts true', () => {
-    const result = runGsdTools('config-set odoo.multi_company true', tmpDir);
+    const result = runAmilTools('config-set odoo.multi_company true', tmpDir);
     assert.ok(result.success, `Should accept true: ${result.error}`);
     const config = readConfig(tmpDir);
     assert.strictEqual(config.odoo.multi_company, true);
   });
 
   test('odoo.multi_company accepts false', () => {
-    const result = runGsdTools('config-set odoo.multi_company false', tmpDir);
+    const result = runAmilTools('config-set odoo.multi_company false', tmpDir);
     assert.ok(result.success, `Should accept false: ${result.error}`);
     const config = readConfig(tmpDir);
     assert.strictEqual(config.odoo.multi_company, false);
   });
 
   test('odoo.multi_company rejects "yes"', () => {
-    const result = runGsdTools('config-set odoo.multi_company yes', tmpDir);
+    const result = runAmilTools('config-set odoo.multi_company yes', tmpDir);
     assert.strictEqual(result.success, false, 'Should reject "yes"');
     assert.ok(result.error.includes('boolean'), `Error should mention boolean: ${result.error}`);
   });
 
   test('odoo.multi_company rejects 1', () => {
-    const result = runGsdTools('config-set odoo.multi_company 1', tmpDir);
+    const result = runAmilTools('config-set odoo.multi_company 1', tmpDir);
     assert.strictEqual(result.success, false, 'Should reject 1');
   });
 
   test('odoo.multi_company rejects "true-ish"', () => {
-    const result = runGsdTools('config-set odoo.multi_company true-ish', tmpDir);
+    const result = runAmilTools('config-set odoo.multi_company true-ish', tmpDir);
     assert.strictEqual(result.success, false, 'Should reject "true-ish"');
   });
 
   // ── odoo.localization (enum) ──
 
   test('odoo.localization accepts "pk"', () => {
-    const result = runGsdTools('config-set odoo.localization pk', tmpDir);
+    const result = runAmilTools('config-set odoo.localization pk', tmpDir);
     assert.ok(result.success, `Should accept pk: ${result.error}`);
     const config = readConfig(tmpDir);
     assert.strictEqual(config.odoo.localization, 'pk');
   });
 
   test('odoo.localization accepts "sa"', () => {
-    const result = runGsdTools('config-set odoo.localization sa', tmpDir);
+    const result = runAmilTools('config-set odoo.localization sa', tmpDir);
     assert.ok(result.success, `Should accept sa: ${result.error}`);
   });
 
   test('odoo.localization accepts "ae"', () => {
-    const result = runGsdTools('config-set odoo.localization ae', tmpDir);
+    const result = runAmilTools('config-set odoo.localization ae', tmpDir);
     assert.ok(result.success, `Should accept ae: ${result.error}`);
   });
 
   test('odoo.localization accepts "none"', () => {
-    const result = runGsdTools('config-set odoo.localization none', tmpDir);
+    const result = runAmilTools('config-set odoo.localization none', tmpDir);
     assert.ok(result.success, `Should accept none: ${result.error}`);
   });
 
   test('odoo.localization rejects "us"', () => {
-    const result = runGsdTools('config-set odoo.localization us', tmpDir);
+    const result = runAmilTools('config-set odoo.localization us', tmpDir);
     assert.strictEqual(result.success, false, 'Should reject "us"');
     assert.ok(result.error.includes('pk') || result.error.includes('localization'),
       `Error should mention valid values: ${result.error}`);
@@ -434,46 +434,46 @@ describe('odoo config extensions (CONF-03)', () => {
   // ── odoo.canvas_integration (enum) ──
 
   test('odoo.canvas_integration accepts "canvas"', () => {
-    const result = runGsdTools('config-set odoo.canvas_integration canvas', tmpDir);
+    const result = runAmilTools('config-set odoo.canvas_integration canvas', tmpDir);
     assert.ok(result.success, `Should accept canvas: ${result.error}`);
   });
 
   test('odoo.canvas_integration accepts "moodle"', () => {
-    const result = runGsdTools('config-set odoo.canvas_integration moodle', tmpDir);
+    const result = runAmilTools('config-set odoo.canvas_integration moodle', tmpDir);
     assert.ok(result.success, `Should accept moodle: ${result.error}`);
   });
 
   test('odoo.canvas_integration accepts "none"', () => {
-    const result = runGsdTools('config-set odoo.canvas_integration none', tmpDir);
+    const result = runAmilTools('config-set odoo.canvas_integration none', tmpDir);
     assert.ok(result.success, `Should accept none: ${result.error}`);
   });
 
   test('odoo.canvas_integration rejects "blackboard"', () => {
-    const result = runGsdTools('config-set odoo.canvas_integration blackboard', tmpDir);
+    const result = runAmilTools('config-set odoo.canvas_integration blackboard', tmpDir);
     assert.strictEqual(result.success, false, 'Should reject "blackboard"');
   });
 
   // ── odoo.deployment_target (enum) ──
 
   test('odoo.deployment_target accepts "single"', () => {
-    const result = runGsdTools('config-set odoo.deployment_target single', tmpDir);
+    const result = runAmilTools('config-set odoo.deployment_target single', tmpDir);
     assert.ok(result.success, `Should accept single: ${result.error}`);
   });
 
   test('odoo.deployment_target accepts "multi"', () => {
-    const result = runGsdTools('config-set odoo.deployment_target multi', tmpDir);
+    const result = runAmilTools('config-set odoo.deployment_target multi', tmpDir);
     assert.ok(result.success, `Should accept multi: ${result.error}`);
   });
 
   test('odoo.deployment_target rejects "cloud"', () => {
-    const result = runGsdTools('config-set odoo.deployment_target cloud', tmpDir);
+    const result = runAmilTools('config-set odoo.deployment_target cloud', tmpDir);
     assert.strictEqual(result.success, false, 'Should reject "cloud"');
   });
 
   // ── odoo.notification_channels includes whatsapp ──
 
   test('odoo.notification_channels now accepts whatsapp', () => {
-    const result = runGsdTools(
+    const result = runAmilTools(
       ['config-set', 'odoo.notification_channels', '["email","whatsapp","sms"]'],
       tmpDir
     );
@@ -485,7 +485,7 @@ describe('odoo config extensions (CONF-03)', () => {
   // ── odoo.existing_modules (free text) ──
 
   test('odoo.existing_modules accepts any string', () => {
-    const result = runGsdTools('config-set odoo.existing_modules base,mail,account', tmpDir);
+    const result = runAmilTools('config-set odoo.existing_modules base,mail,account', tmpDir);
     assert.ok(result.success, `Should accept free text: ${result.error}`);
     const config = readConfig(tmpDir);
     assert.strictEqual(config.odoo.existing_modules, 'base,mail,account');
@@ -499,7 +499,7 @@ describe('odoo config block', () => {
 
   beforeEach(() => {
     tmpDir = createTempProject();
-    runGsdTools('config-ensure-section', tmpDir);
+    runAmilTools('config-ensure-section', tmpDir);
   });
 
   afterEach(() => {
@@ -507,17 +507,17 @@ describe('odoo config block', () => {
   });
 
   test('config set odoo.version 17.0 succeeds and config get returns it', () => {
-    const set = runGsdTools('config-set odoo.version 17.0', tmpDir);
+    const set = runAmilTools('config-set odoo.version 17.0', tmpDir);
     assert.ok(set.success, `Set failed: ${set.error}`);
 
-    const get = runGsdTools('config-get odoo.version', tmpDir);
+    const get = runAmilTools('config-get odoo.version', tmpDir);
     assert.ok(get.success, `Get failed: ${get.error}`);
     const val = JSON.parse(get.output);
     assert.strictEqual(val, '17.0', 'odoo.version should be stored as string "17.0"');
   });
 
   test('config set odoo.version 16.0 fails validation (only 17.0/18.0 allowed)', () => {
-    const result = runGsdTools('config-set odoo.version 16.0', tmpDir);
+    const result = runAmilTools('config-set odoo.version 16.0', tmpDir);
     // With validation in config.cjs, this should fail
     assert.strictEqual(result.success, false, 'Should reject version 16.0');
     assert.ok(result.error.includes('17.0') || result.error.includes('18.0'),
@@ -525,7 +525,7 @@ describe('odoo config block', () => {
   });
 
   test('config set odoo.scope_levels with valid array succeeds', () => {
-    const result = runGsdTools(
+    const result = runAmilTools(
       ['config-set', 'odoo.scope_levels', '["foundation","core"]'],
       tmpDir
     );
@@ -538,10 +538,10 @@ describe('odoo config block', () => {
 
   test('config without odoo block does not break existing config operations', () => {
     // Existing config has no odoo block -- verify standard operations still work
-    const set = runGsdTools('config-set model_profile quality', tmpDir);
+    const set = runAmilTools('config-set model_profile quality', tmpDir);
     assert.ok(set.success, `Set failed: ${set.error}`);
 
-    const get = runGsdTools('config-get model_profile', tmpDir);
+    const get = runAmilTools('config-get model_profile', tmpDir);
     assert.ok(get.success, `Get failed: ${get.error}`);
     assert.strictEqual(JSON.parse(get.output), 'quality');
   });

@@ -4,7 +4,7 @@ const { describe, it, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
+const { runAmilTools, createTempProject, cleanup } = require('./helpers.cjs');
 
 describe('dependency-graph', () => {
   let tmpDir;
@@ -24,7 +24,7 @@ describe('dependency-graph', () => {
   function initModules(modules) {
     for (const [name, { tier, depends }] of Object.entries(modules)) {
       const depsJson = JSON.stringify(depends || []);
-      runGsdTools(
+      runAmilTools(
         ['module-status', 'init', name, tier || 'foundation', depsJson, '--raw'],
         tmpDir
       );
@@ -41,7 +41,7 @@ describe('dependency-graph', () => {
         mod_a: { tier: 'operations', depends: ['mod_b'] },
       });
 
-      const r = runGsdTools(['dep-graph', 'order', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'order', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const order = JSON.parse(r.output);
       const idxC = order.indexOf('mod_c');
@@ -59,7 +59,7 @@ describe('dependency-graph', () => {
         mod_a: { tier: 'operations', depends: ['mod_b', 'mod_c'] },
       });
 
-      const r = runGsdTools(['dep-graph', 'order', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'order', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const order = JSON.parse(r.output);
       const idxD = order.indexOf('mod_d');
@@ -78,7 +78,7 @@ describe('dependency-graph', () => {
         mod_b: { tier: 'foundation', depends: [] },
       });
 
-      const r = runGsdTools(['dep-graph', 'order', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'order', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const order = JSON.parse(r.output);
       assert.equal(order.length, 2);
@@ -87,7 +87,7 @@ describe('dependency-graph', () => {
     });
 
     it('empty module set returns empty array', () => {
-      const r = runGsdTools(['dep-graph', 'order', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'order', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const order = JSON.parse(r.output);
       assert.deepEqual(order, []);
@@ -103,7 +103,7 @@ describe('dependency-graph', () => {
         mod_b: { tier: 'foundation', depends: ['mod_a'] },
       });
 
-      const r = runGsdTools(['dep-graph', 'order', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'order', '--raw'], tmpDir);
       assert.equal(r.success, false);
       assert.ok(r.error.includes('mod_a'), 'Error should mention mod_a');
       assert.ok(r.error.includes('mod_b'), 'Error should mention mod_b');
@@ -116,7 +116,7 @@ describe('dependency-graph', () => {
         mod_c: { tier: 'foundation', depends: ['mod_b'] },
       });
 
-      const r = runGsdTools(['dep-graph', 'order', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'order', '--raw'], tmpDir);
       assert.equal(r.success, false);
       assert.ok(r.error.includes('Circular'), 'Error should mention circular');
     });
@@ -126,7 +126,7 @@ describe('dependency-graph', () => {
         mod_a: { tier: 'foundation', depends: ['mod_a'] },
       });
 
-      const r = runGsdTools(['dep-graph', 'order', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'order', '--raw'], tmpDir);
       assert.equal(r.success, false);
       assert.ok(r.error.includes('mod_a'), 'Error should mention mod_a');
     });
@@ -140,7 +140,7 @@ describe('dependency-graph', () => {
         mod_a: { tier: 'foundation', depends: [] },
       });
 
-      const r = runGsdTools(['dep-graph', 'tiers', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'tiers', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const data = JSON.parse(r.output);
       assert.ok(data.tiers.foundation.includes('mod_a'));
@@ -152,7 +152,7 @@ describe('dependency-graph', () => {
         mod_child: { tier: 'core', depends: ['mod_base'] },
       });
 
-      const r = runGsdTools(['dep-graph', 'tiers', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'tiers', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const data = JSON.parse(r.output);
       assert.ok(data.tiers.core.includes('mod_child'));
@@ -165,7 +165,7 @@ describe('dependency-graph', () => {
         mod_top: { tier: 'operations', depends: ['mod_mid'] },
       });
 
-      const r = runGsdTools(['dep-graph', 'tiers', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'tiers', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const data = JSON.parse(r.output);
       assert.ok(data.tiers.operations.includes('mod_top'));
@@ -179,7 +179,7 @@ describe('dependency-graph', () => {
         mod_3: { tier: 'communication', depends: ['mod_2'] },
       });
 
-      const r = runGsdTools(['dep-graph', 'tiers', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'tiers', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const data = JSON.parse(r.output);
       assert.ok(data.tiers.communication.includes('mod_3'));
@@ -196,10 +196,10 @@ describe('dependency-graph', () => {
       });
 
       // Advance mod_base to generated
-      runGsdTools(['module-status', 'transition', 'mod_base', 'spec_approved', '--raw'], tmpDir);
-      runGsdTools(['module-status', 'transition', 'mod_base', 'generated', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'mod_base', 'spec_approved', '--raw'], tmpDir);
+      runAmilTools(['module-status', 'transition', 'mod_base', 'generated', '--raw'], tmpDir);
 
-      const r = runGsdTools(['dep-graph', 'can-generate', 'mod_child', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'can-generate', 'mod_child', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const data = JSON.parse(r.output);
       assert.equal(data.can_generate, true);
@@ -212,7 +212,7 @@ describe('dependency-graph', () => {
         mod_child: { tier: 'core', depends: ['mod_base'] },
       });
 
-      const r = runGsdTools(['dep-graph', 'can-generate', 'mod_child', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'can-generate', 'mod_child', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const data = JSON.parse(r.output);
       assert.equal(data.can_generate, false);
@@ -225,7 +225,7 @@ describe('dependency-graph', () => {
         mod_base: { tier: 'foundation', depends: [] },
       });
 
-      const r = runGsdTools(['dep-graph', 'can-generate', 'mod_base', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'can-generate', 'mod_base', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const data = JSON.parse(r.output);
       assert.equal(data.can_generate, true);
@@ -242,7 +242,7 @@ describe('dependency-graph', () => {
         mod_b: { tier: 'core', depends: ['mod_a'] },
       });
 
-      const r = runGsdTools(['dep-graph', 'build', '--raw'], tmpDir);
+      const r = runAmilTools(['dep-graph', 'build', '--raw'], tmpDir);
       assert.equal(r.success, true);
       const data = JSON.parse(r.output);
       assert.ok(data.modules);

@@ -713,7 +713,7 @@ class TestContext7Enrich:
 
         # Pre-populate cache
         query = PATTERN_QUERIES["mail_thread"]
-        key = _cache_key(query, "17.0")
+        key = _cache_key(query, "19.0")
         _cache_write(cache_dir, key, query, "cached response")
 
         with patch.object(client, "query_docs") as mock_qd:

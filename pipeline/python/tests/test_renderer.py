@@ -777,8 +777,8 @@ class TestVersionedTemplates:
 class TestVersionConfig:
     """Tests that odoo_version flows through spec correctly."""
 
-    def test_default_version_is_17(self):
-        """render_module with no odoo_version in spec defaults to 17.0."""
+    def test_default_version_is_19(self):
+        """render_module with no odoo_version in spec defaults to 19.0."""
         spec = {
             "module_name": "test_default",
             "depends": ["base"],
@@ -798,7 +798,7 @@ class TestVersionConfig:
             )
             assert views_file is not None
             content = Path(views_file).read_text(encoding="utf-8")
-            assert "<tree" in content, f"Default should produce 17.0 tree tags. Got:\n{content}"
+            assert "<list" in content, f"Default should produce 19.0 list tags. Got:\n{content}"
 
     def test_version_from_spec(self):
         """render_module reads odoo_version from spec dict."""
@@ -4985,7 +4985,7 @@ class TestApprovalTemplateRendering:
     def test_approval_template_write_guard_raises_user_error(self):
         """write() state guard raises UserError (not AccessError)."""
         output = self._render_model(self._make_approval_spec())
-        assert "raise UserError(_(" in output
+        assert "raise UserError(self.env._(" in output or "raise UserError(_(" in output
 
     def test_approval_template_write_guard_stacking_17(self):
         """Approval state guard sits AFTER audit old_values capture and BEFORE cache clear in 17.0."""

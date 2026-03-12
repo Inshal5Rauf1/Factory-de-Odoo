@@ -330,9 +330,9 @@ class TestExtractTranslatableStrings:
 
 class TestGeneratePot:
     def test_produces_valid_pot_header(self) -> None:
-        """generate_pot creates valid POT content with standard Odoo header (Project-Id-Version: Odoo Server 17.0)."""
+        """generate_pot creates valid POT content with standard Odoo header (Project-Id-Version: Odoo Server 19.0)."""
         pot = generate_pot("test_module", [])
-        assert "Project-Id-Version: Odoo Server 17.0" in pot
+        assert "Project-Id-Version: Odoo Server 19.0" in pot
         assert "MIME-Version: 1.0" in pot
         assert "Content-Type: text/plain; charset=UTF-8" in pot
 
@@ -351,7 +351,7 @@ class TestGeneratePot:
         """generate_pot with empty string list still produces valid POT header (never skip generation)."""
         pot = generate_pot("test_module", [])
         assert pot.strip() != ""
-        assert "Project-Id-Version: Odoo Server 17.0" in pot
+        assert "Project-Id-Version: Odoo Server 19.0" in pot
         assert 'msgid ""' in pot
         assert 'msgstr ""' in pot
 

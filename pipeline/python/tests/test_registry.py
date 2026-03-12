@@ -67,7 +67,7 @@ class TestInitLoadSave:
         """ModelRegistry(path) creates empty registry with default _meta."""
         reg = ModelRegistry(reg_path)
         assert reg._meta["version"] == "1.0"
-        assert reg._meta["odoo_version"] == "17.0"
+        assert reg._meta["odoo_version"] == "19.0"
         assert reg._models == {}
         assert reg._dependency_graph == {}
 

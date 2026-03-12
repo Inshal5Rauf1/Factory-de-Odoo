@@ -1048,7 +1048,8 @@ class TestRenderModelsComplexConstraints:
             tmp_path / "test_constraints" / "models" / "test_constraints_course.py"
         ).read_text()
         assert "from odoo.exceptions import ValidationError" in course_py
-        assert "from odoo.tools.translate import _" in course_py
+        # Odoo 19+ uses self.env._() instead of standalone _(), so the translate import is no longer needed
+        assert "self.env._(" in course_py or "from odoo.tools.translate import _" in course_py
 
 
 # ---------------------------------------------------------------------------

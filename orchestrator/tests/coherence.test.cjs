@@ -11,7 +11,7 @@ const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const { createTempProject, cleanup, runGsdTools } = require('./helpers.cjs');
+const { createTempProject, cleanup, runAmilTools } = require('./helpers.cjs');
 
 const coherencePath = path.join(__dirname, '..', 'amil', 'bin', 'lib', 'coherence.cjs');
 const {
@@ -428,7 +428,7 @@ describe('CLI coherence check', () => {
     fs.writeFileSync(specPath, JSON.stringify(specData), 'utf-8');
     fs.writeFileSync(regPath, JSON.stringify(registryData), 'utf-8');
 
-    const result = runGsdTools(
+    const result = runAmilTools(
       ['coherence', 'check', '--spec', specPath, '--registry', regPath, '--raw'],
       tmpDir
     );
@@ -456,7 +456,7 @@ describe('CLI coherence check', () => {
     fs.writeFileSync(specPath, JSON.stringify(specData), 'utf-8');
     fs.writeFileSync(regPath, JSON.stringify(registryData), 'utf-8');
 
-    const result = runGsdTools(
+    const result = runAmilTools(
       ['coherence', 'check', '--spec', specPath, '--registry', regPath, '--raw'],
       tmpDir
     );
