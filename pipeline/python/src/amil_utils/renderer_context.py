@@ -32,6 +32,71 @@ _VERSION_GATES: dict[str, dict[str, str]] = {
 }
 
 
+# NEW-07: Known external Python packages mapping (pip_name -> import_name).
+EXTERNAL_PACKAGES: dict[str, str] = {
+    "openpyxl": "openpyxl",
+    "requests": "requests",
+    "boto3": "boto3",
+    "paramiko": "paramiko",
+    "pdfplumber": "pdfplumber",
+    "xlsxwriter": "xlsxwriter",
+    "phonenumbers": "phonenumbers",
+    "cryptography": "cryptography",
+    "Pillow": "PIL",
+    "python-dateutil": "dateutil",
+    "pytz": "pytz",
+    "num2words": "num2words",
+    "python-barcode": "barcode",
+}
+
+
+def _detect_external_dependencies(spec: dict[str, Any]) -> list[str]:
+    """Scan model fields and method code for references to known external packages.
+
+    Returns a deduplicated sorted list of pip package names that should be
+    declared in the manifest's external_dependencies.python.
+    """
+    # Build a reverse mapping: import_name -> pip_name
+    import_to_pip = {v: k for k, v in EXTERNAL_PACKAGES.items()}
+
+    detected: set[str] = set()
+    text_corpus: list[str] = []
+
+    for model in spec.get("models", []):
+        for field in model.get("fields", []):
+            # Check field compute code, defaults, etc.
+            for key in ("compute", "default", "onchange"):
+                val = field.get(key, "")
+                if val:
+                    text_corpus.append(str(val))
+
+        # Check complex_constraints, business_rules body text
+        for cc in model.get("complex_constraints", []):
+            body = cc.get("check_body", "")
+            if body:
+                text_corpus.append(body)
+
+    # Check module-level business_rules
+    for rule in spec.get("business_rules", []):
+        text_corpus.append(str(rule))
+
+    # Scan the text corpus for import references
+    full_text = " ".join(text_corpus)
+    for import_name, pip_name in import_to_pip.items():
+        if import_name in full_text:
+            detected.add(pip_name)
+
+    # Also check if import_export is used (needs openpyxl)
+    if any(m.get("import_export") for m in spec.get("models", [])):
+        detected.add("openpyxl")
+
+    # Check if archival models exist (needs python-dateutil)
+    if any(m.get("is_archival") or m.get("archival") for m in spec.get("models", [])):
+        detected.add("python-dateutil")
+
+    return sorted(detected)
+
+
 def _build_base_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[str, Any]:
     """Build base context: module metadata, model identity, and basic field lists."""
     module_name = spec.get("module_name", "")
@@ -363,6 +428,55 @@ def _compute_needs_api_and_translate(ctx: dict[str, Any], model: dict[str, Any])
     return {"needs_api": needs_api, "needs_translate": needs_translate}
 
 
+
+
+def _auto_display_name_pattern(fields: list[dict[str, Any]]) -> tuple[str, list[str]]:
+    """Determine a display_name_pattern for models without a 'name' field.
+
+    Returns (pattern, depends_fields) or ("", []) if no suitable pattern found.
+
+    Strategy:
+    1. Look for a 'reference' field -> use "{reference}" or "[{reference}] {first_char}"
+    2. Otherwise use the first Char field -> "{first_char}"
+    3. Fallback -> "#{id}"
+    """
+    field_names = {f.get("name") for f in fields}
+    has_name = "name" in field_names
+
+    if has_name:
+        return ("", [])
+
+    # Find reference field
+    reference_field = next(
+        (f for f in fields if f.get("name") == "reference" and f.get("type") == "Char"),
+        None,
+    )
+
+    # Find first Char field (excluding reference, internal, parent_path)
+    skip_names = {"reference", "parent_path"}
+    first_char = next(
+        (f for f in fields
+         if f.get("type") == "Char"
+         and f.get("name") not in skip_names
+         and not f.get("internal")),
+        None,
+    )
+
+    if reference_field and first_char:
+        pattern = "[{" + reference_field["name"] + "}] {" + first_char["name"] + "}"
+        return (pattern, [reference_field["name"], first_char["name"]])
+
+    if reference_field:
+        pattern = "{" + reference_field["name"] + "}"
+        return (pattern, [reference_field["name"]])
+
+    if first_char:
+        pattern = "{" + first_char["name"] + "}"
+        return (pattern, [first_char["name"]])
+
+    # Fallback: use record id
+    return ("#{id}", ["id"])
+
 def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[str, Any]:
     """Build the template context for a single model from the module spec.
 
@@ -404,6 +518,12 @@ def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[st
         depends_fields = re.findall(r'\{(\w+)\}', pattern)
         ctx["display_name_pattern"] = pattern
         ctx["display_name_depends"] = depends_fields
+    elif spec.get("odoo_version", "19.0") >= "19.0":
+        # NEW-04: Auto _compute_display_name for nameless models (Odoo 19.0+)
+        auto_pattern, auto_depends = _auto_display_name_pattern(ctx["fields"])
+        if auto_pattern:
+            ctx["display_name_pattern"] = auto_pattern
+            ctx["display_name_depends"] = auto_depends
 
     return ctx
 
@@ -735,8 +855,19 @@ def _build_module_context(spec: dict[str, Any], module_name: str) -> dict[str, A
         "business_rules": spec.get("business_rules", []),
         "view_hints": spec.get("view_hints", []),
     }
+    # NEW-08: settings manifest files
+    has_settings = bool(spec.get("settings"))
+    if has_settings:
+        manifest_files.append("views/res_config_settings_view.xml")
+    ctx["has_settings"] = has_settings
+
     # Phase 52: VERSION_GATES for Odoo version-conditional template rendering (DOMN-04)
     ctx["version_gates"] = _VERSION_GATES
-    if has_import_export:
+
+    # NEW-07: Auto-detect external dependencies from model code
+    ext_deps = _detect_external_dependencies(spec)
+    if ext_deps:
+        ctx["external_dependencies"] = {"python": ext_deps}
+    elif has_import_export:
         ctx["external_dependencies"] = {"python": ["openpyxl"]}
     return ctx

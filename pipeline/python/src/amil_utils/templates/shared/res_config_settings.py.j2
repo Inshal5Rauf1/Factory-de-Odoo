@@ -1,0 +1,15 @@
+from odoo import api, fields, models
+
+
+class ResConfigSettings(models.TransientModel):
+    _inherit = "res.config.settings"
+
+{% for setting in settings %}
+    {{ setting.name }} = fields.{{ setting.type }}(
+        string="{{ setting.description or setting.name | replace('_', ' ') | title }}",
+        config_parameter="{{ module_name }}.{{ setting.name }}",
+{% if setting.default is not none %}
+        default={{ setting.default | tojson }},
+{% endif %}
+    )
+{% endfor %}

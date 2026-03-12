@@ -5,9 +5,9 @@ manifest dependency gaps, and ORM pattern violations in rendered output
 files -- eliminating the Docker round-trip for the majority of
 generation bugs.
 
-25 checks total:
+26 checks total:
   ERRORS (E1-E13, E15-E17, E23-E25) -- generation is broken, will fail at install
-  WARNINGS (W1-W8) -- might be wrong, might be intentional
+  WARNINGS (W1-W9) -- might be wrong, might be intentional
 
 All stdlib: ast, xml.etree, csv, difflib, dataclasses, time, pathlib.
 """
@@ -1119,11 +1119,14 @@ def _check_e8(
                 method_name = stmt.name
                 target_fields: list[str] = []
 
+                # NEW-04: Odoo built-in fields that can be overridden via compute
+                _BUILTIN_COMPUTE_FIELDS = {"display_name"}
+
                 if method_name in sidecar_targets:
                     target_fields = sidecar_targets[method_name]
                 elif method_name.startswith("_compute_"):
                     inferred = method_name[len("_compute_"):]
-                    if inferred and inferred in model_info.fields:
+                    if inferred and (inferred in model_info.fields or inferred in _BUILTIN_COMPUTE_FIELDS):
                         target_fields = [inferred]
 
                 if not target_fields:
@@ -2037,6 +2040,9 @@ def semantic_validate(
         result.errors.extend(_check_e25(output_dir, spec, registry))
         result.warnings.extend(_check_w8(output_dir, spec, registry))
 
+    # W9: Comodel depends cross-validation
+    result.warnings.extend(check_comodel_depends(output_dir))
+
     elapsed = time.perf_counter() - start
     result.duration_ms = int(elapsed * 1000)
     return result
@@ -2192,6 +2198,114 @@ def _check_w8(
                         ),
                     )
                 )
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# W9: Comodel depends cross-validation
+# ---------------------------------------------------------------------------
+
+# Standard Odoo models that don't require an explicit depends entry
+_COMODEL_NO_DEPENDS: frozenset[str] = frozenset({
+    "res.users", "res.partner", "res.company", "res.groups",
+    "res.currency", "ir.attachment", "ir.cron",
+    "mail.thread", "mail.activity.mixin", "portal.mixin",
+    "utm.mixin", "image.mixin",
+})
+
+
+def _parse_manifest_depends(output_dir: Path) -> set[str] | None:
+    """Parse __manifest__.py and return the depends set, or None on failure."""
+    manifest_path = output_dir / "__manifest__.py"
+    if not manifest_path.exists():
+        return None
+    try:
+        manifest_src = manifest_path.read_text(encoding="utf-8")
+        manifest = ast.literal_eval(manifest_src)
+    except (SyntaxError, ValueError):
+        return None
+    depends = set(manifest.get("depends", []))
+    depends.add("base")
+    return depends
+
+
+def _extract_comodel_module_prefix(comodel: str) -> str | None:
+    """Extract the module prefix from a comodel name.
+
+    Examples: 'sale.order' -> 'sale', 'account.move' -> 'account'.
+    Returns None if the comodel has no dot separator.
+    """
+    parts = comodel.split(".")
+    if len(parts) < 2:
+        return None
+    return parts[0]
+
+
+def _prefix_covered_by_depends(prefix: str, declared_depends: set[str]) -> bool:
+    """Check if a comodel prefix is covered by any declared dependency.
+
+    Matches exact module name or modules that start with the prefix
+    followed by ``_`` (e.g., prefix ``uni`` matches ``uni_core``).
+    """
+    if prefix in declared_depends:
+        return True
+    prefix_underscore = prefix + "_"
+    return any(dep.startswith(prefix_underscore) for dep in declared_depends)
+
+
+def check_comodel_depends(output_dir: Path) -> list[ValidationIssue]:
+    """W9: Verify all comodel references have corresponding depends entries.
+
+    Parses __manifest__.py for depends and all .py model files for
+    comodel_name= references. Flags comodels whose module prefix
+    is not in the depends list.
+    """
+    declared_depends = _parse_manifest_depends(output_dir)
+    if declared_depends is None:
+        return []
+
+    module_name = output_dir.name
+    issues: list[ValidationIssue] = []
+    missing_prefixes: set[str] = set()
+
+    for py_file in output_dir.rglob("*.py"):
+        rel = str(py_file.relative_to(output_dir))
+        try:
+            source = py_file.read_text(encoding="utf-8")
+            tree = ast.parse(source, filename=rel)
+        except (SyntaxError, UnicodeDecodeError):
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.keyword):
+                continue
+            if node.arg != "comodel_name":
+                continue
+            if not isinstance(node.value, ast.Constant):
+                continue
+            comodel = str(node.value.value)
+            if comodel in _COMODEL_NO_DEPENDS:
+                continue
+            prefix = _extract_comodel_module_prefix(comodel)
+            if prefix is None:
+                continue
+            if prefix == module_name:
+                continue
+            if _prefix_covered_by_depends(prefix, declared_depends):
+                continue
+            if prefix not in missing_prefixes:
+                missing_prefixes.add(prefix)
+                issues.append(ValidationIssue(
+                    code="W9",
+                    severity="warning",
+                    file=rel,
+                    line=node.value.lineno if hasattr(node.value, "lineno") else None,
+                    message=(
+                        f"Comodel '{comodel}' implies dependency on "
+                        f"module '{prefix}', but '{prefix}' is not in "
+                        f"manifest depends"
+                    ),
+                ))
+
     return issues
 
 

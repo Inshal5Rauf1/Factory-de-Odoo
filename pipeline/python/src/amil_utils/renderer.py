@@ -1059,6 +1059,276 @@ def render_bulk(
         return Result.fail(f"render_bulk failed: {exc}")
 
 
+def _classify_migration_ops(
+    operations: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Split migration operations into pre and post lists.
+
+    Pre-migration: rename_field, drop_column, rename_model, sql.
+    Post-migration: add_column, sql.
+    """
+    pre_ops: list[dict[str, Any]] = []
+    post_ops: list[dict[str, Any]] = []
+    pre_types = {"rename_field", "drop_column", "rename_model", "sql"}
+    post_types = {"add_column", "sql"}
+
+    for op in operations:
+        op_type = op.get("type", "rename_field")
+        if op_type in pre_types:
+            pre_ops.append(op)
+        if op_type in post_types:
+            post_ops.append(op)
+
+    return pre_ops, post_ops
+
+
+def render_migrations(
+    env: Environment,
+    spec: dict[str, Any],
+    module_dir: Path,
+    module_context: dict[str, Any],
+) -> "Result[list[Path]]":
+    """Render migration scripts from spec migrations.
+
+    For each migration entry, creates:
+    - migrations/{to_version}/pre-migrate.py (rename/drop/sql ops)
+    - migrations/{to_version}/post-migrate.py (add_column/sql ops)
+
+    Returns Result.ok([]) when no migrations are defined.
+    """
+    migrations = spec.get("migrations", [])
+    if not migrations:
+        return Result.ok([])
+
+    try:
+        created: list[Path] = []
+        for migration in migrations:
+            to_version = migration.get("to_version", "")
+            if not to_version:
+                continue
+            operations = migration.get("operations", [])
+            if not operations:
+                continue
+
+            pre_ops, post_ops = _classify_migration_ops(operations)
+            mig_dir = module_dir / "migrations" / to_version
+            mig_dir.mkdir(parents=True, exist_ok=True)
+
+            if pre_ops:
+                pre_ctx = {
+                    **module_context,
+                    "migration_version": to_version,
+                    "pre_operations": pre_ops,
+                }
+                created.append(render_template(
+                    env, "pre_migration.py.j2",
+                    mig_dir / "pre-migrate.py",
+                    pre_ctx,
+                ))
+
+            if post_ops:
+                post_ctx = {
+                    **module_context,
+                    "migration_version": to_version,
+                    "post_operations": post_ops,
+                }
+                created.append(render_template(
+                    env, "post_migration.py.j2",
+                    mig_dir / "post-migrate.py",
+                    post_ctx,
+                ))
+
+        return Result.ok(created)
+    except Exception as exc:
+        return Result.fail(f"render_migrations failed: {exc}")
+
+
+
+def render_settings(
+    env: Environment,
+    spec: dict[str, Any],
+    module_dir: Path,
+    module_context: dict[str, Any],
+) -> "Result[list[Path]]":
+    """Render res.config.settings model and view for ir.config_parameter settings.
+
+    Generates:
+    - models/res_config_settings.py (TransientModel inheriting res.config.settings)
+    - views/res_config_settings_view.xml (inherited settings form view)
+    - models/__init__.py updated with import
+
+    Returns Result.ok([]) when spec has no settings.
+    """
+    settings = spec.get("settings", [])
+    if not settings:
+        return Result.ok([])
+
+    try:
+        created: list[Path] = []
+        module_name = module_context["module_name"]
+        module_title = module_context.get("module_title", module_name.replace("_", " ").title())
+
+        settings_ctx = {
+            **module_context,
+            "settings": settings,
+            "module_title": module_title,
+        }
+
+        # Render settings model
+        created.append(render_template(
+            env, "res_config_settings.py.j2",
+            module_dir / "models" / "res_config_settings.py",
+            settings_ctx,
+        ))
+
+        # Render settings view
+        created.append(render_template(
+            env, "res_config_settings_view.xml.j2",
+            module_dir / "views" / "res_config_settings_view.xml",
+            settings_ctx,
+        ))
+
+        # Update models/__init__.py to import res_config_settings
+        init_path = module_dir / "models" / "__init__.py"
+        init_path.parent.mkdir(parents=True, exist_ok=True)
+        existing = ""
+        if init_path.exists():
+            existing = init_path.read_text(encoding="utf-8")
+        import_line = "from . import res_config_settings"
+        if import_line not in existing:
+            new_content = existing.rstrip("\n")
+            if new_content:
+                new_content += "\n"
+            new_content += import_line + "\n"
+            init_path.write_text(new_content, encoding="utf-8")
+        created.append(init_path)
+
+        return Result.ok(created)
+    except Exception as exc:
+        return Result.fail(f"render_settings failed: {exc}")
+
+
+def render_owl_components(
+    env: Environment,
+    spec: dict[str, Any],
+    module_dir: Path,
+    module_context: dict[str, Any],
+) -> "Result[list[Path]]":
+    """Render OWL component JS and XML files from spec owl_components.
+
+    Generates per component:
+    - static/src/js/{name}.js (OWL component class)
+    - static/src/xml/{name}.xml (QWeb template)
+
+    Returns Result.ok([]) when no owl_components are present.
+    """
+    components = spec.get("owl_components", [])
+    if not components:
+        return Result.ok([])
+    try:
+        created: list[Path] = []
+        for comp in components:
+            comp_name = comp.get("name", "")
+            comp_class = _to_class(comp_name)
+            comp_ctx = {
+                **module_context,
+                "component_class": comp_class,
+                "component_name": comp_name,
+                "component_css_class": f"o_{comp_name.replace('.', '_')}",
+                "registry_category": comp.get("type", "field_widget"),
+            }
+            js_path = module_dir / "static" / "src" / "js" / f"{comp_name}.js"
+            created.append(render_template(env, "owl_component.js.j2", js_path, comp_ctx))
+            xml_path = module_dir / "static" / "src" / "xml" / f"{comp_name}.xml"
+            created.append(render_template(env, "owl_component.xml.j2", xml_path, comp_ctx))
+        return Result.ok(created)
+    except Exception as exc:
+        return Result.fail(f"render_owl_components failed: {exc}")
+
+
+def render_assets(
+    env: Environment,
+    spec: dict[str, Any],
+    module_dir: Path,
+    module_context: dict[str, Any],
+) -> "Result[list[Path]]":
+    """Render asset bundle declaration XML when OWL components or static JS/CSS exist.
+
+    Auto-generates views/assets.xml referencing all JS and CSS files
+    produced by OWL components or found in static/src/.
+
+    Returns Result.ok([]) when no assets need declaration.
+    """
+    components = spec.get("owl_components", [])
+    has_bulk = spec.get("has_bulk_operations", False)
+    if not components and not has_bulk:
+        return Result.ok([])
+    try:
+        asset_files: list[dict[str, str]] = []
+        css_files: list[dict[str, str]] = []
+        for comp in components:
+            comp_name = comp.get("name", "")
+            asset_files.append({"path": f"static/src/js/{comp_name}.js"})
+        if has_bulk:
+            asset_files.append({"path": "static/src/js/bulk_progress.js"})
+        assets_ctx = {
+            **module_context,
+            "asset_files": asset_files,
+            "css_files": css_files,
+        }
+        out_path = module_dir / "views" / "assets.xml"
+        created = [render_template(env, "assets.xml.j2", out_path, assets_ctx)]
+        return Result.ok(created)
+    except Exception as exc:
+        return Result.fail(f"render_assets failed: {exc}")
+
+
+def render_server_actions(
+    env: Environment,
+    spec: dict[str, Any],
+    module_dir: Path,
+    module_context: dict[str, Any],
+) -> "Result[list[Path]]":
+    """Render server action XML bindings from model-level server_actions.
+
+    Generates per model with server_actions:
+    - data/server_action_{model_var}.xml
+
+    Validates method names are valid Python identifiers.
+    Returns Result.ok([]) when no server_actions are present.
+    """
+    models = spec.get("models", [])
+    models_with_actions = [
+        m for m in models if m.get("server_actions")
+    ]
+    if not models_with_actions:
+        return Result.ok([])
+    try:
+        created: list[Path] = []
+        for model in models_with_actions:
+            actions = model.get("server_actions", [])
+            for action in actions:
+                method = action.get("method", "")
+                if not method.isidentifier():
+                    return Result.fail(
+                        f"Invalid server action method '{method}': "
+                        "must be a valid Python identifier"
+                    )
+            model_var = _to_python_var(model["name"])
+            action_ctx = {
+                **module_context,
+                "server_actions": actions,
+                "model_xml_id": _model_ref(model["name"]),
+            }
+            out_path = module_dir / "data" / f"server_action_{model_var}.xml"
+            created.append(render_template(
+                env, "server_action.xml.j2", out_path, action_ctx,
+            ))
+        return Result.ok(created)
+    except Exception as exc:
+        return Result.fail(f"render_server_actions failed: {exc}")
+
+
 def render_mail_templates(
     env: Environment,
     spec: dict[str, Any],
@@ -1248,6 +1518,11 @@ def render_module(
         ("controllers", lambda: render_controllers(env, spec, module_dir, ctx)),
         ("portal", lambda: render_portal(env, spec, module_dir, ctx)),
         ("bulk", lambda: render_bulk(env, spec, module_dir, ctx)),
+        ("migrations", lambda: render_migrations(env, spec, module_dir, ctx)),
+        ("settings", lambda: render_settings(env, spec, module_dir, ctx)),
+        ("owl_components", lambda: render_owl_components(env, spec, module_dir, ctx)),
+        ("assets", lambda: render_assets(env, spec, module_dir, ctx)),
+        ("server_actions", lambda: render_server_actions(env, spec, module_dir, ctx)),
     ]
 
     # Phase 60: Filter stages in iterative mode

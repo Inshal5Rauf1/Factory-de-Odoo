@@ -1,0 +1,15 @@
+/** @odoo-module **/
+
+import { Component, useState } from "@odoo/owl";
+import { registry } from "@web/core/registry";
+
+export class {{ component_class }} extends Component {
+    static template = "{{ module_name }}.{{ component_class }}";
+    static props = {};
+
+    setup() {
+        this.state = useState({});
+    }
+}
+
+registry.category("{{ registry_category }}").add("{{ component_name }}", {{ component_class }});

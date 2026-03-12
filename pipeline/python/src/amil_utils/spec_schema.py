@@ -16,7 +16,7 @@ Usage::
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 
@@ -456,6 +456,50 @@ class RelatedCountSpec(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Server action specs (NEW-03)
+# ---------------------------------------------------------------------------
+
+
+class ServerActionSpec(BaseModel):
+    """Specification for a server action bound to a model's list view."""
+
+    model_config = ConfigDict(extra="allow", protected_namespaces=())
+
+    name: str
+    label: str
+    method: str
+
+
+# ---------------------------------------------------------------------------
+# Migration specs (NEW-06)
+# ---------------------------------------------------------------------------
+
+
+class MigrationOp(BaseModel):
+    """A single migration operation (rename, add, drop, sql)."""
+
+    model_config = ConfigDict(extra="allow", protected_namespaces=())
+
+    type: Literal[
+        "rename_field", "add_column", "drop_column", "rename_model", "sql"
+    ] = "rename_field"
+    model: str = ""
+    old_name: str = ""
+    new_name: str = ""
+    sql: str = ""
+
+
+class MigrationSpec(BaseModel):
+    """Specification for a versioned migration with ordered operations."""
+
+    model_config = ConfigDict(extra="allow", protected_namespaces=())
+
+    from_version: str
+    to_version: str
+    operations: list[MigrationOp] = []
+
+
+# ---------------------------------------------------------------------------
 # Model-level spec
 # ---------------------------------------------------------------------------
 
@@ -485,6 +529,7 @@ class ModelSpec(BaseModel):
     no_active: bool = False
     record_rules: list[str] | None = None
     related_counts: list[RelatedCountSpec] = []
+    server_actions: list[ServerActionSpec] = []
     display_name_pattern: str | None = None
 
 
@@ -515,6 +560,39 @@ class ReportSpec(BaseModel):
     report_type: str = "qweb-pdf"
     template: str = ""
     xml_id: str = ""
+
+
+# ---------------------------------------------------------------------------
+# OWL component specs (NEW-01)
+# ---------------------------------------------------------------------------
+
+
+class OWLComponentSpec(BaseModel):
+    """Specification for an OWL frontend component."""
+
+    model_config = ConfigDict(extra="allow", protected_namespaces=())
+
+    name: str
+    type: Literal["field_widget", "systray", "client_action", "view"] = "field_widget"
+    description: str = ""
+
+
+
+# ---------------------------------------------------------------------------
+# Settings specs (NEW-08)
+# ---------------------------------------------------------------------------
+
+
+class SettingSpec(BaseModel):
+    """Specification for an ir.config_parameter setting exposed via res.config.settings."""
+
+    model_config = ConfigDict(extra="allow", protected_namespaces=())
+
+    name: str
+    type: Literal["Boolean", "Char", "Integer", "Selection"] = "Boolean"
+    default: str | bool | int = ""
+    description: str = ""
+    group: str = "general"
 
 
 # ---------------------------------------------------------------------------
@@ -551,6 +629,7 @@ class ModuleSpec(BaseModel):
     controllers: list[dict] | None = None
     portal: PortalSpec | None = None
     bulk_operations: list[BulkOperationSpec] = []
+    owl_components: list[OWLComponentSpec] = []
     dashboards: list[dict] = []
     relationships: list[dict] = []
     computation_chains: list[dict] = []
@@ -559,6 +638,8 @@ class ModuleSpec(BaseModel):
     view_hints: list[ViewHintSpec] = []
     constraints: list[dict] = []
     security: SecurityBlockSpec | None = None
+    settings: list[SettingSpec] = []
+    migrations: list[MigrationSpec] = []
 
     @model_validator(mode="after")
     def check_no_duplicate_extends(self) -> ModuleSpec:
