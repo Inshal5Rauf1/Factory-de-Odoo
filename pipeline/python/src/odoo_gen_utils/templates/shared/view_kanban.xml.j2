@@ -25,7 +25,11 @@
                 <field name="{{ extra.field }}"/>
 {% endfor %}
                 <templates>
+{% if odoo_version is defined and odoo_version >= "19.0" %}
+                    <t t-name="card">
+{% else %}
                     <t t-name="kanban-card">
+{% endif %}
                         <div class="oe_kanban_details">
 {% if dashboard.get('kanban_title_field') %}
                             <strong><field name="{{ dashboard.kanban_title_field }}"/></strong>

@@ -1,4 +1,4 @@
-# Odoo 17.0 Security Rules
+# Odoo 17.0/18.0/19.0 Security Rules
 
 > Loaded alongside MASTER.md. Covers module categories, security groups,
 > access control lists, record rules, and data load order.
@@ -240,5 +240,32 @@ In `__manifest__.py`, security files must be loaded in the correct order:
 |------|---------|-----|
 | **W8180** | Missing access rights for a model | Add ACL rows in `ir.model.access.csv` for every model |
 
+## Changed in 19.0
+
+| What Changed | Before (18.0) | Now (19.0) | Impact |
+|-------------|---------------|------------|--------|
+| Security groups `category_id` | Used to associate groups with module categories | **Replaced** by `privilege_id` | **Breaking** -- group XML using `category_id` must use `privilege_id` instead |
+| ACLs and record rules | Same format | Same, unchanged | No breaking changes |
+
+### Security groups: `category_id` replaced by `privilege_id`
+
+**WRONG (19.0):**
+```xml
+<record id="group_library_user" model="res.groups">
+    <field name="name">User</field>
+    <field name="category_id" ref="module_category_library"/>
+</record>
+```
+
+**CORRECT (19.0):**
+```xml
+<record id="group_library_user" model="res.groups">
+    <field name="name">User</field>
+    <field name="privilege_id" ref="module_category_library"/>
+</record>
+```
+
+**Why:** Odoo 19 replaced `category_id` with `privilege_id` on `res.groups` for a clearer privilege-based security model. Existing group definitions using `category_id` must be updated.
+
 ---
-*Odoo 17.0 Security -- loaded by security generation agents*
+*Odoo 17.0/18.0/19.0 Security -- loaded by security generation agents*

@@ -1,6 +1,6 @@
 ---
 name: odoo-validator
-description: Validates Odoo 17.0/18.0 modules using pylint-odoo static analysis and Docker-based Odoo 17.0 installation/testing. Provides structured reports with actionable error diagnosis.
+description: Validates Odoo 17.0/18.0/19.0 modules using pylint-odoo static analysis and Docker-based Odoo 19.0 installation/testing. Provides structured reports with actionable error diagnosis.
 tools: Read, Write, Bash, Glob, Grep
 color: blue
 ---
@@ -19,7 +19,7 @@ Load the MASTER knowledge base for version-checking context. The validator uses 
 You run a multi-stage validation pipeline on Odoo modules:
 
 1. **pylint-odoo static analysis** -- Checks Python and XML code against ~80 OCA rules covering naming conventions, API usage, security patterns, and Odoo-specific best practices.
-2. **Docker-based module installation** -- Installs the module in an ephemeral Odoo 17.0 + PostgreSQL 16 environment to verify it loads without errors.
+2. **Docker-based module installation** -- Installs the module in an ephemeral Odoo 19.0 + PostgreSQL 16 environment to verify it loads without errors.
 3. **Docker-based test execution** -- Runs the module's test suite with `--test-enable` and reports per-test pass/fail results.
 4. **Error diagnosis** -- Matches error logs against a library of 25 common Odoo error patterns and provides human-readable explanations with fix suggestions.
 

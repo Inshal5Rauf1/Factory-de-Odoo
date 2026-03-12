@@ -1,6 +1,6 @@
 # Odoo Module Automation
 
-An AI-powered system that automates Odoo 17.0 and 18.0 module development end-to-end. Describe a business need in natural language, and the system produces OCA-grade Odoo modules — complete with models, views, security, tests, and i18n.
+An AI-powered system that automates Odoo 17.0, 18.0, and 19.0 module development end-to-end. Describe a business need in natural language, and the system produces OCA-grade Odoo modules — complete with models, views, security, tests, and i18n.
 
 ## How It Works
 
@@ -39,7 +39,7 @@ You: "I need a module to track employee training courses and sessions"
 - **Natural Language to Module** — Describe what you need; the system asks follow-up questions, generates a structured spec, and produces a complete Odoo module
 - **Semantic Search** — ChromaDB-powered vector search across 200+ OCA repositories to find and fork existing modules
 - **8 Specialized AI Agents** — Model generation, view generation, security patterns, test generation, validation, search, scaffolding, fork-and-extend
-- **24 Jinja2 Templates** — Version-aware templates for Odoo 17.0 and 18.0 with shared fallback
+- **24 Jinja2 Templates** — Version-aware templates for Odoo 17.0, 18.0, and 19.0 with shared fallback
 - **Validation Pipeline** — pylint-odoo linting + Docker-based Odoo installation + test execution
 - **Auto-Fix** — Automatically fixes pylint violations, missing `mail.thread` inheritance, unused imports (AST-based), XML parse errors, missing ACLs, manifest load order — with configurable 5-iteration caps
 - **Knowledge Base** — 13 domain files with 80+ WRONG/CORRECT example pairs preventing AI hallucinations
@@ -47,12 +47,12 @@ You: "I need a module to track employee training courses and sessions"
 - **Artifact State Tracking** — Generation pipeline observability with JSON sidecar persistence and CLI display
 - **MCP Server** — 6 tools for live Odoo introspection (list_models, get_model_fields, check_module_dependency, etc.)
 - **Human Review** — 3 checkpoint-based review gates before code generation
-- **Edition Support** — Community and Enterprise, Odoo 17.0 (primary) and 18.0
+- **Edition Support** — Community and Enterprise, Odoo 19.0 (primary), 18.0, and 17.0
 
 ## Prerequisites
 
 - **[uv](https://docs.astral.sh/uv/)** — Python package manager
-- **Python 3.12** (Odoo 17 requires 3.10-3.12; 3.13+ breaks validation)
+- **Python 3.12** (Odoo 17.0-19.0 supports 3.10-3.12; 3.13+ breaks validation)
 - **Docker + Docker Compose v2** (for module validation and dev instance)
 - **GitHub Token** (optional, for OCA search: `export GITHUB_TOKEN=...`)
 - An AI coding assistant: [Claude Code](https://claude.ai/code), Gemini, Codex, or OpenCode
@@ -105,7 +105,7 @@ The system will:
 
 Runs the full validation pipeline:
 - pylint-odoo linting (with auto-fix for common violations)
-- Docker installation test (Odoo 17.0 + PostgreSQL 16)
+- Docker installation test (Odoo 19.0 + PostgreSQL 16)
 - Docker test execution
 - Auto-fix for structural issues (missing `mail.thread`, unused imports)
 
@@ -202,9 +202,10 @@ odoo-gen/
 ├── templates/              # Jinja2 templates
 │   ├── 17.0/               # Odoo 17 specific
 │   ├── 18.0/               # Odoo 18 specific
+│   ├── 19.0/               # Odoo 19 specific
 │   └── shared/             # Common (fallback)
 ├── workflows/              # Workflow configs
-├── docker/                 # Docker Compose (Odoo 17 + PostgreSQL 16)
+├── docker/                 # Docker Compose (Odoo 19 + PostgreSQL 16)
 │   └── docker-compose.yml
 └── python/                 # Python package
     ├── pyproject.toml
@@ -272,7 +273,7 @@ uv run pytest tests/test_golden_path.py -v
 
 ## Dev Instance
 
-A persistent Odoo 17 CE development instance is available for local development and MCP server integration. It runs separately from the ephemeral validation Docker setup.
+A persistent Odoo 19 CE development instance is available for local development and MCP server integration. It runs separately from the ephemeral validation Docker setup.
 
 ### Prerequisites
 
@@ -281,7 +282,7 @@ A persistent Odoo 17 CE development instance is available for local development 
 ### Quick Start
 
 ```bash
-# Start the Odoo 17 CE dev instance
+# Start the Odoo 19 CE dev instance
 scripts/odoo-dev.sh start
 
 # Stop the instance (data is preserved)
@@ -336,7 +337,7 @@ Default settings in `defaults.json`:
 ```json
 {
   "odoo": {
-    "odoo_version": "17.0",
+    "odoo_version": "19.0",
     "edition": "community",
     "license": "LGPL-3",
     "output_dir": "."
@@ -346,7 +347,7 @@ Default settings in `defaults.json`:
 
 Override via `/odoo-gen:config` or environment variables:
 - `GITHUB_TOKEN` — GitHub API access for OCA search
-- `ODOO_VERSION` — Target Odoo version (17.0 or 18.0)
+- `ODOO_VERSION` — Target Odoo version (17.0, 18.0, or 19.0)
 - `CONTEXT7_API_KEY` — Context7 API key for live Odoo documentation queries (optional)
 
 ## Knowledge Base

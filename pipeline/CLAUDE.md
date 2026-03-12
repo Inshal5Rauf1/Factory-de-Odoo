@@ -29,10 +29,10 @@ Layer 4: AI Coding Assistant (USER'S ENVIRONMENT)
 | Monorepo component (not standalone CLI) | Orchestrator provides cross-module coherence, context, state management | Decided |
 | Integrated with orchestrator | Single repo, shared state, coordinated generation | Decided |
 | Clone-based install (~/.claude/) | Works with any AI coding assistant | Decided |
-| Odoo 17.0 primary target | Stable, widely adopted, strong OCA support | Decided |
+| Odoo 19.0 primary target | Latest stable, strong OCA support, backward compatible with 17.0/18.0 | Decided |
 | Fork-and-extend strategy | Leverage existing OCA/GitHub modules as foundation | Decided |
 | Semantic search (ChromaDB + sentence-transformers) | Intent-based matching, not just keywords | Decided |
-| Python 3.12 for utilities | Odoo 17 supports 3.10-3.12 only; 3.13+ breaks validation | Decided |
+| Python 3.12 for utilities | Odoo 17.0-19.0 supports 3.10-3.12; 3.13+ breaks validation | Decided |
 | Checkpoint-based human review | Orchestrator provides mechanism; we wire Odoo checkpoints | Decided |
 | OCA quality as the bar | pylint-odoo, i18n, full security, tests | Decided |
 | Docker for validation | Only way to truly verify module installs and tests pass | Decided |

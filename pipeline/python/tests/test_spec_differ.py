@@ -84,7 +84,7 @@ class TestSpecToDiffable:
 
         result = _spec_to_diffable(spec_v1)
         assert result["module_name"] == "uni_fee"
-        assert result["version"] == "17.0.1.0.0"
+        assert result["version"] == "19.0.1.0.0"
 
     def test_cron_jobs_converted_to_dict(self, spec_v1: dict) -> None:
         from odoo_gen_utils.spec_differ import _spec_to_diffable
@@ -418,8 +418,8 @@ class TestDiffOutputStructure:
 
     def test_versions_correct(self, spec_v1: dict, spec_v2: dict) -> None:
         result = diff_specs(spec_v1, spec_v2)
-        assert result["old_version"] == "17.0.1.0.0"
-        assert result["new_version"] == "17.0.1.1.0"
+        assert result["old_version"] == "19.0.1.0.0"
+        assert result["new_version"] == "19.0.1.1.0"
 
     def test_migration_required_true_with_destructive(self, spec_v1: dict, spec_v2: dict) -> None:
         result = diff_specs(spec_v1, spec_v2)
@@ -476,8 +476,8 @@ class TestHumanFormat:
         result = diff_specs(spec_v1, spec_v2)
         summary = format_human_summary(result)
         assert "uni_fee" in summary
-        assert "17.0.1.0.0" in summary
-        assert "17.0.1.1.0" in summary
+        assert "19.0.1.0.0" in summary
+        assert "19.0.1.1.0" in summary
 
 
 # ---------------------------------------------------------------------------

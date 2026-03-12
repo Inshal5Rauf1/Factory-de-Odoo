@@ -1,6 +1,6 @@
 ---
 name: odoo-view-gen
-description: Generates Odoo 17.0/18.0 XML view files (form, list, search), actions, and menus. Activated in Phase 5.
+description: Generates Odoo 17.0/18.0/19.0 XML view files (form, list, search), actions, and menus. Activated in Phase 5.
 tools: Read, Write, Bash, Glob, Grep
 color: blue
 ---

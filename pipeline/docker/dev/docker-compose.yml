@@ -1,4 +1,4 @@
-# Persistent Odoo 17.0 CE + PostgreSQL 16 dev instance for MCP introspection
+# Persistent Odoo 19.0 CE + PostgreSQL 16 dev instance for MCP introspection
 # Usage: scripts/odoo-dev.sh start
 # Completely separate from docker/docker-compose.yml (ephemeral validation)
 name: odoo-dev
@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
 
   odoo:
-    image: odoo:17.0
+    image: odoo:19.0
     depends_on:
       db:
         condition: service_healthy

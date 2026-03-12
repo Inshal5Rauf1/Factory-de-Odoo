@@ -1,6 +1,6 @@
-# Odoo 17.0 Data Files Rules
+# Odoo 17.0/18.0/19.0 Data Files Rules
 
-> Category: Data | Target: Odoo 17.0 | Load with: MASTER.md + data.md
+> Category: Data | Target: Odoo 17.0/18.0/19.0 | Load with: MASTER.md + data.md
 
 ## Data Files (`data/`)
 
@@ -271,3 +271,10 @@ Configuration records (system parameters, default settings) should use `noupdate
 ### Wrong `eval` syntax
 
 Using `eval="True"` (capital T, Python boolean) is correct. Using `eval="true"` (lowercase) evaluates to a variable name and raises `NameError`. For integers, `eval="42"` is correct; `<field>42</field>` would be a string `"42"`.
+
+## Changed in 19.0
+
+No breaking changes to data file format in 19.0. Sequences (`ir.sequence`), email templates (`mail.template`), cron jobs (`ir.cron`), and demo data patterns remain the same as in 18.0. Note that `ir.cron` `numbercall` was already removed in 18.0 -- this remains absent in 19.0.
+
+---
+*Odoo 17.0/18.0/19.0 Data Files -- loaded by data generation agents*

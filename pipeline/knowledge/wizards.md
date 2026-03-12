@@ -1,6 +1,6 @@
-# Odoo 17.0 Wizard Rules
+# Odoo 17.0/18.0/19.0 Wizard Rules
 
-> Category: Wizards | Target: Odoo 17.0 | Load with: MASTER.md + wizards.md
+> Category: Wizards | Target: Odoo 17.0/18.0/19.0 | Load with: MASTER.md + wizards.md
 
 ## Wizard Model
 
@@ -334,3 +334,10 @@ Wizard data is ephemeral. Using `models.Model` creates permanent records in the 
 ### Not using `ensure_one()` in the action method
 
 Without `ensure_one()`, if the wizard somehow has multiple records in the recordset, the action method may produce unexpected results or silently process only the first record.
+
+## Changed in 19.0
+
+No breaking changes to wizards in 19.0. `TransientModel`, `default_get` patterns, `target="new"`, `special="cancel"`, and `ensure_one()` all work the same as in 18.0. Wizard views should adopt 19.0 QWeb changes where applicable (use `t-out` instead of `t-esc`).
+
+---
+*Odoo 17.0/18.0/19.0 Wizards -- loaded by wizard generation agents*

@@ -99,7 +99,7 @@ class ModelRegistry:
         self._meta: dict[str, Any] = {
             "version": "1.0",
             "last_updated": "",
-            "odoo_version": "17.0",
+            "odoo_version": "19.0",
             "modules_registered": 0,
         }
         self._models: dict[str, ModelEntry] = {}

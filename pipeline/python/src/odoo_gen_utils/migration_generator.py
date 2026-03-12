@@ -614,7 +614,7 @@ def generate_migration(
 # Version Discovery & Computation
 # ---------------------------------------------------------------------------
 
-_DEFAULT_BASE_VERSION = "17.0.1.0.0"
+_DEFAULT_BASE_VERSION = "19.0.1.0.0"
 
 
 def discover_migrations(module_dir: str | Path) -> list[str]:

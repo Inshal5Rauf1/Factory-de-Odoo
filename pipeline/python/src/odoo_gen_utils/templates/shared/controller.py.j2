@@ -12,7 +12,7 @@ class {{ controller_class }}(http.Controller):
 
     @http.route(
         '/{{ module_name }}/{{ route.path }}',
-        type='{{ route.get("type", "http") }}',
+        type='{% if route.get("type", "http") == "json" %}{% if odoo_version is defined and odoo_version >= "19.0" %}jsonrpc{% else %}json{% endif %}{% else %}{{ route.get("type", "http") }}{% endif %}',
         auth='{{ route.get("auth", "user") }}',
         csrf={{ route.get("csrf", True) }},
         methods={{ route.get("methods", ["GET"]) }},

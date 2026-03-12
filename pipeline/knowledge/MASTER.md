@@ -1,10 +1,10 @@
-# Odoo 17.0/18.0 Global Conventions
+# Odoo 17.0/18.0/19.0 Global Conventions
 
-> **Supported Versions: Odoo 17.0 and 18.0**
-> This knowledge base covers both Odoo 17.0 (primary) and 18.0. The base rules
-> are for 17.0. Each KB file has a "Changed in 18.0" section documenting breaking
-> changes and new patterns. Read `odoo_version` from spec/config to determine
-> which version-specific rules to apply. Do NOT mix patterns from Odoo 8-16.
+> **Supported Versions: Odoo 17.0, 18.0, and 19.0**
+> This knowledge base covers Odoo 17.0 (primary), 18.0, and 19.0. The base rules
+> are for 17.0. Each KB file has "Changed in 18.0" and "Changed in 19.0" sections
+> documenting breaking changes and new patterns. Read `odoo_version` from spec/config
+> to determine which version-specific rules to apply. Do NOT mix patterns from Odoo 8-16.
 
 ## Naming Conventions
 
@@ -175,7 +175,25 @@ field in spec.json or defaults.json controls which version-specific patterns to 
 **Version-specific template directories:**
 - `templates/17.0/` -- 17.0 view, model, and action templates (uses `<tree>`, `tree,form`)
 - `templates/18.0/` -- 18.0 view, model, and action templates (uses `<list>`, `list,form`)
+- `templates/19.0/` -- 19.0 view, model, and action templates (builds on 18.0 with 19.0-specific changes)
 - `templates/shared/` -- Templates identical across versions
+
+### Odoo 19.0 Version Awareness
+
+When `odoo_version` is `"19.0"`, these additional rules apply (on top of 18.0 changes):
+
+| What Changed | Before (18.0) | Now (19.0) | Impact |
+|-------------|---------------|------------|--------|
+| `name_get()` | Deprecated | **Removed** | Always use `_compute_display_name()` |
+| `read_group()` | Available | **Replaced** | Use `_read_group()` or `formatted_read_group()` |
+| `@api.returns` | Available | **Removed** | Use modern return patterns |
+| HTTP route type | `type='json'` | `type='jsonrpc'` | Update all controllers |
+| Kanban card | `t-name="kanban-box"` | `t-name="card"` | Update kanban views |
+| QWeb `t-esc` | Available | **Deprecated** | Use `t-out` instead |
+| SQL constraints | `_sql_constraints` | `models.Constraint` recommended | New import pattern |
+| Domain helpers | `expression.OR` | `Domain.OR` | New import |
+| Security groups | `category_id` | `privilege_id` | Update group XML |
+| Version prefix | `18.0.X.Y.Z` | `19.0.X.Y.Z` | Manifest version |
 
 **Enterprise edition awareness:**
 - Use `odoo-gen-utils check-edition` to detect Enterprise-only dependencies
@@ -183,4 +201,4 @@ field in spec.json or defaults.json controls which version-specific patterns to 
 - OCA Community alternatives suggested where available
 
 ---
-*Knowledge base for Odoo 17.0/18.0 -- loaded by all agents via @include*
+*Knowledge base for Odoo 17.0/18.0/19.0 -- loaded by all agents via @include*

@@ -33,7 +33,7 @@ services:
       - db-internal
 
   odoo:
-    image: odoo:17.0
+    image: odoo:19.0
     depends_on:
       db:
         condition: service_healthy

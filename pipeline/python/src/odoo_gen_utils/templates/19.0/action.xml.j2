@@ -1,0 +1,22 @@
+{# action.xml.j2 -- Odoo 19.0 window action for a model #}
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_{{ model_name | to_xml_id }}" model="ir.actions.act_window">
+        <field name="name">{{ model_description }}</field>
+        <field name="res_model">{{ model_name }}</field>
+        <field name="view_mode">list,form{% if has_dashboard %},graph,pivot{% endif %}</field>
+        <field name="search_view_id" ref="view_{{ model_name | to_xml_id }}_search"/>
+        <field name="context">{}</field>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first {{ model_description }}
+            </p>
+            <p>
+                Click the "New" button to create a new {{ model_description | lower }} record.
+            </p>
+        </field>
+    </record>
+
+</odoo>

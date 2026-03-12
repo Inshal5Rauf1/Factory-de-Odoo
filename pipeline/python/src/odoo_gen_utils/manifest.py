@@ -92,7 +92,7 @@ class GenerationManifest(BaseModel):
     spec_version: str = "1.0"
     spec_sha256: str
     generated_at: str
-    odoo_version: str = "17.0"
+    odoo_version: str = "19.0"
     generator_version: str
     preprocessing: PreprocessingInfo = PreprocessingInfo()
     stages: dict[str, StageResult] = {}
@@ -186,7 +186,7 @@ class GenerationSession:
 
     module_name: str
     spec_sha256: str
-    odoo_version: str = "17.0"
+    odoo_version: str = "19.0"
     generator_version: str = __version__
     _stages: dict[str, StageResult] = field(default_factory=dict)
     _start_time_ns: int = field(default_factory=lambda: time.perf_counter_ns())

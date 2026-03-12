@@ -63,7 +63,7 @@ class TestValidateSpec:
     def test_optional_defaults(self):
         """Optional fields get correct defaults."""
         result = validate_spec({"module_name": "test_mod"})
-        assert result.odoo_version == "17.0"
+        assert result.odoo_version == "19.0"
         assert result.license == "LGPL-3"
         assert result.depends == ["base"]
         assert result.application is True

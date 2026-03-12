@@ -307,7 +307,7 @@ def _build_model_context(spec: dict[str, Any], model: dict[str, Any]) -> dict[st
         "website": spec.get("website", ""),
         "license": spec.get("license", "LGPL-3"),
         "category": spec.get("category", "Uncategorized"),
-        "odoo_version": spec.get("odoo_version", "17.0"),
+        "odoo_version": spec.get("odoo_version", "19.0"),
         "depends": spec.get("depends", ["base"]),
         "application": spec.get("application", True),
         "models": spec.get("models", []),
@@ -694,7 +694,7 @@ def _build_module_context(spec: dict[str, Any], module_name: str) -> dict[str, A
         "website": spec.get("website", ""),
         "license": spec.get("license", "LGPL-3"),
         "category": spec.get("category", "Uncategorized"),
-        "odoo_version": spec.get("odoo_version", "17.0"),
+        "odoo_version": spec.get("odoo_version", "19.0"),
         "depends": spec.get("depends", ["base"]),
         "application": spec.get("application", True),
         "models": models,
@@ -735,6 +735,11 @@ def _build_module_context(spec: dict[str, Any], module_name: str) -> dict[str, A
         "18.0": {
             "mail.channel": "discuss.channel",
             "mail.channel_all_employees": "discuss.channel_general",
+        },
+        "19.0": {
+            "mail.channel": "discuss.channel",
+            "mail.channel_all_employees": "discuss.channel_general",
+            # Add any 19.0-specific renames here
         },
     }
     ctx["version_gates"] = _VERSION_GATES

@@ -36,6 +36,8 @@ pipeline/              — Python: Jinja2 templates, pylint-odoo, Docker validat
 | Workflows | `orchestrator/odoo-gsd/workflows/` |
 | Python src | `pipeline/python/src/odoo_gen_utils/` |
 | Templates 17.0 | `pipeline/python/src/odoo_gen_utils/templates/17.0/` |
+| Templates 18.0 | `pipeline/python/src/odoo_gen_utils/templates/18.0/` |
+| Templates 19.0 | `pipeline/python/src/odoo_gen_utils/templates/19.0/` |
 | Templates shared | `pipeline/python/src/odoo_gen_utils/templates/shared/` |
 | Auto-fix | `pipeline/python/src/odoo_gen_utils/auto_fix.py` |
 | MCP server | `pipeline/python/src/odoo_gen_utils/mcp/server.py` |
@@ -50,4 +52,4 @@ All 8 fixes committed. All 8 gaps implemented. Ralph Loop docs complete.
 - `self.env._()` not standalone `_()` in model methods (W8161)
 - Manifest load order: security → data → wizard views → model views → dashboard → menu
 - Chatter uses `{% if chatter %}` flag, not `'mail' in depends`
-- Python 3.12 (Odoo 17 doesn't support 3.13+)
+- Python 3.12 (works across Odoo 17.0-19.0)

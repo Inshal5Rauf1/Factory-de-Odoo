@@ -1,11 +1,11 @@
 {
   "_meta": {
-    "odoo_version": "17.0",
+    "odoo_version": "19.0",
     "schema_version": "1.0",
     "model_count": 203,
-    "description": "Common Odoo 17.0 models for comodel validation and depends inference",
-    "last_updated": "2025-03-09",
-    "source": "Odoo 17.0 Community Edition base install"
+    "description": "Common Odoo 19.0 models for comodel validation and depends inference",
+    "last_updated": "2026-03-11",
+    "source": "Odoo 19.0 Community Edition base install"
   },
   "models": {
     "res.partner": {"module": "base", "fields": {"name": {"type": "Char"}, "email": {"type": "Char"}, "phone": {"type": "Char"}, "mobile": {"type": "Char"}, "street": {"type": "Char"}, "city": {"type": "Char"}, "country_id": {"type": "Many2one", "comodel_name": "res.country"}, "state_id": {"type": "Many2one", "comodel_name": "res.country.state"}, "company_id": {"type": "Many2one", "comodel_name": "res.company"}, "parent_id": {"type": "Many2one", "comodel_name": "res.partner"}, "child_ids": {"type": "One2many", "comodel_name": "res.partner"}, "is_company": {"type": "Boolean"}, "active": {"type": "Boolean"}, "image_1920": {"type": "Binary"}, "vat": {"type": "Char"}, "user_ids": {"type": "One2many", "comodel_name": "res.users"}}, "is_mixin": false, "common_views": {"form": "base.view_partner_form", "tree": "base.view_partner_tree", "search": "base.view_res_partner_filter"}},

@@ -83,7 +83,7 @@ function cmdConfigEnsureSection(cwd, raw) {
 
 // ─── Odoo Config Validation ──────────────────────────────────────────────────
 
-const VALID_ODOO_VERSIONS = ['17.0', '18.0'];
+const VALID_ODOO_VERSIONS = ['17.0', '18.0', '19.0'];
 const VALID_NOTIFICATION_CHANNELS = ['email', 'sms', 'push', 'in_app', 'whatsapp'];
 const VALID_LOCALIZATIONS = ['pk', 'sa', 'ae', 'none'];
 const VALID_LMS_INTEGRATIONS = ['canvas', 'moodle', 'none'];

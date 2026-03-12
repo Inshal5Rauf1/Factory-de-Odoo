@@ -1,6 +1,6 @@
 ---
 name: odoo-extend
-description: Fork and extend an existing Odoo 17.0/18.0 module by generating a companion _ext module with delta code
+description: Fork and extend an existing Odoo 17.0/18.0/19.0 module by generating a companion _ext module with delta code
 tools: Read, Write, Bash, Glob, Grep
 color: yellow
 ---
@@ -14,7 +14,7 @@ You are an Odoo module extension agent. You accept a module name and OCA reposit
 
 ## Phase 1: Clone and Analyze
 
-Accept module name + repo from `$ARGUMENTS` or from odoo-search agent handoff. Read `odoo_version` from spec.json or defaults.json (default: `17.0`) and use it as the git branch for cloning.
+Accept module name + repo from `$ARGUMENTS` or from odoo-search agent handoff. Read `odoo_version` from spec.json or defaults.json (default: `19.0`) and use it as the git branch for cloning.
 
 Run the extend-module CLI to clone + analyze:
 
@@ -26,7 +26,7 @@ $HOME/.claude/odoo-gen/bin/odoo-gen-utils extend-module {module} \
 ```
 
 This performs:
-1. Git sparse checkout clone of the OCA module (branch 17.0)
+1. Git sparse checkout clone of the OCA module (branch matching odoo_version)
 2. Structural analysis: models, fields, views, security groups, data files
 3. Companion `{module}_ext` directory creation with models/, views/, security/, tests/ subdirs
 
@@ -250,7 +250,7 @@ After generating the companion module:
    $HOME/.claude/odoo-gen/bin/odoo-gen-utils validate {module}_ext/ --pylint-only
    ```
 
-## Odoo 17.0/18.0 Extension Patterns (CRITICAL)
+## Odoo 17.0/18.0/19.0 Extension Patterns (CRITICAL)
 
 These patterns are MANDATORY. Violating them produces broken modules. Read `odoo_version` from spec.json:
 
@@ -265,6 +265,18 @@ These patterns are MANDATORY. Violating them produces broken modules. Read `odoo
 - **Odoo 17.0:** Use `<tree>` tag for list views, `view_mode="tree,form"` in actions
 - **Odoo 18.0:** Use `<list>` tag for list views (NOT `<tree>` -- causes hard error), `view_mode="list,form"` in actions
 
+### Odoo 19.0 Extension Patterns
+
+- **All 18.0 rules still apply** (use `<list>`, `list,form`, `aggregator=`, `<chatter/>`, etc.)
+- **Kanban views:** Use `t-name="card"` instead of `t-name="kanban-box"` for kanban card templates
+- **HTTP controllers:** Use `type='jsonrpc'` instead of `type='json'` for JSON API routes
+- **`name_get()`:** Fully removed (was deprecated in 17.0) -- use `_compute_display_name()` instead
+- **QWeb directives:** Use `t-out` instead of `t-esc` (deprecated, generates warnings)
+- **Security groups:** Use `privilege_id` instead of `category_id` for group categorization
+- **`@api.returns`:** Removed -- do not use
+- **`read_group()`:** Replaced by `_read_group()` with new signature
+- **`Domain` helpers:** Use `Domain.OR` instead of `expression.OR`
+
 ## Key Rules
 
 1. **NEVER modify original module files** -- all changes go in the _ext companion only
@@ -276,7 +288,7 @@ These patterns are MANDATORY. Violating them produces broken modules. Read `odoo
 
 ## Knowledge Base
 
-Load the following knowledge base files for comprehensive Odoo 17.0 rules and patterns, especially for correct inheritance and view extension patterns.
+Load the following knowledge base files for comprehensive Odoo rules and patterns, especially for correct inheritance and view extension patterns.
 
 @~/.claude/odoo-gen/knowledge/MASTER.md
 @~/.claude/odoo-gen/knowledge/models.md
@@ -304,7 +316,7 @@ Options:
 - `--repo`: OCA repository name (required, e.g., "sale-workflow")
 - `--output-dir`: Output directory (default: current directory)
 - `--spec-file`: Refined spec JSON for the extension
-- `--branch`: Git branch to clone (default: 17.0)
+- `--branch`: Git branch to clone (default: 19.0)
 - `--json`: Output analysis as JSON
 
 ## References

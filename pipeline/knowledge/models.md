@@ -1,4 +1,4 @@
-# Odoo 17.0 Models & ORM Rules
+# Odoo 17.0/18.0/19.0 Models & ORM Rules
 
 > Loaded alongside MASTER.md. Covers field types, relational fields, computed fields,
 > constraints, CRUD overrides, decorators, inheritance, and OCA conventions.
@@ -621,5 +621,101 @@ def _search_display_name(self, name, domain=None, operator='ilike', limit=100, o
 
 **Why:** The method was replaced to support broader search capabilities. Custom `_name_search()` overrides are silently ignored in 18.0.
 
+## Changed in 19.0
+
+| What Changed | Before (18.0) | Now (19.0) | Impact |
+|-------------|---------------|------------|--------|
+| `name_get()` | Deprecated (still works) | **Fully removed** | **Breaking** -- any `name_get()` override causes `AttributeError` |
+| `read_group()` | Public API method | **Replaced** by `_read_group()` and `formatted_read_group()` | **Breaking** -- direct `read_group()` calls fail |
+| `@api.returns` | Available (deprecated) | **Removed** | **Breaking** -- decorator causes `AttributeError` |
+| `_sql_constraints` | Standard list of tuples | `models.Constraint` class recommended | **Recommendation** -- old syntax still works but new pattern preferred |
+| Domain expressions | `from odoo.osv import expression` + `expression.OR(...)` | `from odoo.domains import Domain` + `Domain.OR(...)` | **New API** -- old import still works but new `Domain` class preferred |
+
+### `name_get()` fully removed -- use `_compute_display_name()`
+
+**WRONG (causes error in 19.0):**
+```python
+def name_get(self):
+    result = []
+    for record in self:
+        result.append((record.id, f"[{record.code}] {record.name}"))
+    return result
+```
+
+**CORRECT (19.0):**
+```python
+@api.depends("code", "name")
+def _compute_display_name(self):
+    for record in self:
+        record.display_name = f"[{record.code}] {record.name}"
+```
+
+**Why:** `name_get()` was deprecated in 18.0 and fully removed in 19.0. Use the `display_name` computed field with `_compute_display_name()` instead. This method is a standard compute method decorated with `@api.depends`.
+
+### `read_group()` replaced by `_read_group()` and `formatted_read_group()`
+
+**WRONG (fails in 19.0):**
+```python
+results = self.env["sale.order"].read_group(
+    domain=[("state", "=", "sale")],
+    fields=["partner_id", "amount_total:sum"],
+    groupby=["partner_id"],
+)
+```
+
+**CORRECT (19.0):**
+```python
+results = self.env["sale.order"]._read_group(
+    domain=[("state", "=", "sale")],
+    groupby=["partner_id"],
+    aggregates=["amount_total:sum"],
+)
+```
+
+**Why:** The public `read_group()` method was replaced. Use `_read_group()` for internal Python code or `formatted_read_group()` when you need the legacy dict-style output format.
+
+### `models.Constraint` recommended for SQL constraints
+
+**Old pattern (still works):**
+```python
+_sql_constraints = [
+    ("code_unique", "UNIQUE(code)", "The code must be unique."),
+]
+```
+
+**New pattern (19.0 recommended):**
+```python
+from odoo import models
+
+_constraints = [
+    models.Constraint(
+        "UNIQUE(code)",
+        "The code must be unique.",
+    ),
+]
+```
+
+**Why:** The `models.Constraint` class provides a more structured and extensible way to define SQL constraints. The old `_sql_constraints` list-of-tuples pattern still works but the new class is preferred for new modules.
+
+### Domain expression helpers
+
+**Old pattern:**
+```python
+from odoo.osv import expression
+
+domain = expression.OR([domain1, domain2])
+domain = expression.AND([domain1, domain2])
+```
+
+**New pattern (19.0):**
+```python
+from odoo.domains import Domain
+
+domain = Domain.OR([domain1, domain2])
+domain = Domain.AND([domain1, domain2])
+```
+
+**Why:** The new `Domain` class provides a cleaner API for domain manipulation. The old `expression` module still works but the new import is preferred.
+
 ---
-*Odoo 17.0/18.0 Models & ORM -- loaded by model generation agents*
+*Odoo 17.0/18.0/19.0 Models & ORM -- loaded by model generation agents*

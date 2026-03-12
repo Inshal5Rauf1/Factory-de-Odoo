@@ -125,7 +125,7 @@ def create_versioned_renderer(version: str) -> Environment:
     then shared directory. Templates in the version directory override shared ones.
 
     Args:
-        version: Odoo version string (e.g., "17.0", "18.0").
+        version: Odoo version string (e.g., "17.0", "18.0", "19.0").
 
     Returns:
         Configured Jinja2 Environment with versioned template loading.
@@ -149,8 +149,8 @@ def create_renderer(template_dir: Path) -> Environment:
     Uses StrictUndefined to fail loudly on missing template variables (Pitfall 1 prevention).
     Registers custom filters for Odoo-specific name conversions.
 
-    If template_dir is the base templates directory (containing 17.0/, 18.0/, shared/
-    subdirectories), falls back to create_versioned_renderer("17.0") for backward
+    If template_dir is the base templates directory (containing 17.0/, 18.0/, 19.0/, shared/
+    subdirectories), falls back to create_versioned_renderer("19.0") for backward
     compatibility after the template reorganization in Phase 9.
 
     Args:
@@ -162,7 +162,7 @@ def create_renderer(template_dir: Path) -> Environment:
     # Detect if this is the base templates dir (reorganized layout)
     base_templates = Path(__file__).parent / "templates"
     if template_dir.resolve() == base_templates.resolve():
-        return create_versioned_renderer("17.0")
+        return create_versioned_renderer("19.0")
 
     env = Environment(
         loader=FileSystemLoader(str(template_dir)),
@@ -1188,13 +1188,13 @@ def render_module(
                 sorted(affected_stages),
             )
 
-    env = create_versioned_renderer(spec.get("odoo_version", "17.0"))
+    env = create_versioned_renderer(spec.get("odoo_version", "19.0"))
 
     # Phase 54: GenerationSession replaces artifact_state tracking
     session = GenerationSession(
         module_name=spec.get("module_name", "unknown"),
         spec_sha256=compute_spec_sha256(spec),
-        odoo_version=spec.get("odoo_version", "17.0"),
+        odoo_version=spec.get("odoo_version", "19.0"),
     )
 
     # Phase 54: Resume spec SHA256 check
@@ -1220,7 +1220,7 @@ def render_module(
             spec, _c7_client,
             cache_dir=_c7_cache,
             fresh=fresh_context7,
-            odoo_version=spec.get("odoo_version", "17.0"),
+            odoo_version=spec.get("odoo_version", "19.0"),
         )
     module_name = spec["module_name"]
     module_dir = output_dir / module_name

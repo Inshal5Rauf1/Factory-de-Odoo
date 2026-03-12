@@ -63,7 +63,7 @@ _MANIFEST_KEY_DEFAULTS: dict[str, str] = {
     "author": "",
     "website": "",
     "category": "Uncategorized",
-    "version": "17.0.1.0.0",
+    "version": "19.0.1.0.0",
     "application": "False",
     # "installable" intentionally omitted — True is the default (C8116)
 }

@@ -1,6 +1,6 @@
-# Odoo 17.0 Actions & Menus Rules
+# Odoo 17.0/18.0/19.0 Actions & Menus Rules
 
-> Category: Actions | Target: Odoo 17.0 | Load with: MASTER.md + actions.md
+> Category: Actions | Target: Odoo 17.0/18.0/19.0 | Load with: MASTER.md + actions.md
 
 ## Window Actions
 
@@ -244,3 +244,10 @@ Omitting `sequence` on menus causes unpredictable ordering that changes across m
 ### Action external ID naming
 
 Follow the convention: `{model_underscore}_action` for the primary action. For secondary actions: `{model_underscore}_action_{qualifier}` (e.g., `library_book_action_available`).
+
+## Changed in 19.0
+
+No additional action or menu changes in 19.0 beyond those introduced in 18.0. The `view_mode` values, server action variables, binding types, and menu patterns remain the same as in 18.0 (`list,form` for actions, `records` variable for server actions).
+
+---
+*Odoo 17.0/18.0/19.0 Actions & Menus -- loaded by action generation agents*

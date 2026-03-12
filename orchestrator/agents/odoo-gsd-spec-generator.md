@@ -46,8 +46,8 @@ The output must conform to this exact structure:
 {
   "module_name": "{MODULE_NAME}",
   "module_title": "{MODULE_NAME in Title Case}",
-  "odoo_version": "17.0",
-  "version": "17.0.1.0.0",
+  "odoo_version": "19.0",
+  "version": "19.0.1.0.0",
   "summary": "",
   "author": "",
   "website": "",

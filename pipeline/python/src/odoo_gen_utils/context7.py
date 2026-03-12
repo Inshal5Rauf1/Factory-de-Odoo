@@ -324,7 +324,7 @@ def _cache_key(query: str, odoo_version: str) -> str:
 
     Args:
         query:        The Context7 query string.
-        odoo_version: Target Odoo version (e.g. "17.0").
+        odoo_version: Target Odoo version (e.g. "17.0", "19.0").
 
     Returns:
         Hex-encoded SHA256 hash string.
@@ -388,7 +388,7 @@ def context7_enrich(
     *,
     cache_dir: Path | None = None,
     fresh: bool = False,
-    odoo_version: str = "17.0",
+    odoo_version: str = "19.0",
 ) -> dict[str, str]:
     """Pre-fetch Context7 docs for detected patterns and return c7_hints dict.
 
@@ -404,7 +404,7 @@ def context7_enrich(
         client:       Context7Client instance (None = skip).
         cache_dir:    Optional disk cache directory for response caching.
         fresh:        If True, bypass cache and force re-query.
-        odoo_version: Target Odoo version for cache keying (default "17.0").
+        odoo_version: Target Odoo version for cache keying (default "19.0").
 
     Returns:
         Dict mapping pattern names to truncated documentation hint strings.

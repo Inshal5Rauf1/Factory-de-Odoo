@@ -144,7 +144,7 @@ def generate_pot(module_name: str, strings: list[tuple[str, str, int]]) -> str:
         f"# * {module_name}\n"
         'msgid ""\n'
         'msgstr ""\n'
-        f'"Project-Id-Version: Odoo Server 17.0\\n"\n'
+        f'"Project-Id-Version: Odoo Server 19.0\\n"\n'
         f'"Report-Msgid-Bugs-To: \\n"\n'
         f'"POT-Creation-Date: {timestamp}\\n"\n'
         f'"PO-Revision-Date: \\n"\n'

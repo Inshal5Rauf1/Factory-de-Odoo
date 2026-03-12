@@ -52,7 +52,7 @@ success "uv found: $(uv --version)"
 # Check Python 3.12
 if ! uv python find 3.12 &>/dev/null; then
     error "Python 3.12 not found."
-    error "Odoo 17.0 requires Python 3.12 (3.13+ is not supported)."
+    error "Factory de Odoo requires Python 3.12 (works across Odoo 17.0-19.0)."
     error ""
     error "Install Python 3.12:"
     error "  uv python install 3.12"

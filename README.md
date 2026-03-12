@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Odoo-17.0%20%7C%2018.0-875A7B?logo=odoo&logoColor=white" alt="Odoo Version"/>
+  <img src="https://img.shields.io/badge/Odoo-17.0%20%7C%2018.0%20%7C%2019.0-875A7B?logo=odoo&logoColor=white" alt="Odoo Version"/>
   <img src="https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white" alt="Node.js"/>
   <img src="https://img.shields.io/badge/Tests-3027%20passing-brightgreen" alt="Tests"/>
@@ -89,13 +89,13 @@ Most code generators produce isolated modules. Factory de Odoo maintains a **Mod
 
 | Requirement | Version | Purpose |
 |-------------|---------|---------|
-| **Python** | 3.12 (not 3.13+) | Pipeline rendering, validation |
+| **Python** | 3.12 (Odoo 17.0-19.0 compatible) | Pipeline rendering, validation |
 | **Node.js** | 20+ | Orchestrator CLI |
 | **Docker + Compose v2** | Latest | Module validation |
 | **uv** | Latest | Python package manager |
 | **An AI coding assistant** | Any | Claude Code, Gemini, Codex, or OpenCode |
 
-> **Why Python 3.12?** Odoo 17.0 supports 3.10-3.12 only. Python 3.13+ introduces breaking changes in `ast` and `importlib` that cause validation failures.
+> **Why Python 3.12?** Odoo 17.0-19.0 supports 3.10-3.12. Python 3.13+ introduces breaking changes in `ast` and `importlib` that cause validation failures.
 
 ### Installation
 
@@ -123,7 +123,7 @@ The orchestrator needs to know where the pipeline lives. In your ERP project's `
 {
   "odoo": {
     "gen_path": "/path/to/Factory-de-Odoo/pipeline",
-    "odoo_version": "17.0",
+    "odoo_version": "19.0",
     "edition": "community",
     "addons_path": "./addons"
   }
@@ -176,8 +176,8 @@ Factory-de-Odoo/
     +-- agents/                   # 8 specialized generation agents
     +-- commands/                 # 13 slash commands (/odoo-gen:*)
     +-- knowledge/                # 13 Odoo knowledge files (80+ examples)
-    +-- templates/                # 24 Jinja2 templates (17.0 / 18.0 / shared)
-    +-- docker/                   # Odoo 17 + PostgreSQL 16 validation
+    +-- templates/                # 24 Jinja2 templates (17.0 / 18.0 / 19.0 / shared)
+    +-- docker/                   # Odoo 19 + PostgreSQL 16 validation
     +-- python/tests/             # 2284 tests (pytest)
 ```
 
@@ -330,19 +330,19 @@ uv run pytest tests/ --cov=odoo_gen_utils --cov-report=html
 | `ODOO_GEN_PATH` | No | Config file | Path to pipeline directory |
 | `GITHUB_TOKEN` | No | — | GitHub API for OCA search (10 req/min) |
 | `CONTEXT7_API_KEY` | No | — | Context7 API for live Odoo docs |
-| `ODOO_VERSION` | No | `17.0` | Target Odoo version |
+| `ODOO_VERSION` | No | `19.0` | Target Odoo version |
 | `ODOO_DEV_PORT` | No | `8069` | Dev instance port |
 
 ---
 
 ## Dev Instance
 
-A persistent Odoo 17 CE development instance for testing:
+A persistent Odoo 19 CE development instance for testing:
 
 ```bash
 cd pipeline/
 
-# Start Odoo 17 + PostgreSQL 16
+# Start Odoo 19 + PostgreSQL 16
 scripts/odoo-dev.sh start
 
 # Access at http://localhost:8069
@@ -391,7 +391,7 @@ Extend the knowledge base by adding `.md` files to `knowledge/custom/`.
 | Total Tests | **3,027** (747 orchestrator + 2,284 pipeline) |
 | Python LOC | **23,500+** |
 | CJS Modules | **43** |
-| Jinja2 Templates | **24** (17.0 / 18.0 / shared) |
+| Jinja2 Templates | **24** (17.0 / 18.0 / 19.0 / shared) |
 | AI Agents | **28** (20 orchestrator + 8 pipeline) |
 | Slash Commands | **43** (30 orchestrator + 13 pipeline) |
 | Knowledge Files | **13** (80+ example pairs) |

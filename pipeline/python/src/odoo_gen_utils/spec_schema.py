@@ -514,7 +514,7 @@ class ModuleSpec(BaseModel):
 
     module_name: str
     module_title: str = ""
-    odoo_version: str = "17.0"
+    odoo_version: str = "19.0"
     version: str = ""
     summary: str = ""
     author: str = ""

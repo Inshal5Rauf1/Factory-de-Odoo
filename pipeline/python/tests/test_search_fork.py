@@ -38,14 +38,14 @@ class TestCloneOcaModule:
         calls = mock_run.call_args_list  # type: ignore[union-attr]
         assert len(calls) == 3
 
-        # First call: git clone --no-checkout --filter=blob:none --sparse -b 17.0
+        # First call: git clone --no-checkout --filter=blob:none --sparse -b 19.0
         clone_args = calls[0][0][0]
         assert "clone" in clone_args
         assert "--no-checkout" in clone_args
         assert "--filter=blob:none" in clone_args
         assert "--sparse" in clone_args
         assert "-b" in clone_args
-        assert "17.0" in clone_args
+        assert "19.0" in clone_args
         assert "https://github.com/OCA/sale-workflow.git" in clone_args
 
         # Second call: git sparse-checkout set {module_name}
@@ -57,7 +57,7 @@ class TestCloneOcaModule:
         # Third call: git checkout {branch}
         checkout_args = calls[2][0][0]
         assert "checkout" in checkout_args
-        assert "17.0" in checkout_args
+        assert "19.0" in checkout_args
 
     @patch("odoo_gen_utils.search.fork.subprocess.run")
     def test_clone_returns_module_path(

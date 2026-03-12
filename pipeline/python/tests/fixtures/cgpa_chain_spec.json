@@ -6,7 +6,7 @@
   "website": "https://test.example.com",
   "license": "LGPL-3",
   "category": "Education",
-  "odoo_version": "17.0",
+  "odoo_version": "19.0",
   "depends": ["base"],
   "application": true,
   "models": [

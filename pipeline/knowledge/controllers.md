@@ -1,6 +1,6 @@
-# Odoo 17.0 Controller Rules
+# Odoo 17.0/18.0/19.0 Controller Rules
 
-> Category: Controllers | Target: Odoo 17.0 | Load with: MASTER.md + controllers.md
+> Category: Controllers | Target: Odoo 17.0/18.0/19.0 | Load with: MASTER.md + controllers.md
 
 ## Controller Class
 
@@ -262,3 +262,37 @@ return "OK"  # No Content-Type, no status code
 ```python
 return http.request.make_response("OK", headers=[("Content-Type", "text/plain")])
 ```
+
+## Changed in 19.0
+
+| What Changed | Before (18.0) | Now (19.0) | Impact |
+|-------------|---------------|------------|--------|
+| `type="json"` | Valid route type for JSON-RPC | **Renamed** to `type="jsonrpc"` | **Breaking** -- `type="json"` causes error |
+| Other route params | Same as 17.0/18.0 | Same, unchanged | No other breaking changes |
+
+### `type="json"` renamed to `type="jsonrpc"`
+
+**WRONG (causes error in 19.0):**
+```python
+@http.route("/api/books/list", auth="user", type="json")
+def api_books(self, **kwargs):
+    books = http.request.env["library.book"].search_read(
+        [], fields=["name", "isbn", "state"]
+    )
+    return books
+```
+
+**CORRECT (19.0):**
+```python
+@http.route("/api/books/list", auth="user", type="jsonrpc")
+def api_books(self, **kwargs):
+    books = http.request.env["library.book"].search_read(
+        [], fields=["name", "isbn", "state"]
+    )
+    return books
+```
+
+**Why:** Odoo 19 renamed the route type from `"json"` to `"jsonrpc"` for clarity, since the endpoint follows the JSON-RPC protocol (not plain JSON). The `type="http"` value is unchanged. All controllers using `type="json"` must be updated.
+
+---
+*Odoo 17.0/18.0/19.0 Controllers -- loaded by controller generation agents*

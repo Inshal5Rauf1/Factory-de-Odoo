@@ -30,7 +30,7 @@ def clone_oca_module(
     repo_name: str,
     module_name: str,
     output_dir: Path,
-    branch: str = "17.0",
+    branch: str = "19.0",
 ) -> Path:
     """Clone a single OCA module via git sparse checkout.
 
@@ -41,7 +41,7 @@ def clone_oca_module(
         repo_name: OCA repository name (e.g., "sale-workflow").
         module_name: Module directory name within the repo (e.g., "sale_order_type").
         output_dir: Parent directory where the clone will be created.
-        branch: Git branch to clone (default: "17.0").
+        branch: Git branch to clone (default: "19.0").
 
     Returns:
         Path to the cloned module directory (clone_dir / module_name).

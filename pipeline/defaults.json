@@ -1,6 +1,6 @@
 {
   "odoo": {
-    "odoo_version": "17.0",
+    "odoo_version": "19.0",
     "edition": "community",
     "output_dir": ".",
     "license": "LGPL-3",

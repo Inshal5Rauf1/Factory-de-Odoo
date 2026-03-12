@@ -1,8 +1,8 @@
 {
   "module_name": "integration_test",
   "module_title": "Integration Test Module",
-  "odoo_version": "17.0",
-  "version": "17.0.1.0.0",
+  "odoo_version": "19.0",
+  "version": "19.0.1.0.0",
   "summary": "E2E integration test for schema alignment verification",
   "author": "Test Author",
   "website": "https://example.com",

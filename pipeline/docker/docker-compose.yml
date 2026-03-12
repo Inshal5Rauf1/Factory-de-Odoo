@@ -1,4 +1,4 @@
-# Ephemeral Odoo 17.0 + PostgreSQL 16 for module validation
+# Ephemeral Odoo 19.0 + PostgreSQL 16 for module validation
 # Usage: MODULE_PATH=/path/to/module MODULE_NAME=module_name docker compose up
 services:
   db:
@@ -16,7 +16,7 @@ services:
       - /var/lib/postgresql/data
 
   odoo:
-    image: odoo:17
+    image: odoo:19
     depends_on:
       db:
         condition: service_healthy

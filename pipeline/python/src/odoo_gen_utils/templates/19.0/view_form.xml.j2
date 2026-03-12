@@ -1,0 +1,241 @@
+{# view_form.xml.j2 -- Odoo 19.0 form, list, and search views for a model #}
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Form View -->
+    <record id="view_{{ model_name | to_xml_id }}_form" model="ir.ui.view">
+        <field name="name">{{ model_name }}.view.form</field>
+        <field name="model">{{ model_name }}</field>
+        <field name="arch" type="xml">
+            <form string="{{ model_description }}">
+{% if state_field or model_reports or has_approval or has_document_verification %}
+                <header>
+                    <!-- Action buttons enriched by odoo-view-gen in generate.md Wave 2 -->
+{% for wizard in wizards %}
+{% if wizard.target_model == model_name %}
+                    <button name="action_open_{{ wizard.name | to_xml_id }}"
+                            string="{{ wizard.button_label | default('Open ' + (wizard.name | replace('.', ' ') | title)) }}"
+                            type="object"
+                            class="btn-primary"
+{% if wizard.get('trigger_state') %}
+                            invisible="{{ state_field.name }} != '{{ wizard.trigger_state }}'"/>
+{% else %}
+                            />
+{% endif %}
+{% endif %}
+{% endfor %}
+{% for report in model_reports %}
+                    <button name="%(report_{{ module_name }}_{{ report.xml_id }})d"
+                            string="{{ report.button_label | default('Print') }}"
+                            type="action"
+                            class="btn-secondary"/>
+{% endfor %}
+{% if has_approval %}
+{% if approval_submit_action %}
+                    <button name="{{ approval_submit_action.name }}"
+                            string="Submit"
+                            type="object"
+                            class="btn-primary"
+                            invisible="{{ approval_state_field_name }} != 'draft'"/>
+{% endif %}
+{% for action in approval_action_methods %}
+                    <button name="{{ action.name }}"
+                            string="{{ action.button_label }}"
+                            type="object"
+                            class="btn-primary"
+                            invisible="{{ approval_state_field_name }} != '{{ action.from_state }}'"
+                            groups="{{ action.group_xml_id }}"/>
+{% endfor %}
+{% if approval_reject_action %}
+                    <button name="action_reject"
+                            string="Reject"
+                            type="object"
+                            class="btn-danger"
+                            invisible="{{ approval_state_field_name }} not in {{ reject_allowed_from }}"/>
+{% endif %}
+{% if approval_reset_action %}
+                    <button name="action_reset_to_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            invisible="{{ approval_state_field_name }} not in ['{{ on_reject }}']"/>
+{% endif %}
+{% endif %}
+{% if has_document_verification %}
+{% for action in document_verification_actions %}
+                    <button name="{{ action.name }}"
+                            string="{{ action.button_label }}"
+                            type="object"
+                            class="{{ action.button_class | default('btn-primary') }}"
+                            invisible="verification_state != '{{ action.visible_when }}'"
+                            groups="{{ action.group_xml_id }}"/>
+{% endfor %}
+{% endif %}
+{% if has_document_verification %}
+                    <field name="verification_state" widget="statusbar"/>
+{% endif %}
+{% if state_field %}
+                    <field name="{{ state_field.name }}" widget="statusbar"
+                           statusbar_visible="{{ state_field.selection | map(attribute=0) | join(',') }}"/>
+{% endif %}
+                </header>
+{% endif %}
+                <sheet>
+                    <div class="oe_title">
+{% for field in view_fields | default(fields) %}
+{% if field.name == 'name' %}
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Enter name..."/>
+                        </h1>
+{% endif %}
+{% endfor %}
+                    </div>
+{% if has_document_versioning %}
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_versions"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-history">
+                            <field name="version" widget="statinfo" string="Version"/>
+                        </button>
+                    </div>
+{% endif %}
+                    <group>
+                        <group>
+{% for field in view_fields | default(fields) %}
+{% set is_state = state_field and field.name == state_field.name %}
+{% if not is_state and field.name != 'name' and field.type not in ('One2many', 'Html') %}
+{% if loop.index0 is even or loop.index0 < 2 %}
+{% if field.name in sequence_field_names %}
+                            <field name="{{ field.name }}"{% if state_field %} readonly="{{ state_field.name }} != 'draft'"{% endif %}/>
+{% elif field.type == 'Many2one' %}
+{% if field.no_create is defined and field.no_create %}
+                            <field name="{{ field.name }}"
+                                   options="{'no_create': True}"
+                            />
+{% else %}
+                            <field name="{{ field.name }}"
+                            />
+{% endif %}
+{% else %}
+                            <field name="{{ field.name }}"
+                            />
+{% endif %}
+{% endif %}
+{% endif %}
+{% endfor %}
+                        </group>
+                        <group>
+{% for field in view_fields | default(fields) %}
+{% set is_state = state_field and field.name == state_field.name %}
+{% if not is_state and field.name != 'name' and field.type not in ('One2many', 'Html') %}
+{% if loop.index0 is odd and loop.index0 >= 2 %}
+{% if field.name in sequence_field_names %}
+                            <field name="{{ field.name }}"{% if state_field %} readonly="{{ state_field.name }} != 'draft'"{% endif %}/>
+{% elif field.type == 'Many2one' %}
+{% if field.no_create is defined and field.no_create %}
+                            <field name="{{ field.name }}"
+                                   options="{'no_create': True}"
+                            />
+{% else %}
+                            <field name="{{ field.name }}"
+                            />
+{% endif %}
+{% else %}
+                            <field name="{{ field.name }}"
+                            />
+{% endif %}
+{% endif %}
+{% endif %}
+{% endfor %}
+                        </group>
+                    </group>
+{% for field in view_fields | default(fields) %}
+{% if field.type == 'Html' %}
+                    <notebook>
+                        <page string="{{ field.string | default(field.name | replace('_', ' ') | title) }}">
+                            <field name="{{ field.name }}" widget="html"/>
+                        </page>
+                    </notebook>
+{% endif %}
+{% endfor %}
+{% for field in view_fields | default(fields) %}
+{% if field.type == 'One2many' %}
+                    <notebook>
+                        <page string="{{ field.string | default(field.name | replace('_', ' ') | title) }}">
+                            <field name="{{ field.name }}">
+{% if field.editable is defined and field.editable %}
+                                <list editable="{{ field.editable }}">
+{% else %}
+                                <list>
+{% endif %}
+{% for submodel in models %}
+{% if submodel.name == field.comodel_name %}
+{% for subfield in submodel.fields %}
+{% if subfield.name != field.inverse_name %}
+                                    <field name="{{ subfield.name }}"/>
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+{% endif %}
+{% endfor %}
+                </sheet>
+{% if chatter %}
+                <chatter/>
+{% endif %}
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="view_{{ model_name | to_xml_id }}_list" model="ir.ui.view">
+        <field name="name">{{ model_name }}.view.list</field>
+        <field name="model">{{ model_name }}</field>
+        <field name="arch" type="xml">
+            <list string="{{ model_description }}">
+{% for field in view_fields | default(fields) %}
+{% if field.type not in ('One2many', 'Html', 'Text') %}
+{% if loop.index0 < 6 %}
+                <field name="{{ field.name }}"{% if loop.index0 >= 4 %} optional="hide"{% endif %}/>
+{% endif %}
+{% endif %}
+{% endfor %}
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_{{ model_name | to_xml_id }}_search" model="ir.ui.view">
+        <field name="name">{{ model_name }}.view.search</field>
+        <field name="model">{{ model_name }}</field>
+        <field name="arch" type="xml">
+            <search string="{{ model_description }}">
+{% for field in view_fields | default(fields) %}
+{% if field.type in ('Char', 'Many2one') %}
+                <field name="{{ field.name }}"/>
+{% endif %}
+{% endfor %}
+{% for field in view_fields | default(fields) %}
+{% if field.type == 'Selection' %}
+                <filter string="Group by {{ field.string | default(field.name | replace('_', ' ') | title) }}"
+                        name="group_by_{{ field.name }}"
+                        context="{'group_by': '{{ field.name }}'}"/>
+{% endif %}
+{% endfor %}
+{% for field in view_fields | default(fields) %}
+{% if field.type == 'Many2one' %}
+                <filter string="Group by {{ field.string | default(field.name | replace('_', ' ') | title) }}"
+                        name="group_by_{{ field.name }}"
+                        context="{'group_by': '{{ field.name }}'}"/>
+{% endif %}
+{% endfor %}
+            </search>
+        </field>
+    </record>
+
+</odoo>

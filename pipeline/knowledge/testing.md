@@ -1,6 +1,6 @@
-# Odoo 17.0 Testing Rules
+# Odoo 17.0/18.0/19.0 Testing Rules
 
-> Category: Testing | Target: Odoo 17.0 | Load with: MASTER.md + testing.md
+> Category: Testing | Target: Odoo 17.0/18.0/19.0 | Load with: MASTER.md + testing.md
 
 ## Test Base Classes
 
@@ -373,3 +373,10 @@ If `tests/__init__.py` does not import your test file, Odoo will silently skip i
 | Rule | Description | Fix |
 |------|-------------|-----|
 | W8106 | Missing test file for model | Add `tests/test_{model_name}.py` for each model |
+
+## Changed in 19.0
+
+No breaking changes to the testing framework in 19.0. The test base classes (`TransactionCase`, `HttpCase`), `setUpClass` pattern, `Form` helper, and test tags remain the same. Test code should be updated to use 19.0 ORM patterns (e.g., `_compute_display_name()` instead of `name_get()`, `_read_group()` instead of `read_group()`).
+
+---
+*Odoo 17.0/18.0/19.0 Testing -- loaded by test generation agents*

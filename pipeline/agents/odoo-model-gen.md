@@ -1,6 +1,6 @@
 ---
 name: odoo-model-gen
-description: Generates Odoo 17.0/18.0 model Python files with fields, computed fields, onchange handlers, and constraints. Activated in Phase 5.
+description: Generates Odoo 17.0/18.0/19.0 model Python files with fields, computed fields, onchange handlers, and constraints. Activated in Phase 5.
 tools: Read, Write, Bash, Glob, Grep
 color: blue
 ---

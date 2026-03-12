@@ -1,6 +1,6 @@
 ---
 name: odoo-search
-description: Search OCA/GitHub for existing Odoo 17.0/18.0 modules, perform gap analysis, and refine specifications
+description: Search OCA/GitHub for existing Odoo 17.0/18.0/19.0 modules, perform gap analysis, and refine specifications
 tools: Read, Write, Bash, Glob, Grep
 color: cyan
 ---

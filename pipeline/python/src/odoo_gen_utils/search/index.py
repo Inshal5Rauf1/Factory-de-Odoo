@@ -196,7 +196,7 @@ def build_oca_index(
     """Crawl OCA GitHub repos and upsert module metadata into ChromaDB.
 
     Creates a ChromaDB persistent collection, iterates over all OCA
-    organization repos, checks for a 17.0 branch, parses module manifests,
+    organization repos, checks for a 19.0 branch, parses module manifests,
     and stores entries with metadata.
 
     Args:
@@ -233,14 +233,14 @@ def build_oca_index(
         if idx % 10 == 0 and idx > 0:
             _check_rate_limit(gh)
 
-        # Try to get 17.0 branch; skip repo if not found
+        # Try to get 19.0 branch; skip repo if not found
         try:
-            repo.get_branch("17.0")
+            repo.get_branch("19.0")
         except RateLimitExceededException:
             # Rate limit hit on get_branch -- wait and retry once
             _check_rate_limit(gh)
             try:
-                repo.get_branch("17.0")
+                repo.get_branch("19.0")
             except (GithubException, Exception):
                 if progress_callback:
                     progress_callback(idx + 1, total_repos)
@@ -260,9 +260,9 @@ def build_oca_index(
                     progress_callback(idx + 1, total_repos)
                 continue
 
-        # Get root contents of 17.0 branch
+        # Get root contents of 19.0 branch
         try:
-            contents = repo.get_contents("", ref="17.0")
+            contents = repo.get_contents("", ref="19.0")
         except Exception:
             if progress_callback:
                 progress_callback(idx + 1, total_repos)
@@ -279,7 +279,7 @@ def build_oca_index(
 
             # Check for __manifest__.py in the module directory
             try:
-                manifest_file = repo.get_contents(f"{module_name}/__manifest__.py", ref="17.0")
+                manifest_file = repo.get_contents(f"{module_name}/__manifest__.py", ref="19.0")
             except Exception:
                 continue
 

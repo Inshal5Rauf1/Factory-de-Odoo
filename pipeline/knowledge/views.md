@@ -1,4 +1,4 @@
-# Odoo 17.0 View Rules
+# Odoo 17.0/18.0/19.0 View Rules
 
 > Loaded alongside MASTER.md. Covers form, tree, search views, modifiers,
 > actions, menus, external IDs, statusbar, and Odoo 17 view changes.
@@ -451,5 +451,56 @@ Options: `editable="bottom"` (new rows at bottom) or `editable="top"` (new rows 
 
 **Why:** The `<chatter/>` shorthand renders all mail components automatically. In 18.0, the verbose form is unnecessary and adds XML noise.
 
+## Changed in 19.0
+
+| What Changed | Before (18.0) | Now (19.0) | Impact |
+|-------------|---------------|------------|--------|
+| Kanban card template | `t-name="kanban-box"` | `t-name="card"` | **Breaking** -- kanban views using old template name fail to render |
+| QWeb `t-esc` | Available | **Deprecated** -- use `t-out` | **Deprecation warning** -- `t-esc` still works but triggers warnings |
+| `<list>` tag | Valid (introduced in 18.0) | Same, unchanged | No change from 18.0 |
+| `<chatter/>` shorthand | Preferred | Same, unchanged | No change from 18.0 |
+
+### Kanban card template: `kanban-box` replaced by `card`
+
+**WRONG (fails in 19.0):**
+```xml
+<kanban>
+    <templates>
+        <t t-name="kanban-box">
+            <div class="oe_kanban_card">
+                <field name="name"/>
+            </div>
+        </t>
+    </templates>
+</kanban>
+```
+
+**CORRECT (19.0):**
+```xml
+<kanban>
+    <templates>
+        <t t-name="card">
+            <field name="name"/>
+        </t>
+    </templates>
+</kanban>
+```
+
+**Why:** Odoo 19 renamed the kanban card template from `kanban-box` to `card` and simplified the card structure. The wrapping `<div class="oe_kanban_card">` is no longer needed -- the card container is provided automatically.
+
+### QWeb: `t-esc` deprecated -- use `t-out`
+
+**WRONG (triggers deprecation in 19.0):**
+```xml
+<span t-esc="record.name.value"/>
+```
+
+**CORRECT (19.0):**
+```xml
+<span t-out="record.name.value"/>
+```
+
+**Why:** `t-out` is the modern replacement for both `t-esc` (escaped output) and `t-raw` (raw HTML output). In 19.0, `t-esc` triggers deprecation warnings. `t-out` escapes by default and supports `t-out` with `Markup()` for safe HTML.
+
 ---
-*Odoo 17.0/18.0 Views -- loaded by view generation agents*
+*Odoo 17.0/18.0/19.0 Views -- loaded by view generation agents*

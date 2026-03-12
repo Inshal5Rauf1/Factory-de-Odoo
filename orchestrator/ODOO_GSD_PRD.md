@@ -402,7 +402,7 @@ GSD's `.planning/config.json` schema is extended:
     "scope_levels": ["institution", "campus", "faculty", "department", "program"],
     "notification_channels": ["email", "whatsapp"],
     "canvas_integration": true,
-    "docker_image": "odoo:17.0",
+    "docker_image": "odoo:19.0",
     "addons_path": "./addons",
     "test_db": "odoo_test",
     "python_path": "python3"

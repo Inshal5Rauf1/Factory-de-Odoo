@@ -1,6 +1,6 @@
 ---
 name: odoo-test-gen
-description: Generates Odoo 17.0/18.0 test files. Full scope: computed, constraint, onchange, CRUD write/unlink, access rights, workflow transitions.
+description: Generates Odoo 17.0/18.0/19.0 test files. Full scope: computed, constraint, onchange, CRUD write/unlink, access rights, workflow transitions.
 tools: Read, Write, Bash, Glob, Grep
 color: green
 ---

@@ -1,4 +1,4 @@
-# Odoo 17.0 Manifest Rules
+# Odoo 17.0/18.0/19.0 Manifest Rules
 
 > Loaded alongside MASTER.md. Covers `__manifest__.py` required keys, version format,
 > license, forbidden keys, data/demo lists, dependencies, and application flag.
@@ -301,5 +301,30 @@ Set `application: True` when:
 
 The `__manifest__.py` format is identical between 17.0 and 18.0. All required keys (`name`, `version`, `license`, `depends`, `data`, `installable`) remain the same. The only change is the version prefix number.
 
+## Changed in 19.0
+
+| What Changed | Before (18.0) | Now (19.0) | Impact |
+|-------------|---------------|------------|--------|
+| Version prefix | `18.0.X.Y.Z` | `19.0.X.Y.Z` | Update on migration |
+| Structural format | No changes | Same manifest structure | No breaking changes |
+
+### Version prefix is `19.0.X.Y.Z`
+
+**WRONG (19.0 module with 18.0 prefix):**
+```python
+"version": "18.0.1.0.0",
+```
+
+**CORRECT (19.0):**
+```python
+"version": "19.0.1.0.0",
+```
+
+**Why:** The Odoo version prefix must match the target Odoo version. OCA tools use the prefix to identify which Odoo version the module targets. Mismatched prefixes prevent publishing and may cause compatibility warnings.
+
+### No structural manifest changes in 19.0
+
+The `__manifest__.py` format is identical between 18.0 and 19.0. All required keys (`name`, `version`, `license`, `depends`, `data`, `installable`) remain the same. The only change is the version prefix number.
+
 ---
-*Odoo 17.0/18.0 Manifest -- loaded by scaffold and generation agents*
+*Odoo 17.0/18.0/19.0 Manifest -- loaded by scaffold and generation agents*

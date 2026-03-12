@@ -1,6 +1,6 @@
 ---
 name: odoo-security-gen
-description: Standalone Odoo 17.0/18.0 security specialist. Use for post-validation security fixes, custom record rules, and security audits. NOT in the generate.md pipeline (security is deterministic via Jinja2 templates).
+description: Standalone Odoo 17.0/18.0/19.0 security specialist. Use for post-validation security fixes, custom record rules, and security audits. NOT in the generate.md pipeline (security is deterministic via Jinja2 templates).
 tools: Read, Write, Bash, Glob, Grep
 color: blue
 ---

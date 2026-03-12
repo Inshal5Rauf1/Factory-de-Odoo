@@ -79,7 +79,7 @@ def render(template: str, output: str, var: tuple[str, ...], var_file: str | Non
 
 
 @main.command("list-templates")
-@click.option("--version", "odoo_version", default=None, help="Odoo version to list templates for (e.g., 17.0, 18.0)")
+@click.option("--version", "odoo_version", default=None, help="Odoo version to list templates for (e.g., 17.0, 18.0, 19.0)")
 def list_templates(odoo_version: str | None) -> None:
     """List all available Jinja2 templates.
 
@@ -999,7 +999,7 @@ def _handle_auth_failure(no_wizard: bool) -> None:
 def build_index(token: str | None, db_path: str | None, update: bool, no_wizard: bool) -> None:
     """Build or update the local ChromaDB index of OCA Odoo modules.
 
-    Crawls all OCA GitHub repositories with a 17.0 branch, extracts module
+    Crawls all OCA GitHub repositories with a 19.0 branch, extracts module
     metadata from __manifest__.py files, and stores embeddings in a local
     ChromaDB database for semantic search.
     """
@@ -1159,7 +1159,7 @@ def search_modules_cmd(
     type=click.Path(exists=True),
     help="Refined spec JSON for the extension module",
 )
-@click.option("--branch", default="17.0", help="Git branch to clone (default: 17.0)")
+@click.option("--branch", default="19.0", help="Git branch to clone (default: 19.0)")
 @click.option("--json", "json_output", is_flag=True, help="Output analysis as JSON")
 @click.option("--no-wizard", is_flag=True, help="Skip interactive setup guidance on auth failure")
 def extend_module_cmd(
@@ -1370,7 +1370,7 @@ def diff_spec(old_spec: str, new_spec: str, json_output: bool) -> None:
 @main.command("gen-migration")
 @click.argument("old_spec", type=click.Path(exists=True))
 @click.argument("new_spec", type=click.Path(exists=True))
-@click.option("--version", "migration_version", required=True, help="Migration version (e.g., 17.0.1.1.0)")
+@click.option("--version", "migration_version", required=True, help="Migration version (e.g., 19.0.1.1.0)")
 @click.option("--output-dir", default=".", type=click.Path(), help="Output directory for migration folder")
 def gen_migration(old_spec: str, new_spec: str, migration_version: str, output_dir: str) -> None:
     """Generate Odoo migration scripts from spec differences.

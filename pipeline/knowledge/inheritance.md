@@ -1,6 +1,6 @@
-# Odoo 17.0 Inheritance Rules
+# Odoo 17.0/18.0/19.0 Inheritance Rules
 
-> Category: Inheritance | Target: Odoo 17.0 | Load with: MASTER.md + inheritance.md
+> Category: Inheritance | Target: Odoo 17.0/18.0/19.0 | Load with: MASTER.md + inheritance.md
 
 ## Model Extension (`_inherit`)
 
@@ -374,3 +374,10 @@ If your xpath does not match any element, Odoo raises an error during module ins
 ### Setting `_name` when extending (without intent to create new model)
 
 If you set `_name = "res.partner"` alongside `_inherit = "res.partner"`, it is technically redundant. While it works, it can cause confusion. When extending, set ONLY `_inherit`.
+
+## Changed in 19.0
+
+No breaking changes to inheritance mechanisms in 19.0. Model extension (`_inherit`), delegation (`_inherits`), view inheritance (`inherit_id` + xpath), and priority all work the same as in 18.0. Note that overriding `name_get()` on inherited models will fail in 19.0 -- use `_compute_display_name()` instead (see models.md "Changed in 19.0").
+
+---
+*Odoo 17.0/18.0/19.0 Inheritance -- loaded by inheritance agents*

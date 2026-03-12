@@ -21,7 +21,7 @@ const EMPTY_REGISTRY = {
     version: 0,
     last_updated: null,
     modules_contributing: [],
-    odoo_version: '17.0',
+    odoo_version: '19.0',
   },
   models: {},
 };
