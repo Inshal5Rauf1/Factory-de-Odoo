@@ -21,8 +21,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Odoo-17.0%20%7C%2018.0%20%7C%2019.0-875A7B?logo=odoo&logoColor=white" alt="Odoo Version"/>
   <img src="https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white" alt="Python"/>
-  <img src="https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white" alt="Node.js"/>
-  <img src="https://img.shields.io/badge/Tests-3041%20passing-brightgreen" alt="Tests"/>
+  <img src="https://img.shields.io/badge/Tests-2953%20passing-brightgreen" alt="Tests"/>
   <img src="https://img.shields.io/badge/License-MIT%20%2F%20LGPL--3-blue" alt="License"/>
 </p>
 
@@ -34,10 +33,10 @@
 
 | Component | Role | Tech |
 |-----------|------|------|
-| **Orchestrator** (`orchestrator/`) | Decomposes an ERP PRD into 20+ modules, tracks cross-module state, drives sequential generation | Node.js (CJS), 797 tests |
-| **Pipeline** (`pipeline/`) | Pure library — renders individual Odoo modules from JSON specs using 9 AI agents, 51 Jinja2 templates, and Docker validation | Python 3.12, 2,244 tests |
+| **Orchestrator** (`orchestrator/`) | Decomposes an ERP PRD into 20+ modules, tracks cross-module state, drives sequential generation | Python 3.12 (`amil_utils.orchestrator`), 485 tests |
+| **Pipeline** (`pipeline/`) | Pure library — renders individual Odoo modules from JSON specs using 9 AI agents, 60 Jinja2 templates, and Docker validation | Python 3.12, 2,468 tests |
 
-**Combined:** 3,041 tests &bull; 24,300+ Python LOC &bull; 23 CJS modules &bull; 51 Jinja2 templates &bull; 28 AI agents &bull; 46 slash commands &bull; 12 knowledge files
+**Combined:** 2,953 tests &bull; 33,200+ Python LOC &bull; 27 orchestrator modules &bull; 60 Jinja2 templates &bull; 28 AI agents &bull; 46 slash commands &bull; 12 knowledge files
 
 ---
 
@@ -59,7 +58,7 @@
                            |
               +------------v-----------+
               |       PIPELINE         |  9 agents generate code
-              | (Single-Module Belt)   |  51 Jinja2 templates render
+              | (Single-Module Belt)   |  60 Jinja2 templates render
               +------------+-----------+  Docker validates output
                            |
               +------------v-----------+
@@ -89,8 +88,7 @@ Most code generators produce isolated modules. Factory de Odoo maintains a **Mod
 
 | Requirement | Version | Purpose |
 |-------------|---------|---------|
-| **Python** | 3.12 | Pipeline rendering, validation |
-| **Node.js** | 20+ | Orchestrator CLI |
+| **Python** | 3.12 | Orchestrator CLI and pipeline |
 | **Docker + Compose v2** | Latest | Module validation |
 | **uv** | Latest | Python package manager |
 | **An AI coding assistant** | Claude Code, Gemini CLI, Codex, or OpenCode | Drives the commands |
@@ -106,17 +104,7 @@ git clone https://github.com/TIFAQM/Factory-de-Odoo.git
 cd Factory-de-Odoo
 ```
 
-**2. Install the orchestrator (Node.js):**
-
-```bash
-cd orchestrator
-npm install
-cd ..
-```
-
-> The orchestrator has zero runtime dependencies — `npm install` only pulls in test/dev tooling (`c8` for coverage).
-
-**3. Install the pipeline (Python):**
+**2. Install the Python package:**
 
 ```bash
 cd pipeline/python
@@ -125,15 +113,15 @@ uv pip install -e ".[dev]"
 cd ../..
 ```
 
-> This creates a `.venv` in `pipeline/python/`, installs `amil-utils` in editable mode, and pulls all dev dependencies (pytest, pylint-odoo, etc.).
+> This creates a `.venv` in `pipeline/python/`, installs `amil-utils` in editable mode with both the pipeline and orchestrator CLI, and pulls all dev dependencies (pytest, pylint-odoo, etc.).
 
-**4. Verify installation:**
+**3. Verify installation:**
 
 ```bash
-# Orchestrator tests (should show 797 pass, 0 fail)
-cd orchestrator && npm test && cd ..
+# Orchestrator CLI loads correctly
+amil-utils orch --help
 
-# Pipeline tests — skip Docker tests if Docker isn't running
+# Run all tests — skip Docker tests if Docker isn't running
 cd pipeline/python && uv run pytest tests/ -m "not docker" --tb=short -q && cd ../..
 ```
 
@@ -190,45 +178,45 @@ For a single standalone module (no ERP decomposition):
 ```
 Factory-de-Odoo/
 |
-+-- orchestrator/                    # Cross-module brain (Node.js)
-|   +-- amil/bin/lib/                # 23 CJS modules (registry, coherence, status)
++-- orchestrator/                    # Cross-module brain
 |   +-- amil/workflows/              # 41 workflow definitions
 |   +-- amil/references/             # Reference docs (config, git, checkpoints)
 |   +-- amil/templates/              # Document templates (plan, project, summary)
 |   +-- agents/                      # 19 orchestration agents
 |   +-- commands/amil/               # 46 slash commands (/amil:*)
-|   +-- hooks/                       # 3 event hooks (amil-*.js)
-|   +-- tests/                       # 797 tests (Node.js native test runner)
+|   +-- hooks/                       # 3 event hooks (amil-*.py)
 |
 +-- pipeline/                        # Single-module belt (Python)
-    +-- python/src/amil_utils/       # Rendering engine, validation, search
-    +-- python/src/amil_utils/templates/  # 51 Jinja2 templates (17.0/18.0/19.0/shared)
-    +-- agents/                      # 9 generation agents
-    +-- knowledge/                   # 12 Odoo knowledge files (80+ examples)
-    +-- docker/                      # Odoo 19 + PostgreSQL 16 validation
-    +-- python/tests/                # 2,244 tests (pytest)
+|   +-- python/src/amil_utils/       # Rendering engine, validation, search
+|   +-- python/src/amil_utils/orchestrator/  # 27 Python modules, 60+ Click commands
+|   +-- python/src/amil_utils/templates/     # 60 Jinja2 templates (17.0/18.0/19.0/shared)
+|   +-- agents/                      # 9 generation agents
+|   +-- knowledge/                   # 12 Odoo knowledge files (80+ examples)
+|   +-- docker/                      # Odoo 19 + PostgreSQL 16 validation
+|   +-- python/tests/                # 2,953 tests (pytest)
 ```
 
 ### Orchestrator
 
-Manages the full ERP lifecycle — PRD decomposition, cross-module state, and sequential generation.
+Manages the full ERP lifecycle — PRD decomposition, cross-module state, and sequential generation. All orchestrator logic lives in the `amil_utils.orchestrator` Python package, accessible via `amil-utils orch <command>`.
 
 **Module Lifecycle:**
 ```
 planned --> spec_approved --> generated --> checked --> shipped
 ```
 
-**Core Library (`amil/bin/lib/`):**
+**Core Library (`amil_utils.orchestrator/`):**
 
 | Module | Purpose |
 |--------|---------|
-| `registry.cjs` | Central model/field tracking with atomic writes and rollback |
-| `coherence.cjs` | 4 structural checks across module boundaries |
-| `module-status.cjs` | State machine with validated transitions |
-| `dependency-graph.cjs` | Topological sort for generation order |
-| `state.cjs` | Session state persistence (STATE.md YAML frontmatter) |
-| `config.cjs` | Project configuration management |
-| `phase.cjs` | Phase planning and execution tracking |
+| `registry.py` | Central model/field tracking with atomic writes and rollback |
+| `coherence.py` | 4 structural checks across module boundaries |
+| `module_status.py` | State machine with validated transitions |
+| `dependency_graph.py` | Topological sort for generation order |
+| `state.py` | Session state persistence (STATE.md YAML frontmatter) |
+| `config.py` | Project configuration management |
+| `phase.py` / `phase_query.py` | Phase planning and execution tracking |
+| `cli.py` / `cli_groups.py` | 60+ Click CLI commands |
 
 **PRD Decomposition** spawns 4 parallel research agents:
 1. **Module Boundary Analyzer** — functional domains, model proposals
@@ -266,7 +254,7 @@ pylint-odoo --> Docker Install --> Docker Tests --> Auto-Fix (up to 5 iterations
 - Missing ACL entries and security group references
 - pylint-odoo violations (W8161, W8113, etc.)
 
-**51 Jinja2 Templates** across 4 version directories:
+**60 Jinja2 Templates** across 4 version directories:
 
 | Directory | Contents |
 |-----------|----------|
@@ -344,25 +332,14 @@ All 46 commands use the `/amil:` prefix. Run `/amil:help` for the full reference
 
 ## Testing
 
-### Orchestrator (Node.js)
-
-```bash
-cd orchestrator
-
-# Run all 797 tests
-npm test
-
-# Run with coverage (80%+ enforced)
-npm run test:coverage
-```
-
-### Pipeline (Python)
-
 ```bash
 cd pipeline/python
 
-# All unit tests (~2,244 tests, ~2 min)
+# Run all tests (~2,953 tests, ~3 min)
 uv run pytest tests/ -q
+
+# Orchestrator tests only (~485 tests)
+uv run pytest tests/orchestrator/ -q
 
 # Skip Docker-dependent tests
 uv run pytest tests/ -m "not docker" -q
@@ -447,10 +424,10 @@ Extend the knowledge base by adding `.md` files to `knowledge/custom/` — they 
 
 | Metric | Value |
 |--------|-------|
-| Total Tests | **3,041** (797 orchestrator + 2,244 pipeline) |
-| Python LOC | **24,300+** |
-| CJS Modules | **23** |
-| Jinja2 Templates | **51** (17.0 / 18.0 / 19.0 / shared) |
+| Total Tests | **2,953** (485 orchestrator + 2,468 pipeline) |
+| Python LOC | **33,200+** |
+| Orchestrator Modules | **27** Python modules, 60+ Click CLI commands |
+| Jinja2 Templates | **60** (17.0 / 18.0 / 19.0 / shared) |
 | AI Agents | **28** (19 orchestrator + 9 pipeline) |
 | Slash Commands | **46** (all `/amil:*` prefix) |
 | Knowledge Files | **12** (80+ example pairs) |
@@ -467,8 +444,8 @@ See [pipeline/CONTRIBUTING.md](pipeline/CONTRIBUTING.md) for development setup, 
 1. **Sequential generation** — one module at a time through the belt
 2. **Atomic writes** — write complete JSON files, never partial updates
 3. **Immutable data** — create new objects, never mutate existing
-4. **Zero runtime deps** — orchestrator uses only Node.js built-ins
-5. **80%+ test coverage** — enforced on both components
+4. **Pure Python** — zero Node.js runtime dependency, only Python 3.12
+5. **80%+ test coverage** — enforced across all components
 6. **Pipeline is a pure library** — no user-facing commands, all interaction through orchestrator
 
 ---
