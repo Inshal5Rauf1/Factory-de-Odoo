@@ -98,7 +98,7 @@ def history_digest(cwd: str | Path) -> dict:
             ):
                 all_phase_dirs.append({
                     "name": entry,
-                    "fullPath": str(phases_dir / entry),
+                    "full_path": str(phases_dir / entry),
                     "milestone": None,
                 })
         except OSError:
@@ -108,7 +108,7 @@ def history_digest(cwd: str | Path) -> dict:
         return {"phases": {}, "decisions": [], "tech_stack": []}
 
     for item in all_phase_dirs:
-        dir_path = Path(item["fullPath"])
+        dir_path = Path(item["full_path"])
         _collect_summaries_from_dir(
             dir_path, item["name"], phases, decisions, tech_stack
         )

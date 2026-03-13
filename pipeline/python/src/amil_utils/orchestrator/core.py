@@ -351,8 +351,8 @@ def get_archived_phase_dirs(cwd: str | Path) -> list[dict]:
                     results.append({
                         "name": d,
                         "milestone": version,
-                        "basePath": str(Path(".planning") / "milestones" / archive_name),
-                        "fullPath": str(archive_path / d),
+                        "base_path": str(Path(".planning") / "milestones" / archive_name),
+                        "full_path": str(archive_path / d),
                     })
             except OSError:
                 continue
