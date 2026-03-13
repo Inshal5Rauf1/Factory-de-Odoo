@@ -10,8 +10,7 @@
     "commands",
     "amil",
     "agents",
-    "hooks/dist",
-    "scripts"
+    "hooks"
   ],
   "keywords": [
     "odoo",
@@ -35,13 +34,8 @@
   "engines": {
     "node": ">=16.7.0"
   },
-  "devDependencies": {
-    "c8": "^11.0.0"
-  },
   "scripts": {
-    "build:hooks": "node scripts/build-hooks.js",
-    "prepublishOnly": "npm run build:hooks",
-    "test": "node scripts/run-tests.cjs",
-    "test:coverage": "c8 --check-coverage --lines 80 --reporter text --include 'amil/bin/lib/*.cjs' --exclude 'tests/**' --all node scripts/run-tests.cjs"
+    "test": "cd ../pipeline/python && python -m pytest tests/orchestrator/ -v",
+    "test:coverage": "cd ../pipeline/python && python -m pytest tests/orchestrator/ --cov=amil_utils.orchestrator"
   }
 }
