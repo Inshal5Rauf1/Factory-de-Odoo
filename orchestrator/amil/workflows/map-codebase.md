@@ -26,7 +26,7 @@ Documents are reference material for Claude when planning/executing. Always incl
 Load codebase mapping context:
 
 ```bash
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init map-codebase)
+INIT=$(amil-utils orch init map-codebase)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -251,7 +251,7 @@ Continue to commit_codebase_map.
 Commit the codebase map:
 
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs: map existing codebase" --files .planning/codebase/*.md
+amil-utils orch commit "docs: map existing codebase" --files .planning/codebase/*.md
 ```
 
 Continue to offer_next.

@@ -60,7 +60,7 @@ cat .planning/research/FEATURES.md
 cat .planning/research/ARCHITECTURE.md
 cat .planning/research/PITFALLS.md
 
-# Planning config loaded via amil-tools.cjs in commit step
+# Planning config loaded via amil-utils orch in commit step
 ```
 
 Parse each file to extract:
@@ -141,7 +141,7 @@ Write to `.planning/research/SUMMARY.md`
 The 4 parallel researcher agents write files but do NOT commit. You commit everything together.
 
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs: complete project research" --files .planning/research/
+amil-utils orch commit "docs: complete project research" --files .planning/research/
 ```
 
 ## Step 8: Return Summary

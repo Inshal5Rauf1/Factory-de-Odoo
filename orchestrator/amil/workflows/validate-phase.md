@@ -11,15 +11,15 @@ Audit Nyquist validation gaps for a completed phase. Generate missing tests. Upd
 ## 0. Initialize
 
 ```bash
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(amil-utils orch init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`.
 
 ```bash
-AUDITOR_MODEL=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" resolve-model amil-nyquist-auditor --raw)
-NYQUIST_CFG=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" config get workflow.nyquist_validation --raw)
+AUDITOR_MODEL=$(amil-utils orch resolve-model amil-nyquist-auditor --raw)
+NYQUIST_CFG=$(amil-utils orch config get workflow.nyquist_validation --raw)
 ```
 
 If `NYQUIST_CFG` is `false`: exit with "Nyquist validation is disabled. Enable via /amil:settings."
@@ -128,7 +128,7 @@ Handle return:
 git add {test_files}
 git commit -m "test(phase-${PHASE}): add Nyquist validation tests"
 
-node "$HOME/.claude/amil/bin/amil-tools.cjs" commit-docs "docs(phase-${PHASE}): add/update validation strategy"
+amil-utils orch commit-docs "docs(phase-${PHASE}): add/update validation strategy"
 ```
 
 ## 8. Results + Routing

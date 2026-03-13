@@ -194,7 +194,7 @@ for dir in .claude .config/opencode .opencode .gemini; do
 done
 ```
 
-The SessionStart hook (`amil-check-update.js`) writes to the detected runtime's cache directory, so all paths must be cleared to prevent stale update indicators.
+The SessionStart hook (`amil-check-update.py`) writes to the detected runtime's cache directory, so all paths must be cleared to prevent stale update indicators.
 </step>
 
 <step name="display_result">

@@ -23,8 +23,8 @@ if $ARGUMENTS.profile not in ["quality", "balanced", "budget"]:
 Ensure config exists and load current state:
 
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" config-ensure-section
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" state load)
+amil-utils orch config-ensure-section
+INIT=$(amil-utils orch state load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -52,7 +52,7 @@ Display confirmation with model table for selected profile:
 
 Agents will now use:
 
-[Show table from MODEL_PROFILES in amil-tools.cjs for selected profile]
+[Show table from MODEL_PROFILES for selected profile]
 
 Example:
 | Agent | Model |

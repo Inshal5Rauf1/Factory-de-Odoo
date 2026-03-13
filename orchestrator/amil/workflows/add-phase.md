@@ -29,7 +29,7 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init phase-op "0")
+INIT=$(amil-utils orch init phase-op "0")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -45,7 +45,7 @@ Exit.
 **Delegate the phase addition to amil-tools:**
 
 ```bash
-RESULT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" phase add "${description}")
+RESULT=$(amil-utils orch phase add "${description}")
 ```
 
 The CLI handles:

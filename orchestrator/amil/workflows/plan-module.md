@@ -2,7 +2,7 @@
 
 Run the 10-step spec generation pipeline to produce an approved spec.json for a specific Odoo module.
 
-**Rules:** CJS tooling, zero npm deps, atomic writes via `amil-tools.cjs`.
+**Rules:** Python tooling via `amil-utils orch`, atomic writes.
 
 ---
 
@@ -17,7 +17,7 @@ The module argument `{MODULE}` is provided by the user when invoking `/amil:plan
 Check that the module exists in module_status.json and is at an appropriate status.
 
 ```bash
-MODULE_STATUS=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status get "${MODULE}" --raw --cwd "$(pwd)" 2>&1)
+MODULE_STATUS=$(amil-utils orch module-status get "${MODULE}" --raw --cwd "$(pwd)" 2>&1)
 ```
 
 - If command fails or returns empty: show error "Module '${MODULE}' not found in module_status.json. Run /amil:new-erp first." and STOP.
@@ -120,7 +120,7 @@ REGISTRY_EXISTS=$(node -e "
 
 - If registry exists and is non-empty:
   ```bash
-  TIERED_REGISTRY=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" registry tiered-injection "${MODULE}" --raw --cwd "$(pwd)")
+  TIERED_REGISTRY=$(amil-utils orch registry tiered-injection "${MODULE}" --raw --cwd "$(pwd)")
   ```
 - If registry is empty or missing (first module in project): use empty tiered result:
   ```json
@@ -133,7 +133,7 @@ Spawn the spec generator agent to produce spec.json:
 
 ```bash
 # Read config odoo block
-ODOO_CONFIG=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" config-get odoo --raw --cwd "$(pwd)" 2>/dev/null || echo '{}')
+ODOO_CONFIG=$(amil-utils orch config-get odoo --raw --cwd "$(pwd)" 2>/dev/null || echo '{}')
 ```
 
 ```
@@ -202,7 +202,7 @@ node -e "
 Run the coherence checker against the produced spec.json:
 
 ```bash
-COHERENCE_REPORT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" coherence check --spec ".planning/modules/${MODULE}/spec.json" --registry ".planning/model_registry.json" --raw --cwd "$(pwd)")
+COHERENCE_REPORT=$(amil-utils orch coherence check --spec ".planning/modules/${MODULE}/spec.json" --registry ".planning/model_registry.json" --raw --cwd "$(pwd)")
 ```
 
 - Parse the JSON coherence report.
@@ -257,7 +257,7 @@ Based on the coherence check status, present approval options:
 
 **On "approve" or "approve_anyway":**
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status transition "${MODULE}" spec_approved --raw --cwd "$(pwd)"
+amil-utils orch module-status transition "${MODULE}" spec_approved --raw --cwd "$(pwd)"
 ```
 Report: "Module '${MODULE}' spec approved. Status transitioned to spec_approved."
 Report: "Next step: /amil:generate-module ${MODULE}"

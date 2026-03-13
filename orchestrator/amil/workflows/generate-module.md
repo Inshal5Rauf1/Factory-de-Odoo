@@ -2,7 +2,7 @@
 
 Run the 10-step module generation pipeline to produce a complete Odoo module from an approved spec.json using the amil belt.
 
-**Rules:** CJS tooling, zero npm deps, atomic writes via `amil-tools.cjs`.
+**Rules:** Python tooling via `amil-utils orch`, atomic writes.
 
 ---
 
@@ -17,7 +17,7 @@ The module argument `{MODULE}` is provided by the user when invoking `/amil:gene
 Check that the module is at `spec_approved` status.
 
 ```bash
-MODULE_STATUS=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status get "${MODULE}" --raw --cwd "$(pwd)" 2>&1)
+MODULE_STATUS=$(amil-utils orch module-status get "${MODULE}" --raw --cwd "$(pwd)" 2>&1)
 ```
 
 - If command fails or returns empty: show error "Module '${MODULE}' not found. Run /amil:plan-module first." and STOP.
@@ -25,7 +25,7 @@ MODULE_STATUS=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status get "
 - If `.status` is "spec_approved": proceed normally.
 - If `.status` is "generated": use AskUserQuestion: "Module '${MODULE}' is already generated. Re-generate? (yes / abort)". If "abort": STOP. If "yes": transition back first:
   ```bash
-  node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status transition "${MODULE}" spec_approved --raw --cwd "$(pwd)"
+  amil-utils orch module-status transition "${MODULE}" spec_approved --raw --cwd "$(pwd)"
   ```
 - If `.status` is any other value: show error "Module '${MODULE}' is at status '${status}', expected 'spec_approved'. Run /amil:plan-module first." and STOP.
 
@@ -185,7 +185,7 @@ node -e "
 Run coherence checker to verify the newly registered models don't break existing cross-references:
 
 ```bash
-COHERENCE_POST=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" coherence check --spec ".planning/modules/${MODULE}/spec.json" --registry ".planning/model_registry.json" --raw --cwd "$(pwd)")
+COHERENCE_POST=$(amil-utils orch coherence check --spec ".planning/modules/${MODULE}/spec.json" --registry ".planning/model_registry.json" --raw --cwd "$(pwd)")
 ```
 
 - If status is "fail": show warnings but do NOT stop — coherence violations at this stage are informational (they indicate cross-module work needed in future modules).
@@ -238,7 +238,7 @@ Based on verification results, present options:
 
 ```bash
 # Transition module status
-node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status transition "${MODULE}" generated --raw --cwd "$(pwd)"
+amil-utils orch module-status transition "${MODULE}" generated --raw --cwd "$(pwd)"
 
 # Git commit the generated module + registry + reports
 git add "${MODULE_DIR}" ".planning/model_registry.json" ".planning/modules/${MODULE}/generation-report.json" ".planning/modules/${MODULE}/verification-report.json" ".planning/module_status.json"

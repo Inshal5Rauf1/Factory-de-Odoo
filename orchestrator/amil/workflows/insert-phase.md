@@ -34,7 +34,7 @@ Validate first argument is an integer.
 Load phase operation context:
 
 ```bash
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init phase-op "${after_phase}")
+INIT=$(amil-utils orch init phase-op "${after_phase}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -49,7 +49,7 @@ Exit.
 **Delegate the phase insertion to amil-tools:**
 
 ```bash
-RESULT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" phase insert "${after_phase}" "${description}")
+RESULT=$(amil-utils orch phase insert "${after_phase}" "${description}")
 ```
 
 The CLI handles:

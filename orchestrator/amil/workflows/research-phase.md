@@ -18,7 +18,7 @@ Resolve model for:
 @~/.claude/amil/references/phase-argument-parsing.md
 
 ```bash
-PHASE_INFO=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap get-phase "${PHASE}")
+PHASE_INFO=$(amil-utils orch roadmap get-phase "${PHASE}")
 ```
 
 If `found` is false: Error and exit.
@@ -34,7 +34,7 @@ If exists: Offer update/view/skip options.
 ## Step 3: Gather Phase Context
 
 ```bash
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init phase-op "${PHASE}")
+INIT=$(amil-utils orch init phase-op "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # Extract: phase_dir, padded_phase, phase_number, state_path, requirements_path, context_path
 ```

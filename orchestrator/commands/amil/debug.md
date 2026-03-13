@@ -31,13 +31,13 @@ ls .planning/debug/*.md 2>/dev/null | grep -v resolved | head -5
 ## 0. Initialize Context
 
 ```bash
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" state load)
+INIT=$(amil-utils orch state load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Extract `commit_docs` from init JSON. Resolve debugger model:
 ```bash
-debugger_model=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" resolve-model amil-debugger --raw)
+debugger_model=$(amil-utils orch resolve-model amil-debugger --raw)
 ```
 
 ## 1. Check Active Sessions

@@ -31,13 +31,13 @@ To avoid spamming the agent with repeated warnings:
 ## Architecture
 
 ```
-Statusline Hook (amil-statusline.js)
+Statusline Hook (amil-statusline.py)
     | writes
     v
 /tmp/claude-ctx-{session_id}.json
     ^ reads
     |
-Context Monitor (amil-context-monitor.js, PostToolUse/AfterTool)
+Context Monitor (amil-context-monitor.py, PostToolUse/AfterTool)
     | injects
     v
 additionalContext -> Agent sees warning
@@ -60,7 +60,7 @@ Amil's `/amil:pause-work` command saves execution state. The WARNING message sug
 
 ## Setup
 
-Both hooks are automatically registered during `npx amil-cc` installation:
+Both hooks are automatically registered during installation:
 
 - **Statusline** (writes bridge file): Registered as `statusLine` in settings.json
 - **Context Monitor** (reads bridge file): Registered as `PostToolUse` hook in settings.json (`AfterTool` for Gemini)
@@ -71,7 +71,7 @@ Manual registration in `~/.claude/settings.json` (Claude Code):
 {
   "statusLine": {
     "type": "command",
-    "command": "node ~/.claude/hooks/amil-statusline.js"
+    "command": "python3 ~/.claude/hooks/amil-statusline.py"
   },
   "hooks": {
     "PostToolUse": [
@@ -79,7 +79,7 @@ Manual registration in `~/.claude/settings.json` (Claude Code):
         "hooks": [
           {
             "type": "command",
-            "command": "node ~/.claude/hooks/amil-context-monitor.js"
+            "command": "python3 ~/.claude/hooks/amil-context-monitor.py"
           }
         ]
       }
@@ -98,7 +98,7 @@ For Gemini CLI (`~/.gemini/settings.json`), use `AfterTool` instead of `PostTool
         "hooks": [
           {
             "type": "command",
-            "command": "node ~/.gemini/hooks/amil-context-monitor.js"
+            "command": "python3 ~/.gemini/hooks/amil-context-monitor.py"
           }
         ]
       }

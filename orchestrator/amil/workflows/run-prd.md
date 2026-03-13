@@ -40,7 +40,7 @@ Each iteration selects ONE action based on this priority table:
 ### Step 1: Read State
 
 ```bash
-node amil-tools.cjs module-status read --raw
+amil-utils orch module-status read --raw
 # Read ONLY the compact summary (first 15 lines) for context efficiency
 head -15 .planning/ERP_CYCLE_LOG.md
 ```
@@ -57,7 +57,7 @@ Apply priority table top-to-bottom. First match wins.
 
 Run the selected slash command. Log result to cycle log:
 ```bash
-node amil-tools.cjs cycle-log append '{
+amil-utils orch cycle-log append '{
   "iteration": N,
   "module": "uni_fee",
   "action": "generate-module",
@@ -72,7 +72,7 @@ node amil-tools.cjs cycle-log append '{
 
 After every module generation, run coherence validation:
 ```bash
-node amil-tools.cjs coherence check --registry .planning/model_registry.json
+amil-utils orch coherence check --registry .planning/model_registry.json
 ```
 
 If coherence warnings found:
@@ -90,7 +90,7 @@ On failure:
 5. Continue to next module
 
 ```bash
-node amil-tools.cjs cycle-log blocked "uni_fee" "Docker install failed: missing depends"
+amil-utils orch cycle-log blocked "uni_fee" "Docker install failed: missing depends"
 ```
 
 ### Step 6: Completion Check

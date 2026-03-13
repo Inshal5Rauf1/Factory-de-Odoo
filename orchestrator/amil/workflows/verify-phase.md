@@ -28,7 +28,7 @@ Then verify each level against the actual codebase.
 Load phase operation context:
 
 ```bash
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(amil-utils orch init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -36,7 +36,7 @@ Extract from init JSON: `phase_dir`, `phase_number`, `phase_name`, `has_plans`, 
 
 Then load phase details and list plans/summaries:
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap get-phase "${phase_number}"
+amil-utils orch roadmap get-phase "${phase_number}"
 grep -E "^| ${phase_number}" .planning/REQUIREMENTS.md 2>/dev/null
 ls "$phase_dir"/*-SUMMARY.md "$phase_dir"/*-PLAN.md 2>/dev/null
 ```
@@ -51,7 +51,7 @@ Use amil-tools to extract must_haves from each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
-  MUST_HAVES=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" frontmatter get "$plan" --field must_haves)
+  MUST_HAVES=$(amil-utils orch frontmatter get "$plan" --field must_haves)
   echo "=== $plan ===" && echo "$MUST_HAVES"
 done
 ```
@@ -65,7 +65,7 @@ Aggregate all must_haves across plans for phase-level verification.
 If no must_haves in frontmatter (MUST_HAVES returns error or empty), check for Success Criteria:
 
 ```bash
-PHASE_DATA=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap get-phase "${phase_number}" --raw)
+PHASE_DATA=$(amil-utils orch roadmap get-phase "${phase_number}" --raw)
 ```
 
 Parse the `success_criteria` array from the JSON output. If non-empty:
@@ -101,7 +101,7 @@ Use amil-tools for artifact verification against must_haves in each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
-  ARTIFACT_RESULT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" verify artifacts "$plan")
+  ARTIFACT_RESULT=$(amil-utils orch verify artifacts "$plan")
   echo "=== $plan ===" && echo "$ARTIFACT_RESULT"
 done
 ```
@@ -133,7 +133,7 @@ Use amil-tools for key link verification against must_haves in each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
-  LINKS_RESULT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" verify key-links "$plan")
+  LINKS_RESULT=$(amil-utils orch verify key-links "$plan")
   echo "=== $plan ===" && echo "$LINKS_RESULT"
 done
 ```

@@ -2,7 +2,7 @@
 
 Initialize an Odoo ERP project by collecting configuration and analyzing a PRD with parallel research agents.
 
-**Rules:** CJS tooling, zero npm deps, atomic writes via `amil-tools.cjs`.
+**Rules:** Python tooling via `amil-utils orch`, atomic writes.
 
 ---
 
@@ -13,7 +13,7 @@ Collect 7 sequential configuration questions. Each answer is written to `config.
 ### Step A.1: Ensure config exists
 
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" config ensure-section odoo --cwd "$(pwd)"
+amil-utils orch config ensure-section odoo --cwd "$(pwd)"
 ```
 
 ### Step A.2: Ask 7 config questions
@@ -26,7 +26,7 @@ Ask each question sequentially using `AskUserQuestion`. After each answer, write
 - Default: `17.0`
 - On answer:
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.version "${ANSWER}" --cwd "$(pwd)"
+amil-utils orch config-set odoo.version "${ANSWER}" --cwd "$(pwd)"
 ```
 
 **Q2: Multi-Company Setup**
@@ -36,7 +36,7 @@ node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.version "${ANSWER}"
 - On answer (convert to boolean):
 ```bash
 # yes -> true, no -> false
-node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.multi_company ${BOOL_VALUE} --cwd "$(pwd)"
+amil-utils orch config-set odoo.multi_company ${BOOL_VALUE} --cwd "$(pwd)"
 ```
 
 **Q3: Localization**
@@ -45,7 +45,7 @@ node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.multi_company ${BOO
 - Default: `pk`
 - On answer:
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.localization "${ANSWER}" --cwd "$(pwd)"
+amil-utils orch config-set odoo.localization "${ANSWER}" --cwd "$(pwd)"
 ```
 
 **Q4: Existing Modules**
@@ -54,7 +54,7 @@ node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.localization "${ANS
 - Default: `none`
 - On answer:
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.existing_modules "${ANSWER}" --cwd "$(pwd)"
+amil-utils orch config-set odoo.existing_modules "${ANSWER}" --cwd "$(pwd)"
 ```
 - **Important:** Store this answer in a variable `EXISTING_MODULES` for passing to research agents in Stage B.
 
@@ -64,7 +64,7 @@ node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.existing_modules "$
 - Default: `canvas`
 - On answer:
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.canvas_integration "${ANSWER}" --cwd "$(pwd)"
+amil-utils orch config-set odoo.canvas_integration "${ANSWER}" --cwd "$(pwd)"
 ```
 
 **Q6: Notification Channels**
@@ -73,7 +73,7 @@ node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.canvas_integration 
 - Multi-select (user picks one or more)
 - On answer (write as JSON array):
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.notification_channels '["email","whatsapp"]' --cwd "$(pwd)"
+amil-utils orch config-set odoo.notification_channels '["email","whatsapp"]' --cwd "$(pwd)"
 ```
 
 **Q7: Deployment Target**
@@ -82,7 +82,7 @@ node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.notification_channe
 - Default: `single`
 - On answer:
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set odoo.deployment_target "${ANSWER}" --cwd "$(pwd)"
+amil-utils orch config-set odoo.deployment_target "${ANSWER}" --cwd "$(pwd)"
 ```
 
 ---
@@ -102,7 +102,7 @@ Check if `.planning/PRD.md` exists. If it does not exist:
 
 ```bash
 PRD_TEXT=$(cat .planning/PRD.md)
-EXISTING_MODULES=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" config-get odoo.existing_modules --cwd "$(pwd)")
+EXISTING_MODULES=$(amil-utils orch config-get odoo.existing_modules --cwd "$(pwd)")
 ```
 
 ### Step B.3: Create research directory
@@ -342,7 +342,7 @@ node -e "
 Then for each module:
 
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status init {module_name} {tier} '{depends_json}' --cwd "$(pwd)"
+amil-utils orch module-status init {module_name} {tier} '{depends_json}' --cwd "$(pwd)"
 ```
 
 This creates `module_status.json` entries and artifact directories in the TARGET project.

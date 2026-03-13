@@ -72,13 +72,13 @@ Keep Accumulated Context section from previous milestone.
 Delete MILESTONE-CONTEXT.md if exists (consumed).
 
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs: start milestone v[X.Y] [Name]" --files .planning/PROJECT.md .planning/STATE.md
+amil-utils orch commit "docs: start milestone v[X.Y] [Name]" --files .planning/PROJECT.md .planning/STATE.md
 ```
 
 ## 7. Load Context and Resolve Models
 
 ```bash
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init new-milestone)
+INIT=$(amil-utils orch init new-milestone)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -94,10 +94,10 @@ AskUserQuestion: "Research the domain ecosystem for new features before defining
 
 ```bash
 # If "Research first": persist true
-node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set workflow.research true
+amil-utils orch config-set workflow.research true
 
 # If "Skip research": persist false
-node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set workflow.research false
+amil-utils orch config-set workflow.research false
 ```
 
 **If "Research first":**
@@ -255,7 +255,7 @@ If "adjust": Return to scoping.
 
 **Commit requirements:**
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs: define milestone v[X.Y] requirements" --files .planning/REQUIREMENTS.md
+amil-utils orch commit "docs: define milestone v[X.Y] requirements" --files .planning/REQUIREMENTS.md
 ```
 
 ## 10. Create Roadmap
@@ -332,7 +332,7 @@ Success criteria:
 
 **Commit roadmap** (after approval):
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs: create milestone v[X.Y] roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md
+amil-utils orch commit "docs: create milestone v[X.Y] roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md
 ```
 
 ## 11. Done

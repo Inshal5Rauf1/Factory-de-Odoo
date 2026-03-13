@@ -12,8 +12,8 @@ Read all files referenced by the invoking prompt's execution_context before star
 Ensure config exists and load current state:
 
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" config-ensure-section
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" state load)
+amil-utils orch config-ensure-section
+INIT=$(amil-utils orch state load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 

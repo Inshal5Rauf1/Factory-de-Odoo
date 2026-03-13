@@ -12,7 +12,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 **Load progress context (paths only):**
 
 ```bash
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init progress)
+INIT=$(amil-utils orch init progress)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -41,8 +41,8 @@ If missing both ROADMAP.md and PROJECT.md: suggest `/amil:new-project`.
 **Use structured extraction from amil-tools:**
 
 Instead of reading full files, use targeted tools to get only the data needed for the report:
-- `ROADMAP=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap analyze)`
-- `STATE=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" state-snapshot)`
+- `ROADMAP=$(amil-utils orch roadmap analyze)`
+- `STATE=$(amil-utils orch state-snapshot)`
 
 This minimizes orchestrator context usage.
 </step>
@@ -51,7 +51,7 @@ This minimizes orchestrator context usage.
 **Get comprehensive roadmap analysis (replaces manual parsing):**
 
 ```bash
-ROADMAP=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap analyze)
+ROADMAP=$(amil-utils orch roadmap analyze)
 ```
 
 This returns structured JSON with:
@@ -70,7 +70,7 @@ Use this instead of manually reading/parsing ROADMAP.md.
 - Find the 2-3 most recent SUMMARY.md files
 - Use `summary-extract` for efficient parsing:
   ```bash
-  node "$HOME/.claude/amil/bin/amil-tools.cjs" summary-extract <path> --fields one_liner
+  amil-utils orch summary-extract <path> --fields one_liner
   ```
 - This shows "what we've been working on"
   </step>
@@ -89,7 +89,7 @@ Use this instead of manually reading/parsing ROADMAP.md.
 
 ```bash
 # Get formatted progress bar
-PROGRESS_BAR=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" progress bar --raw)
+PROGRESS_BAR=$(amil-utils orch progress bar --raw)
 ```
 
 Present:

@@ -36,7 +36,7 @@ Exit.
 Execute all 4 check categories using the CLI tool:
 
 ```bash
-node ~/.claude/amil/bin/amil-tools.cjs coherence --cwd .
+amil-utils orch coherence --cwd .
 ```
 
 **Check 1: Many2one Target Validity** — verify target models exist in registry.

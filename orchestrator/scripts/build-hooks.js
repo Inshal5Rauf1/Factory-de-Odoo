@@ -9,11 +9,11 @@ const path = require('path');
 const HOOKS_DIR = path.join(__dirname, '..', 'hooks');
 const DIST_DIR = path.join(HOOKS_DIR, 'dist');
 
-// Hooks to copy (pure Node.js, no bundling needed)
+// Hooks to copy (Python scripts, no bundling needed)
 const HOOKS_TO_COPY = [
-  'amil-check-update.js',
-  'amil-context-monitor.js',
-  'amil-statusline.js'
+  'amil-check-update.py',
+  'amil-context-monitor.py',
+  'amil-statusline.py'
 ];
 
 function build() {

@@ -380,7 +380,7 @@ If FAIL: return to planner with specific fixes. Same revision loop as other dime
 
 Load phase operation context:
 ```bash
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(amil-utils orch init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -392,7 +392,7 @@ Orchestrator provides CONTEXT.md content in the verification prompt. If provided
 ls "$phase_dir"/*-PLAN.md 2>/dev/null
 # Read research for Nyquist validation data
 cat "$phase_dir"/*-RESEARCH.md 2>/dev/null
-node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap get-phase "$phase_number"
+amil-utils orch roadmap get-phase "$phase_number"
 ls "$phase_dir"/*-BRIEF.md 2>/dev/null
 ```
 
@@ -405,7 +405,7 @@ Use amil-tools to validate plan structure:
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
   echo "=== $plan ==="
-  PLAN_STRUCTURE=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" verify plan-structure "$plan")
+  PLAN_STRUCTURE=$(amil-utils orch verify plan-structure "$plan")
   echo "$PLAN_STRUCTURE"
 done
 ```
@@ -423,7 +423,7 @@ Map errors/warnings to verification dimensions:
 Extract must_haves from each plan using amil-tools:
 
 ```bash
-MUST_HAVES=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" frontmatter get "$PLAN_PATH" --field must_haves)
+MUST_HAVES=$(amil-utils orch frontmatter get "$PLAN_PATH" --field must_haves)
 ```
 
 Returns JSON: `{ truths: [...], artifacts: [...], key_links: [...] }`
@@ -468,7 +468,7 @@ For each requirement: find covering task(s), verify action is specific, flag gap
 Use amil-tools plan-structure verification (already run in Step 2):
 
 ```bash
-PLAN_STRUCTURE=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" verify plan-structure "$PLAN_PATH")
+PLAN_STRUCTURE=$(amil-utils orch verify plan-structure "$PLAN_PATH")
 ```
 
 The `tasks` array in the result shows each task's completeness:

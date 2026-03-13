@@ -86,13 +86,13 @@ Be specific enough for a fresh Claude to understand immediately.
 
 Use `current-timestamp` for last_updated field. You can use init todos (which provides timestamps) or call directly:
 ```bash
-timestamp=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" current-timestamp full --raw)
+timestamp=$(amil-utils orch current-timestamp full --raw)
 ```
 </step>
 
 <step name="commit">
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "wip: [phase-name] paused at task [X]/[Y]" --files .planning/phases/*/.continue-here.md
+amil-utils orch commit "wip: [phase-name] paused at task [X]/[Y]" --files .planning/phases/*/.continue-here.md
 ```
 </step>
 

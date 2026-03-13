@@ -15,7 +15,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 Load all context in one call (paths only to minimize orchestrator context):
 
 ```bash
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init plan-phase "$PHASE")
+INIT=$(amil-utils orch init plan-phase "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -43,7 +43,7 @@ mkdir -p ".planning/phases/${padded_phase}-${phase_slug}"
 ## 3. Validate Phase
 
 ```bash
-PHASE_INFO=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap get-phase "${PHASE}")
+PHASE_INFO=$(amil-utils orch roadmap get-phase "${PHASE}")
 ```
 
 **If `found` is false:** Error with available phases. **If `found` is true:** Extract `phase_number`, `phase_name`, `goal` from JSON.
@@ -129,7 +129,7 @@ Generating CONTEXT.md from requirements...
 
 5. Commit:
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs(${padded_phase}): generate context from PRD" --files "${phase_dir}/${padded_phase}-CONTEXT.md"
+amil-utils orch commit "docs(${padded_phase}): generate context from PRD" --files "${phase_dir}/${padded_phase}-CONTEXT.md"
 ```
 
 6. Set `context_content` to the generated CONTEXT.md content and continue to step 5 (Handle Research).
@@ -176,7 +176,7 @@ Display banner:
 ### Spawn amil-phase-researcher
 
 ```bash
-PHASE_DESC=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap get-phase "${PHASE}" | jq -r '.section')
+PHASE_DESC=$(amil-utils orch roadmap get-phase "${PHASE}" | jq -r '.section')
 ```
 
 Research prompt:
@@ -456,13 +456,13 @@ Check for auto-advance trigger:
 2. **Sync chain flag with intent** — if user invoked manually (no `--auto`), clear the ephemeral chain flag from any previous interrupted `--auto` chain. This does NOT touch `workflow.auto_advance` (the user's persistent settings preference):
    ```bash
    if [[ ! "$ARGUMENTS" =~ --auto ]]; then
-     node "$HOME/.claude/amil/bin/amil-tools.cjs" config-set workflow._auto_chain_active false 2>/dev/null
+     amil-utils orch config-set workflow._auto_chain_active false 2>/dev/null
    fi
    ```
 3. Read both the chain flag and user preference:
    ```bash
-   AUTO_CHAIN=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
-   AUTO_CFG=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
+   AUTO_CHAIN=$(amil-utils orch config-get workflow._auto_chain_active 2>/dev/null || echo "false")
+   AUTO_CFG=$(amil-utils orch config-get workflow.auto_advance 2>/dev/null || echo "false")
    ```
 
 **If `--auto` flag present OR `AUTO_CHAIN` is true OR `AUTO_CFG` is true:**

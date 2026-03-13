@@ -339,7 +339,7 @@ function printSummary(hasOdooGen, hasPython) {
     ? fs.readdirSync(commandsSrc).filter(f => f.endsWith('.md')).length
     : 0;
 
-  log(`  ${green}Core tools:${reset}     amil/bin/amil-tools.cjs`);
+  log(`  ${green}Core tools:${reset}     amil-utils orch (Python CLI)`);
   log(`  ${green}Commands:${reset}       ${commandCount} slash commands (/amil:*)`);
   log(`  ${green}Workflows:${reset}      amil/workflows/`);
   log(`  ${green}Templates:${reset}      amil/templates/`);

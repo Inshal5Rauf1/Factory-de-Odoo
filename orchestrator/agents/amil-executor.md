@@ -45,7 +45,7 @@ This ensures project-specific patterns, conventions, and best practices are appl
 Load execution context:
 
 ```bash
-INIT=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" init execute-phase "${PHASE}")
+INIT=$(amil-utils orch init execute-phase "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -209,8 +209,8 @@ Do NOT continue reading. Analysis without action is a stuck signal.
 Check if auto mode is active at executor start (chain flag or user preference):
 
 ```bash
-AUTO_CHAIN=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
-AUTO_CFG=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
+AUTO_CHAIN=$(amil-utils orch config-get workflow._auto_chain_active 2>/dev/null || echo "false")
+AUTO_CFG=$(amil-utils orch config-get workflow.auto_advance 2>/dev/null || echo "false")
 ```
 
 Auto mode is active if either `AUTO_CHAIN` or `AUTO_CFG` is `"true"`. Store the result for checkpoint handling below.
@@ -399,34 +399,34 @@ After SUMMARY.md, update STATE.md using amil-tools:
 
 ```bash
 # Advance plan counter (handles edge cases automatically)
-node "$HOME/.claude/amil/bin/amil-tools.cjs" state advance-plan
+amil-utils orch state advance-plan
 
 # Recalculate progress bar from disk state
-node "$HOME/.claude/amil/bin/amil-tools.cjs" state update-progress
+amil-utils orch state update-progress
 
 # Record execution metrics
-node "$HOME/.claude/amil/bin/amil-tools.cjs" state record-metric \
+amil-utils orch state record-metric \
   --phase "${PHASE}" --plan "${PLAN}" --duration "${DURATION}" \
   --tasks "${TASK_COUNT}" --files "${FILE_COUNT}"
 
 # Add decisions (extract from SUMMARY.md key-decisions)
 for decision in "${DECISIONS[@]}"; do
-  node "$HOME/.claude/amil/bin/amil-tools.cjs" state add-decision \
+  amil-utils orch state add-decision \
     --phase "${PHASE}" --summary "${decision}"
 done
 
 # Update session info
-node "$HOME/.claude/amil/bin/amil-tools.cjs" state record-session \
+amil-utils orch state record-session \
   --stopped-at "Completed ${PHASE}-${PLAN}-PLAN.md"
 ```
 
 ```bash
 # Update ROADMAP.md progress for this phase (plan counts, status)
-node "$HOME/.claude/amil/bin/amil-tools.cjs" roadmap update-plan-progress "${PHASE_NUMBER}"
+amil-utils orch roadmap update-plan-progress "${PHASE_NUMBER}"
 
 # Mark completed requirements from PLAN.md frontmatter
 # Extract the `requirements` array from the plan's frontmatter, then mark each complete
-node "$HOME/.claude/amil/bin/amil-tools.cjs" requirements mark-complete ${REQ_IDS}
+amil-utils orch requirements mark-complete ${REQ_IDS}
 ```
 
 **Requirement IDs:** Extract from the PLAN.md frontmatter `requirements:` field (e.g., `requirements: [AUTH-01, AUTH-02]`). Pass all IDs to `requirements mark-complete`. If the plan has no requirements field, skip this step.
@@ -444,13 +444,13 @@ node "$HOME/.claude/amil/bin/amil-tools.cjs" requirements mark-complete ${REQ_ID
 
 **For blockers found during execution:**
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" state add-blocker "Blocker description"
+amil-utils orch state add-blocker "Blocker description"
 ```
 </state_updates>
 
 <final_commit>
 ```bash
-node "$HOME/.claude/amil/bin/amil-tools.cjs" commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md .planning/REQUIREMENTS.md
+amil-utils orch commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md .planning/REQUIREMENTS.md
 ```
 
 Separate from per-task commits — captures execution results only.

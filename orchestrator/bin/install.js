@@ -239,7 +239,7 @@ function expandTilde(filePath) {
 function buildHookCommand(configDir, hookName) {
   // Use forward slashes for Node.js compatibility on all platforms
   const hooksPath = configDir.replace(/\\/g, '/') + '/hooks/' + hookName;
-  return `node "${hooksPath}"`;
+  return `python3 "${hooksPath}"`;
 }
 
 /**
@@ -1178,6 +1178,9 @@ function cleanupOrphanedFiles(configDir) {
   const orphanedFiles = [
     'hooks/amil-notify.sh',  // Removed in v1.6.x
     'hooks/statusline.js',  // Renamed to amil-statusline.js in v1.9.0
+    'hooks/amil-check-update.js',  // Replaced by .py in v2.0
+    'hooks/amil-statusline.js',  // Replaced by .py in v2.0
+    'hooks/amil-context-monitor.js',  // Replaced by .py in v2.0
   ];
 
   for (const relPath of orphanedFiles) {
@@ -1199,6 +1202,9 @@ function cleanupOrphanedHooks(settings) {
     'amil-intel-index.js',  // Removed in v1.9.2
     'amil-intel-session.js',  // Removed in v1.9.2
     'amil-intel-prune.js',  // Removed in v1.9.2
+    'amil-check-update.js',  // Replaced by .py in v2.0
+    'amil-statusline.js',  // Replaced by .py in v2.0
+    'amil-context-monitor.js',  // Replaced by .py in v2.0
   ];
 
   let cleanedHooks = false;
@@ -1238,9 +1244,18 @@ function cleanupOrphanedHooks(settings) {
       /hooks[\/\\]statusline\.js/.test(settings.statusLine.command)) {
     settings.statusLine.command = settings.statusLine.command.replace(
       /hooks([\/\\])statusline\.js/,
-      'hooks$1amil-statusline.js'
-    );
-    console.log(`  ${green}✓${reset} Updated statusline path (hooks/statusline.js → hooks/amil-statusline.js)`);
+      'hooks$1amil-statusline.py'
+    ).replace(/^node\s+/, 'python3 ');
+    console.log(`  ${green}✓${reset} Updated statusline path (hooks/statusline.js → hooks/amil-statusline.py)`);
+  }
+
+  // Migrate JS hooks to Python hooks (v2.0 unification)
+  if (settings.statusLine && settings.statusLine.command &&
+      settings.statusLine.command.includes('amil-statusline.js')) {
+    settings.statusLine.command = settings.statusLine.command
+      .replace('amil-statusline.js', 'amil-statusline.py')
+      .replace(/^node\s+/, 'python3 ');
+    console.log(`  ${green}✓${reset} Migrated statusline to Python (amil-statusline.js → amil-statusline.py)`);
   }
 
   return settings;
@@ -1385,7 +1400,7 @@ function uninstall(isGlobal, runtime = 'claude') {
   // 4. Remove Amil hooks
   const hooksDir = path.join(targetDir, 'hooks');
   if (fs.existsSync(hooksDir)) {
-    const amilHooks = ['amil-statusline.js', 'amil-check-update.js', 'amil-check-update.sh', 'amil-context-monitor.js'];
+    const amilHooks = ['amil-statusline.py', 'amil-check-update.py', 'amil-context-monitor.py', 'amil-statusline.js', 'amil-check-update.js', 'amil-check-update.sh', 'amil-context-monitor.js'];
     let hookCount = 0;
     for (const hook of amilHooks) {
       const hookPath = path.join(hooksDir, hook);
@@ -2123,14 +2138,14 @@ function install(isGlobal, runtime = 'claude') {
   const settingsPath = path.join(targetDir, 'settings.json');
   const settings = cleanupOrphanedHooks(readSettings(settingsPath));
   const statuslineCommand = isGlobal
-    ? buildHookCommand(targetDir, 'amil-statusline.js')
-    : 'node ' + dirName + '/hooks/amil-statusline.js';
+    ? buildHookCommand(targetDir, 'amil-statusline.py')
+    : 'python3 ' + dirName + '/hooks/amil-statusline.py';
   const updateCheckCommand = isGlobal
-    ? buildHookCommand(targetDir, 'amil-check-update.js')
-    : 'node ' + dirName + '/hooks/amil-check-update.js';
+    ? buildHookCommand(targetDir, 'amil-check-update.py')
+    : 'python3 ' + dirName + '/hooks/amil-check-update.py';
   const contextMonitorCommand = isGlobal
-    ? buildHookCommand(targetDir, 'amil-context-monitor.js')
-    : 'node ' + dirName + '/hooks/amil-context-monitor.js';
+    ? buildHookCommand(targetDir, 'amil-context-monitor.py')
+    : 'python3 ' + dirName + '/hooks/amil-context-monitor.py';
 
   // Enable experimental agents for Gemini CLI (required for custom sub-agents)
   if (isGemini) {

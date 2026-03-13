@@ -2,7 +2,7 @@
 
 Run an interactive module discussion to capture design decisions for a specific Odoo module.
 
-**Rules:** CJS tooling, zero npm deps, atomic writes via `amil-tools.cjs`.
+**Rules:** Python tooling via `amil-utils orch`, atomic writes.
 
 ---
 
@@ -17,7 +17,7 @@ The module argument `{MODULE}` is provided by the user when invoking `/amil:disc
 Check that the module exists in module_status.json and is at "planned" status.
 
 ```bash
-MODULE_STATUS=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" module-status get "${MODULE}" --raw --cwd "$(pwd)" 2>&1)
+MODULE_STATUS=$(amil-utils orch module-status get "${MODULE}" --raw --cwd "$(pwd)" 2>&1)
 ```
 
 - If command fails or returns empty: show error "Module '${MODULE}' not found in module_status.json. Run /amil:new-erp first." and STOP.
@@ -78,7 +78,7 @@ Read .planning/research/decomposition.json
 # Extract the module's entry: models, depends, complexity
 
 # Get odoo config block
-ODOO_CONFIG=$(node "$HOME/.claude/amil/bin/amil-tools.cjs" config-get odoo --raw --cwd "$(pwd)" 2>/dev/null || echo '{}')
+ODOO_CONFIG=$(amil-utils orch config-get odoo --raw --cwd "$(pwd)" 2>/dev/null || echo '{}')
 ```
 
 ## Step 6: Spawn Questioner Agent
