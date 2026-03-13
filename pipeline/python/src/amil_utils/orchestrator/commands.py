@@ -240,7 +240,7 @@ def commit(
         else ["commit", "-m", message]
     )
     commit_result = exec_git(cwd, commit_args)
-    if commit_result["exitCode"] != 0:
+    if commit_result["exit_code"] != 0:
         stdout = commit_result.get("stdout", "")
         stderr = commit_result.get("stderr", "")
         if "nothing to commit" in stdout or "nothing to commit" in stderr:
@@ -254,7 +254,7 @@ def commit(
 
     # Get short hash
     hash_result = exec_git(cwd, ["rev-parse", "--short", "HEAD"])
-    short_hash = hash_result["stdout"] if hash_result["exitCode"] == 0 else None
+    short_hash = hash_result["stdout"] if hash_result["exit_code"] == 0 else None
     return {"committed": True, "hash": short_hash, "reason": "committed"}
 
 

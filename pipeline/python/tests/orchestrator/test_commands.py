@@ -205,6 +205,63 @@ class TestCommit:
         with pytest.raises(ValueError, match="commit message required"):
             commit(tmp_path, "")
 
+    def test_successful_commit(self, tmp_path: Path, monkeypatch) -> None:
+        from amil_utils.orchestrator import commands as cmd_mod
+
+        _make_project(tmp_path)
+        calls = []
+
+        def fake_exec_git(cwd, args):
+            calls.append(args)
+            if args[0] == "add":
+                return {"exit_code": 0, "stdout": "", "stderr": ""}
+            if args[0] == "commit":
+                return {"exit_code": 0, "stdout": "", "stderr": ""}
+            if args[0] == "rev-parse":
+                return {"exit_code": 0, "stdout": "abc1234", "stderr": ""}
+            return {"exit_code": 1, "stdout": "", "stderr": "unknown"}
+
+        monkeypatch.setattr(cmd_mod, "exec_git", fake_exec_git)
+        result = commit(tmp_path, "feat: test commit")
+        assert result["committed"] is True
+        assert result["hash"] == "abc1234"
+        assert result["reason"] == "committed"
+
+    def test_commit_failure(self, tmp_path: Path, monkeypatch) -> None:
+        from amil_utils.orchestrator import commands as cmd_mod
+
+        _make_project(tmp_path)
+
+        def fake_exec_git(cwd, args):
+            if args[0] == "add":
+                return {"exit_code": 0, "stdout": "", "stderr": ""}
+            if args[0] == "commit":
+                return {"exit_code": 1, "stdout": "", "stderr": "fatal: error"}
+            return {"exit_code": 0, "stdout": "", "stderr": ""}
+
+        monkeypatch.setattr(cmd_mod, "exec_git", fake_exec_git)
+        result = commit(tmp_path, "feat: will fail")
+        assert result["committed"] is False
+        assert result["reason"] == "commit_failed"
+        assert "fatal" in result["error"]
+
+    def test_nothing_to_commit(self, tmp_path: Path, monkeypatch) -> None:
+        from amil_utils.orchestrator import commands as cmd_mod
+
+        _make_project(tmp_path)
+
+        def fake_exec_git(cwd, args):
+            if args[0] == "add":
+                return {"exit_code": 0, "stdout": "", "stderr": ""}
+            if args[0] == "commit":
+                return {"exit_code": 1, "stdout": "nothing to commit", "stderr": ""}
+            return {"exit_code": 0, "stdout": "", "stderr": ""}
+
+        monkeypatch.setattr(cmd_mod, "exec_git", fake_exec_git)
+        result = commit(tmp_path, "feat: empty")
+        assert result["committed"] is False
+        assert result["reason"] == "nothing_to_commit"
+
 
 class TestSummaryExtract:
     def test_extracts_fields(self, tmp_path: Path) -> None:

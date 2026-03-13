@@ -161,16 +161,11 @@ def state_add_decision_cmd(
 ) -> None:
     from amil_utils.orchestrator.state import state_add_decision
 
-    _emit(
-        state_add_decision(
-            cwd,
-            phase=phase,
-            summary=summary,
-            summary_file=summary_file,
-            rationale=rationale,
-            rationale_file=rationale_file,
-        )
-    )
+    if summary_file and not summary:
+        summary = Path(summary_file).read_text(encoding="utf-8").strip()
+    if rationale_file and not rationale:
+        rationale = Path(rationale_file).read_text(encoding="utf-8").strip()
+    _emit(state_add_decision(cwd, phase=phase, summary=summary, rationale=rationale))
 
 
 @state_grp.command("add-blocker")
