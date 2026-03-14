@@ -38,3 +38,6 @@ pgdata/
 
 # Logs
 *.log
+
+# Docker dev environment
+docker/dev/.env
