@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "odoo-introspection": {
+      "type": "stdio",
+      "command": "python3",
+      "args": ["-m", "amil_utils.mcp.server"],
+      "env": {
+        "ODOO_URL": "http://localhost:8069",
+        "ODOO_DB": "odoo_dev"
+      }
+    }
+  }
+}
