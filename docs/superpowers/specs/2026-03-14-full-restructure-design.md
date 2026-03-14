@@ -23,7 +23,7 @@ After the Python-first unification (CJS → Python), the directory structure no 
 | Repo layout | Mirror `~/.claude/` install layout | What you see in repo = what you get after install. No translation layer. |
 | Python package location | `python/` at repo root | Honest name, 1 level of nesting, clear separation from Claude Code artifacts |
 | Agent organization | All 28 in single `agents/` directory | No more split across orchestrator/pipeline — one flat directory |
-| Knowledge files | Under `amil/knowledge/` (not root) | Agents reference `@~/.claude/amil/knowledge/`; keeping under `amil/` preserves all 40+ existing path references |
+| Knowledge files | Under `amil/knowledge/` (not root) | Agents reference `@~/.claude/amil/knowledge/`; keeping under `amil/` preserves all ~36 existing path references |
 
 ## Target Directory Structure
 
@@ -209,8 +209,9 @@ Factory-de-Odoo/
 │   └── pyproject.toml
 │
 ├── docker/                      # Dev instance
-│   ├── dev/docker-compose.yml
-│   └── odoo.conf
+│   └── dev/
+│       ├── docker-compose.yml
+│       └── odoo.conf            # Must be alongside docker-compose.yml (./odoo.conf mount)
 │
 ├── scripts/                     # Dev scripts
 │   ├── odoo-dev.sh
@@ -296,6 +297,14 @@ PIPELINE_PYTHON = SOURCE_ROOT / "python"
 | `orchestrator/docs/context-monitor.md` | `docs/context-monitor.md` | Real documentation file |
 | `orchestrator/docs/USER-GUIDE.md` | `docs/USER-GUIDE.md` | Real documentation file |
 | `pipeline/CONTRIBUTING.md` | `CONTRIBUTING.md` (root) | Project-level doc |
+| `orchestrator/CHANGELOG.md` | `CHANGELOG.md` (root) | Project-level doc |
+| `orchestrator/SECURITY.md` | `SECURITY.md` (root) | Project-level doc |
+| `orchestrator/LICENSE` | `LICENSE` (root) | Project-level doc |
+| `orchestrator/.github/*` | `.github/*` (root) | GitHub config (CODEOWNERS, workflows, issue templates) |
+| `orchestrator/assets/factory-logo.svg` | `assets/factory-logo.svg` | Branding |
+
+Note: Root `install.py` is created by moving `orchestrator/install.py` to root and
+updating `INSTALL_DIRS`, `PIPELINE_PYTHON` paths, and error messages.
 
 ## Renames
 
