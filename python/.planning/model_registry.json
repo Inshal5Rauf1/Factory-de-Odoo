@@ -1,0 +1,17 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "last_updated": "2026-03-14T00:52:31.212784+00:00",
+    "odoo_version": "17.0",
+    "modules_registered": 6
+  },
+  "models": {},
+  "dependency_graph": {
+    "test_cli_no_c7": [],
+    "test_cli_default": [],
+    "test_cli_fresh": [],
+    "test_cli_fresh_default": [],
+    "test_resume_mod": [],
+    "test_no_resume": []
+  }
+}
