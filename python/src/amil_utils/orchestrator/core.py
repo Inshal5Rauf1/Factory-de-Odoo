@@ -1,7 +1,7 @@
 """Core — Shared utilities, constants, and internal helpers.
 
 Ported from orchestrator/amil/bin/lib/core.cjs (581 lines, since deleted).
-Excludes parseArgs (Click handles CLI args) and output/error (in output.py).
+Excludes parseArgs (Click handles CLI args) and output (in cli_helpers.py).
 """
 from __future__ import annotations
 
