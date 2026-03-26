@@ -531,6 +531,7 @@ class ModelSpec(BaseModel):
     related_counts: list[RelatedCountSpec] = []
     server_actions: list[ServerActionSpec] = []
     display_name_pattern: str | None = None
+    expected_examples: list[dict] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------

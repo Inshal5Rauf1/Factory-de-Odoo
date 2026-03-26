@@ -585,3 +585,65 @@ class TestOdooGsdSchemaAlignment:
         transition = dumped["workflow"][0]["transitions"][0]
         assert "from_state" in transition, "default dump should use Python field names"
         assert "to_state" in transition
+
+
+# ---------------------------------------------------------------------------
+# TestExpectedExamples
+# ---------------------------------------------------------------------------
+class TestExpectedExamples:
+    """Tests for expected_examples field on ModelSpec."""
+
+    def test_model_spec_accepts_expected_examples(self):
+        """ModelSpec should accept expected_examples field."""
+        model = ModelSpec(
+            name="sale.custom",
+            expected_examples=[
+                {"create": {"quantity": 5, "unit_price": 10.0}, "expect": {"total_amount": 50.0}},
+            ],
+        )
+        assert len(model.expected_examples) == 1
+        assert model.expected_examples[0]["expect"]["total_amount"] == 50.0
+
+    def test_model_spec_expected_examples_defaults_empty(self):
+        """expected_examples should default to empty list."""
+        model = ModelSpec(name="test.model")
+        assert model.expected_examples == []
+
+    def test_model_spec_multiple_examples(self):
+        """ModelSpec should accept multiple expected_examples entries."""
+        model = ModelSpec(
+            name="sale.custom",
+            expected_examples=[
+                {"create": {"quantity": 5, "unit_price": 10.0}, "expect": {"total_amount": 50.0}},
+                {"create": {"quantity": 0, "unit_price": 10.0}, "expect": {"total_amount": 0.0}},
+                {"create": {"quantity": 3, "unit_price": 7.5}, "expect": {"total_amount": 22.5}},
+            ],
+        )
+        assert len(model.expected_examples) == 3
+        assert model.expected_examples[2]["expect"]["total_amount"] == 22.5
+
+    def test_model_spec_expected_examples_roundtrip(self):
+        """expected_examples should survive model_dump() roundtrip."""
+        examples = [
+            {"create": {"name": "Test"}, "expect": {"display_name": "Test"}},
+        ]
+        model = ModelSpec(name="test.model", expected_examples=examples)
+        dumped = model.model_dump()
+        assert dumped["expected_examples"] == examples
+
+    def test_model_spec_expected_examples_in_module_spec(self):
+        """expected_examples on a model within ModuleSpec validates correctly."""
+        spec = ModuleSpec(
+            module_name="test_mod",
+            models=[
+                {
+                    "name": "test.order",
+                    "fields": [{"name": "name", "type": "Char"}],
+                    "expected_examples": [
+                        {"create": {"name": "Order1"}, "expect": {"state": "draft"}},
+                    ],
+                },
+            ],
+        )
+        assert len(spec.models[0].expected_examples) == 1
+        assert spec.models[0].expected_examples[0]["create"]["name"] == "Order1"

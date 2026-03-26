@@ -234,3 +234,23 @@ class Test{{ model_name | to_class }}(TransactionCase):
         record = form.save()
         self.assertTrue(record.id)
 {% endif %}
+{% if expected_examples is defined and expected_examples %}
+
+
+@tagged("post_install", "-at_install")
+class Test{{ model_name | to_class }}Examples(TransactionCase):
+    """Data-driven tests from spec expected_examples."""
+{% for ex in expected_examples %}
+
+    def test_example_{{ loop.index }}(self):
+        """Verify: create({{ ex.create | tojson }}) => {{ ex.expect | tojson }}"""
+        record = self.env['{{ model_name }}'].create({{ ex.create | tojson }})
+{% for field_name, expected_value in ex.expect.items() %}
+        self.assertEqual(
+            record.{{ field_name }},
+            {{ expected_value }},
+            "Expected {{ field_name }} = {{ expected_value }}",
+        )
+{% endfor %}
+{% endfor %}
+{% endif %}

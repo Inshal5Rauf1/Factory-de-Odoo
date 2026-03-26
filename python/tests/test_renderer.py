@@ -5818,3 +5818,139 @@ class TestCronNumbercallVersionGuard:
             assert cron_file is not None, "cron_data.xml not generated"
             content = Path(cron_file).read_text(encoding="utf-8")
             assert "numbercall" not in content
+
+
+# ---------------------------------------------------------------------------
+# Expected Examples: data-driven test generation
+# ---------------------------------------------------------------------------
+
+
+class TestExpectedExamplesRendering:
+    """Tests for expected_examples rendering in test_model.py.j2."""
+
+    def test_expected_examples_generates_additional_test_class(self, tmp_path):
+        """When expected_examples is present, an additional Examples test class is generated."""
+        spec = {
+            "module_name": "test_module",
+            "odoo_version": "19.0",
+            "depends": ["base"],
+            "models": [
+                {
+                    "name": "test.order",
+                    "description": "Test Order",
+                    "fields": [
+                        {"name": "name", "type": "Char", "required": True},
+                        {"name": "quantity", "type": "Integer", "required": True},
+                        {"name": "unit_price", "type": "Float", "required": True},
+                        {"name": "total_amount", "type": "Float", "compute": "_compute_total"},
+                    ],
+                    "expected_examples": [
+                        {"create": {"quantity": 5, "unit_price": 10.0}, "expect": {"total_amount": 50.0}},
+                        {"create": {"quantity": 0, "unit_price": 10.0}, "expect": {"total_amount": 0.0}},
+                    ],
+                },
+            ],
+            "wizards": [],
+        }
+        files, _ = render_module(spec, get_template_dir(), tmp_path)
+        test_file = tmp_path / "test_module" / "tests" / "test_test_order.py"
+        assert test_file.exists(), "Test file should be generated"
+        content = test_file.read_text()
+        # Should have the original test class
+        assert "class TestTestOrder(TransactionCase):" in content
+        # Should have the additional examples class
+        assert "TestTestOrderExamples" in content
+        # Should have two test methods (one per example)
+        assert "test_example_1" in content
+        assert "test_example_2" in content
+        # Should reference the model name
+        assert "test.order" in content
+        # Should contain expected values
+        assert "total_amount" in content
+        assert "50.0" in content
+
+    def test_no_examples_no_extra_class(self, tmp_path):
+        """When expected_examples is empty/absent, no Examples class is generated."""
+        spec = {
+            "module_name": "test_module",
+            "odoo_version": "19.0",
+            "depends": ["base"],
+            "models": [
+                {
+                    "name": "test.order",
+                    "description": "Test Order",
+                    "fields": [
+                        {"name": "name", "type": "Char", "required": True},
+                    ],
+                },
+            ],
+            "wizards": [],
+        }
+        files, _ = render_module(spec, get_template_dir(), tmp_path)
+        test_file = tmp_path / "test_module" / "tests" / "test_test_order.py"
+        assert test_file.exists(), "Test file should be generated"
+        content = test_file.read_text()
+        # Should have the original test class
+        assert "class TestTestOrder(TransactionCase):" in content
+        # Should NOT have the examples class
+        assert "Examples" not in content
+        assert "test_example_" not in content
+
+    def test_expected_examples_empty_list_no_extra_class(self, tmp_path):
+        """When expected_examples is an explicit empty list, no Examples class is generated."""
+        spec = {
+            "module_name": "test_module",
+            "odoo_version": "19.0",
+            "depends": ["base"],
+            "models": [
+                {
+                    "name": "test.order",
+                    "description": "Test Order",
+                    "fields": [
+                        {"name": "name", "type": "Char", "required": True},
+                    ],
+                    "expected_examples": [],
+                },
+            ],
+            "wizards": [],
+        }
+        files, _ = render_module(spec, get_template_dir(), tmp_path)
+        test_file = tmp_path / "test_module" / "tests" / "test_test_order.py"
+        content = test_file.read_text()
+        assert "Examples" not in content
+        assert "test_example_" not in content
+
+    def test_expected_examples_assertEqual_per_expect_field(self, tmp_path):
+        """Each field in 'expect' dict generates a separate assertEqual."""
+        spec = {
+            "module_name": "test_module",
+            "odoo_version": "19.0",
+            "depends": ["base"],
+            "models": [
+                {
+                    "name": "test.calc",
+                    "description": "Test Calc",
+                    "fields": [
+                        {"name": "name", "type": "Char", "required": True},
+                        {"name": "a", "type": "Float", "required": True},
+                        {"name": "b", "type": "Float", "required": True},
+                        {"name": "sum_ab", "type": "Float", "compute": "_compute_sum"},
+                        {"name": "diff_ab", "type": "Float", "compute": "_compute_diff"},
+                    ],
+                    "expected_examples": [
+                        {
+                            "create": {"a": 10.0, "b": 3.0},
+                            "expect": {"sum_ab": 13.0, "diff_ab": 7.0},
+                        },
+                    ],
+                },
+            ],
+            "wizards": [],
+        }
+        files, _ = render_module(spec, get_template_dir(), tmp_path)
+        test_file = tmp_path / "test_module" / "tests" / "test_test_calc.py"
+        content = test_file.read_text()
+        # Should have assertEqual for both expected fields
+        assert "record.sum_ab" in content
+        assert "record.diff_ab" in content
+        assert "assertEqual" in content
