@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from amil_utils.orchestrator.coherence import (
-    BASE_ODOO_MODELS,
+    _load_base_models,
     check_computed_depends,
     check_duplicate_models,
     check_many2one_targets,
@@ -54,6 +54,38 @@ class TestCheckMany2oneTargets:
         ]}]}
         result = check_many2one_targets(spec, EMPTY_REGISTRY)
         assert result["status"] == "pass"
+
+    def test_many2one_to_sale_order_passes(self) -> None:
+        """sale.order is in known_odoo_models.json -- should not be flagged."""
+        spec = {"models": [{"name": "custom.invoice", "fields": [
+            {"name": "order_id", "type": "Many2one", "comodel_name": "sale.order"},
+        ]}]}
+        result = check_many2one_targets(spec, EMPTY_REGISTRY)
+        assert result["status"] == "pass"
+
+    def test_many2one_to_stock_picking_passes(self) -> None:
+        """stock.picking is in known_odoo_models.json -- should not be flagged."""
+        spec = {"models": [{"name": "custom.delivery", "fields": [
+            {"name": "picking_id", "type": "Many2one", "comodel_name": "stock.picking"},
+        ]}]}
+        result = check_many2one_targets(spec, EMPTY_REGISTRY)
+        assert result["status"] == "pass"
+
+    def test_many2one_to_project_task_passes(self) -> None:
+        """project.task is in known_odoo_models.json -- should not be flagged."""
+        spec = {"models": [{"name": "custom.work", "fields": [
+            {"name": "task_id", "type": "Many2one", "comodel_name": "project.task"},
+        ]}]}
+        result = check_many2one_targets(spec, EMPTY_REGISTRY)
+        assert result["status"] == "pass"
+
+    def test_many2one_to_truly_unknown_model_fails(self) -> None:
+        """A completely invented model should still fail."""
+        spec = {"models": [{"name": "custom.invoice", "fields": [
+            {"name": "widget_id", "type": "Many2one", "comodel_name": "fake.nonexistent.model"},
+        ]}]}
+        result = check_many2one_targets(spec, EMPTY_REGISTRY)
+        assert result["status"] == "fail"
 
 
 class TestCheckDuplicateModels:
@@ -152,8 +184,25 @@ class TestRunAllChecks:
         assert result["status"] == "fail"
 
 
-class TestBaseOdooModels:
+class TestLoadBaseModels:
     def test_contains_common_models(self) -> None:
-        assert "res.partner" in BASE_ODOO_MODELS
-        assert "res.users" in BASE_ODOO_MODELS
-        assert "mail.thread" in BASE_ODOO_MODELS
+        models = _load_base_models()
+        assert "res.partner" in models
+        assert "res.users" in models
+        assert "mail.thread" in models
+
+    def test_contains_many_models(self) -> None:
+        """Should load all 203 models from known_odoo_models.json, not just 20."""
+        models = _load_base_models()
+        assert len(models) >= 200
+
+    def test_contains_sale_stock_project_models(self) -> None:
+        """Models that were missing from the hardcoded set."""
+        models = _load_base_models()
+        assert "sale.order" in models
+        assert "stock.picking" in models
+        assert "project.task" in models
+
+    def test_returns_frozenset(self) -> None:
+        models = _load_base_models()
+        assert isinstance(models, frozenset)

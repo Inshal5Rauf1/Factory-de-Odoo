@@ -7,30 +7,29 @@ run_all_checks aggregates: {status, checks}
 """
 from __future__ import annotations
 
+import json
+from functools import lru_cache
+from pathlib import Path
+
 # ── Constants ────────────────────────────────────────────────────────────────
 
-BASE_ODOO_MODELS: frozenset[str] = frozenset([
-    "res.partner",
-    "res.users",
-    "res.company",
-    "res.currency",
-    "product.product",
-    "product.template",
-    "account.move",
-    "account.account",
-    "account.journal",
-    "mail.thread",
-    "mail.activity.mixin",
-    "uom.uom",
-    "ir.attachment",
-    "ir.sequence",
-    "ir.cron",
-    "hr.employee",
-    "hr.department",
-    "base",
-    "res.config.settings",
-    "res.country",
-])
+
+@lru_cache(maxsize=1)
+def _load_base_models() -> frozenset[str]:
+    """Load known Odoo model names from data/known_odoo_models.json."""
+    data_file = Path(__file__).resolve().parent.parent / "data" / "known_odoo_models.json"
+    if not data_file.exists():
+        return frozenset()
+    raw = json.loads(data_file.read_text(encoding="utf-8"))
+    if isinstance(raw, dict):
+        # JSON has {"_meta": {...}, "models": {...}} — extract model keys
+        models = raw.get("models", {})
+        if isinstance(models, dict):
+            return frozenset(models.keys())
+        return frozenset()
+    if isinstance(raw, list):
+        return frozenset(raw)
+    return frozenset()
 
 _RELATIONAL_TYPES = {"Many2one", "Many2many", "One2many"}
 
@@ -56,7 +55,7 @@ def check_many2one_targets(spec: dict, registry: dict) -> dict:
                 continue
             if target in registry_model_names:
                 continue
-            if target in BASE_ODOO_MODELS:
+            if target in _load_base_models():
                 continue
 
             violations.append({
