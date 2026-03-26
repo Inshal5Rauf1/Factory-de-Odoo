@@ -3,7 +3,7 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: ${FACTORY_DB_USER:-odoo}
-      POSTGRES_PASSWORD: ${FACTORY_DB_PASSWORD:-odoo}
+      POSTGRES_PASSWORD: ${FACTORY_DB_PASSWORD:?Set FACTORY_DB_PASSWORD env var}
       POSTGRES_DB: odoo_factory
     volumes:
       - factory-db-data:/var/lib/postgresql/data
@@ -45,7 +45,7 @@ services:
     environment:
       HOST: db
       USER: ${FACTORY_DB_USER:-odoo}
-      PASSWORD: ${FACTORY_DB_PASSWORD:-odoo}
+      PASSWORD: ${FACTORY_DB_PASSWORD:?Set FACTORY_DB_PASSWORD env var}
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8069/web/health"]
       interval: 10s
