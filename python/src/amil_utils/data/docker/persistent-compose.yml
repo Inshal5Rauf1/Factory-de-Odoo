@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16
+    image: postgres:${POSTGRES_VERSION:-16}
     environment:
       POSTGRES_USER: ${FACTORY_DB_USER:-odoo}
       POSTGRES_PASSWORD: ${FACTORY_DB_PASSWORD:?Set FACTORY_DB_PASSWORD env var}
@@ -33,7 +33,7 @@ services:
       - db-internal
 
   odoo:
-    image: odoo:19.0
+    image: odoo:${ODOO_MAJOR_VERSION:-19}.0
     depends_on:
       db:
         condition: service_healthy

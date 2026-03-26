@@ -830,3 +830,185 @@ class TestPreCleanupOnStart:
         compose_args = first_call_args[0][1]  # second positional arg is the args list
         assert "down" in compose_args
         assert "--remove-orphans" in compose_args
+
+
+# --- Odoo version parameterization tests ---
+
+
+class TestInstallPassesOdooVersionEnv:
+    """docker_install_module passes ODOO_MAJOR_VERSION in compose env."""
+
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
+    def test_odoo_version_17_sets_major_17(
+        self,
+        mock_available: MagicMock,
+        mock_run: MagicMock,
+        mock_teardown: MagicMock,
+        module_dir: Path,
+        compose_file: Path,
+    ) -> None:
+        """odoo_version='17.0' should set ODOO_MAJOR_VERSION=17 in compose env."""
+        mock_available.return_value = True
+        success_log = (
+            "2026-03-02 10:00:00,000 1 INFO test_db "
+            "odoo.modules.loading: Modules loaded.\n"
+        )
+        mock_run.side_effect = [
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=success_log, stderr="", returncode=0),  # run --rm
+        ]
+
+        docker_install_module(
+            module_dir, compose_file=compose_file, odoo_version="17.0"
+        )
+
+        # All _run_compose calls should include ODOO_MAJOR_VERSION=17 in env
+        for call_obj in mock_run.call_args_list:
+            env_arg = call_obj[0][2]  # third positional arg is the env dict
+            assert env_arg.get("ODOO_MAJOR_VERSION") == "17", (
+                f"Expected ODOO_MAJOR_VERSION='17' in env, got: {env_arg}"
+            )
+
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
+    def test_default_odoo_version_is_19(
+        self,
+        mock_available: MagicMock,
+        mock_run: MagicMock,
+        mock_teardown: MagicMock,
+        module_dir: Path,
+        compose_file: Path,
+    ) -> None:
+        """Default odoo_version should produce ODOO_MAJOR_VERSION=19."""
+        mock_available.return_value = True
+        success_log = (
+            "2026-03-02 10:00:00,000 1 INFO test_db "
+            "odoo.modules.loading: Modules loaded.\n"
+        )
+        mock_run.side_effect = [
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=success_log, stderr="", returncode=0),  # run --rm
+        ]
+
+        docker_install_module(module_dir, compose_file=compose_file)
+
+        # All _run_compose calls should include ODOO_MAJOR_VERSION=19 in env
+        for call_obj in mock_run.call_args_list:
+            env_arg = call_obj[0][2]  # third positional arg is the env dict
+            assert env_arg.get("ODOO_MAJOR_VERSION") == "19", (
+                f"Expected ODOO_MAJOR_VERSION='19' in env, got: {env_arg}"
+            )
+
+
+class TestRunTestsPassesOdooVersionEnv:
+    """docker_run_tests passes ODOO_MAJOR_VERSION in compose env."""
+
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
+    def test_odoo_version_18_sets_major_18(
+        self,
+        mock_available: MagicMock,
+        mock_run: MagicMock,
+        mock_teardown: MagicMock,
+        module_dir: Path,
+        compose_file: Path,
+    ) -> None:
+        """odoo_version='18.0' should set ODOO_MAJOR_VERSION=18 in compose env."""
+        mock_available.return_value = True
+        test_log = (
+            "2026-03-02 10:00:00,000 1 INFO test_db "
+            "odoo.addons.test_mod.tests.test_model: test_create ... ok\n"
+        )
+        mock_run.side_effect = [
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=test_log, stderr="", returncode=0),  # run --rm
+        ]
+
+        docker_run_tests(
+            module_dir, compose_file=compose_file, odoo_version="18.0"
+        )
+
+        # All _run_compose calls should include ODOO_MAJOR_VERSION=18 in env
+        for call_obj in mock_run.call_args_list:
+            env_arg = call_obj[0][2]  # third positional arg is the env dict
+            assert env_arg.get("ODOO_MAJOR_VERSION") == "18", (
+                f"Expected ODOO_MAJOR_VERSION='18' in env, got: {env_arg}"
+            )
+
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
+    def test_default_odoo_version_is_19(
+        self,
+        mock_available: MagicMock,
+        mock_run: MagicMock,
+        mock_teardown: MagicMock,
+        module_dir: Path,
+        compose_file: Path,
+    ) -> None:
+        """Default odoo_version for run_tests should produce ODOO_MAJOR_VERSION=19."""
+        mock_available.return_value = True
+        test_log = (
+            "2026-03-02 10:00:00,000 1 INFO test_db "
+            "odoo.addons.test_mod.tests.test_model: test_create ... ok\n"
+        )
+        mock_run.side_effect = [
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=test_log, stderr="", returncode=0),  # run --rm
+        ]
+
+        docker_run_tests(module_dir, compose_file=compose_file)
+
+        # All _run_compose calls should include ODOO_MAJOR_VERSION=19 in env
+        for call_obj in mock_run.call_args_list:
+            env_arg = call_obj[0][2]  # third positional arg is the env dict
+            assert env_arg.get("ODOO_MAJOR_VERSION") == "19", (
+                f"Expected ODOO_MAJOR_VERSION='19' in env, got: {env_arg}"
+            )
+
+
+class TestTeardownReceivesOdooVersionEnv:
+    """_teardown receives ODOO_MAJOR_VERSION so 'down' uses the correct image."""
+
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
+    def test_teardown_env_includes_odoo_major_version(
+        self,
+        mock_available: MagicMock,
+        mock_run: MagicMock,
+        mock_teardown: MagicMock,
+        module_dir: Path,
+        compose_file: Path,
+    ) -> None:
+        """_teardown should receive env dict with ODOO_MAJOR_VERSION."""
+        mock_available.return_value = True
+        success_log = (
+            "2026-03-02 10:00:00,000 1 INFO test_db "
+            "odoo.modules.loading: Modules loaded.\n"
+        )
+        mock_run.side_effect = [
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=success_log, stderr="", returncode=0),  # run --rm
+        ]
+
+        docker_install_module(
+            module_dir, compose_file=compose_file, odoo_version="17.0"
+        )
+
+        # _teardown should have been called with env containing ODOO_MAJOR_VERSION
+        mock_teardown.assert_called()
+        teardown_call = mock_teardown.call_args
+        teardown_env = teardown_call[0][1]  # second positional arg is env dict
+        assert teardown_env.get("ODOO_MAJOR_VERSION") == "17", (
+            f"Expected ODOO_MAJOR_VERSION='17' in teardown env, got: {teardown_env}"
+        )

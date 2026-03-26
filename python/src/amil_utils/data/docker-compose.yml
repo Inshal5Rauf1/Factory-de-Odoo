@@ -1,8 +1,9 @@
-# Ephemeral Odoo 19.0 + PostgreSQL 16 for module validation
+# Ephemeral Odoo + PostgreSQL for module validation
 # Usage: MODULE_PATH=/path/to/module MODULE_NAME=module_name docker compose up
+# Set ODOO_MAJOR_VERSION to target a specific Odoo release (default: 19).
 services:
   db:
-    image: postgres:16
+    image: postgres:${POSTGRES_VERSION:-16}
     environment:
       POSTGRES_USER: odoo
       POSTGRES_PASSWORD: ${FACTORY_DB_PASSWORD:?Set FACTORY_DB_PASSWORD env var}
@@ -16,7 +17,7 @@ services:
       - /var/lib/postgresql/data
 
   odoo:
-    image: odoo:19
+    image: odoo:${ODOO_MAJOR_VERSION:-19}
     depends_on:
       db:
         condition: service_healthy

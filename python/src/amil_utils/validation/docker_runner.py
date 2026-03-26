@@ -1,8 +1,9 @@
 """Docker lifecycle management for Odoo module validation.
 
-Manages ephemeral Docker Compose environments (Odoo 17 + PostgreSQL 16)
-for module installation and test execution. Containers are always torn
-down after validation, even on errors.
+Manages ephemeral Docker Compose environments (Odoo + PostgreSQL) for
+module installation and test execution. The Odoo version is configurable
+via the ``odoo_version`` parameter (default: ``"19.0"``). Containers are
+always torn down after validation, even on errors.
 """
 
 from __future__ import annotations
@@ -213,16 +214,20 @@ def docker_install_module(
     module_path: Path,
     compose_file: Path | None = None,
     timeout: int = 300,
+    odoo_version: str = "19.0",
 ) -> Result[InstallResult]:
     """Install an Odoo module in an ephemeral Docker environment.
 
-    Starts Odoo 17 + PostgreSQL 16 containers, runs module installation,
+    Starts Odoo + PostgreSQL containers, runs module installation,
     parses the log output for success/failure, and tears down containers.
 
     Args:
         module_path: Path to the Odoo module directory.
         compose_file: Path to docker-compose.yml. Uses default if None.
         timeout: Timeout in seconds for the install command.
+        odoo_version: Odoo version string (e.g. "17.0", "19.0"). The major
+            version is extracted and passed as ODOO_MAJOR_VERSION env var
+            to the Docker Compose file.
 
     Returns:
         Result.ok(InstallResult) on successful execution,
@@ -240,10 +245,12 @@ def docker_install_module(
         return Result.fail(name_error)
 
     project_name = _unique_project_name(module_name)
+    major = odoo_version.split(".")[0]
 
     env = {
         "MODULE_PATH": str(module_path.resolve()),
         "MODULE_NAME": module_name,
+        "ODOO_MAJOR_VERSION": major,
     }
 
     try:
@@ -303,10 +310,11 @@ def docker_run_tests(
     module_path: Path,
     compose_file: Path | None = None,
     timeout: int = 600,
+    odoo_version: str = "19.0",
 ) -> Result[tuple[TestResult, ...]]:
     """Run Odoo module tests in an ephemeral Docker environment.
 
-    Starts Odoo 17 + PostgreSQL 16 containers, runs module tests with
+    Starts Odoo + PostgreSQL containers, runs module tests with
     --test-enable, parses per-test results from the log output, and
     tears down containers.
 
@@ -314,6 +322,9 @@ def docker_run_tests(
         module_path: Path to the Odoo module directory.
         compose_file: Path to docker-compose.yml. Uses default if None.
         timeout: Timeout in seconds for the test command.
+        odoo_version: Odoo version string (e.g. "17.0", "19.0"). The major
+            version is extracted and passed as ODOO_MAJOR_VERSION env var
+            to the Docker Compose file.
 
     Returns:
         Result.ok(test_results) on successful execution,
@@ -331,10 +342,12 @@ def docker_run_tests(
         return Result.fail(name_error)
 
     project_name = _unique_project_name(module_name)
+    major = odoo_version.split(".")[0]
 
     env = {
         "MODULE_PATH": str(module_path.resolve()),
         "MODULE_NAME": module_name,
+        "ODOO_MAJOR_VERSION": major,
     }
 
     try:
