@@ -47,6 +47,7 @@ target-version = "py312"
 line-length = 120
 
 [tool.pytest.ini_options]
+pythonpath = ["src"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 norecursedirs = ["tests/fixtures/docker_test_module"]
