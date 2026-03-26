@@ -1,8 +1,11 @@
 """Tests for orchestrator circular_dep module."""
 from __future__ import annotations
 
+import json
+
 from amil_utils.orchestrator.circular_dep import (
     analyze_circular_pair,
+    apply_circular_patches,
     generate_patch_spec,
     plan_build_order,
 )
@@ -134,3 +137,166 @@ class TestPlanBuildOrder:
         }]
         result = plan_build_order(["mod_a", "mod_b"], risks, None)
         assert len(result["patch_rounds"]) == 1
+
+
+class TestApplyCircularPatches:
+    def test_single_patch_adds_field_to_spec(self, tmp_path):
+        """A patch should add the deferred field to the target module's spec."""
+        module_dir = tmp_path / ".planning" / "modules" / "hr_contract"
+        module_dir.mkdir(parents=True)
+        spec = {
+            "module_name": "hr_contract",
+            "models": [{"name": "hr.contract", "fields": [
+                {"name": "name", "type": "Char"},
+            ]}],
+        }
+        (module_dir / "spec.json").write_text(json.dumps(spec))
+
+        patch = {
+            "target_module": "hr_contract",
+            "target_model": "hr.contract",
+            "deferred_fields": [
+                {"name": "slip_ids", "type": "One2many",
+                 "comodel_name": "hr.payslip", "inverse_name": "contract_id"},
+            ],
+        }
+
+        result = apply_circular_patches(tmp_path, [patch])
+        assert len(result) == 1
+        assert result[0]["status"] == "applied"
+
+        # Verify the spec was updated
+        updated_spec = json.loads((module_dir / "spec.json").read_text())
+        field_names = [f["name"] for f in updated_spec["models"][0]["fields"]]
+        assert "slip_ids" in field_names
+
+    def test_patch_to_nonexistent_module_returns_error(self, tmp_path):
+        """Patching a module that doesn't exist should return error status."""
+        patch = {
+            "target_module": "nonexistent",
+            "target_model": "x.model",
+            "deferred_fields": [{"name": "ref_id", "type": "Many2one"}],
+        }
+        result = apply_circular_patches(tmp_path, [patch])
+        assert len(result) == 1
+        assert result[0]["status"] == "error"
+
+    def test_patch_skips_if_field_already_exists(self, tmp_path):
+        """If the deferred field already exists, skip with warning."""
+        module_dir = tmp_path / ".planning" / "modules" / "hr_contract"
+        module_dir.mkdir(parents=True)
+        spec = {
+            "module_name": "hr_contract",
+            "models": [{"name": "hr.contract", "fields": [
+                {"name": "name", "type": "Char"},
+                {"name": "slip_ids", "type": "One2many"},
+            ]}],
+        }
+        (module_dir / "spec.json").write_text(json.dumps(spec))
+
+        patch = {
+            "target_module": "hr_contract",
+            "target_model": "hr.contract",
+            "deferred_fields": [
+                {"name": "slip_ids", "type": "One2many",
+                 "comodel_name": "hr.payslip", "inverse_name": "contract_id"},
+            ],
+        }
+        result = apply_circular_patches(tmp_path, [patch])
+        assert result[0]["status"] == "skipped"
+
+    def test_empty_patches_returns_empty(self, tmp_path):
+        """Empty patch list returns empty result list."""
+        result = apply_circular_patches(tmp_path, [])
+        assert result == []
+
+    def test_patch_to_nonexistent_model_returns_error(self, tmp_path):
+        """Patching a model that doesn't exist in the spec returns error."""
+        module_dir = tmp_path / ".planning" / "modules" / "hr_contract"
+        module_dir.mkdir(parents=True)
+        spec = {
+            "module_name": "hr_contract",
+            "models": [{"name": "hr.contract", "fields": [
+                {"name": "name", "type": "Char"},
+            ]}],
+        }
+        (module_dir / "spec.json").write_text(json.dumps(spec))
+
+        patch = {
+            "target_module": "hr_contract",
+            "target_model": "hr.nonexistent",
+            "deferred_fields": [
+                {"name": "foo_id", "type": "Many2one"},
+            ],
+        }
+        result = apply_circular_patches(tmp_path, [patch])
+        assert len(result) == 1
+        assert result[0]["status"] == "error"
+
+    def test_multiple_patches_applied(self, tmp_path):
+        """Multiple patches to different modules all get applied."""
+        for mod_name in ("mod_a", "mod_b"):
+            mod_dir = tmp_path / ".planning" / "modules" / mod_name
+            mod_dir.mkdir(parents=True)
+            spec = {
+                "module_name": mod_name,
+                "models": [{"name": f"{mod_name}.model", "fields": [
+                    {"name": "name", "type": "Char"},
+                ]}],
+            }
+            (mod_dir / "spec.json").write_text(json.dumps(spec))
+
+        patches = [
+            {
+                "target_module": "mod_a",
+                "target_model": "mod_a.model",
+                "deferred_fields": [
+                    {"name": "b_ids", "type": "One2many",
+                     "comodel_name": "mod_b.model", "inverse_name": "a_id"},
+                ],
+            },
+            {
+                "target_module": "mod_b",
+                "target_model": "mod_b.model",
+                "deferred_fields": [
+                    {"name": "a_ids", "type": "One2many",
+                     "comodel_name": "mod_a.model", "inverse_name": "b_id"},
+                ],
+            },
+        ]
+
+        results = apply_circular_patches(tmp_path, patches)
+        assert len(results) == 2
+        assert all(r["status"] == "applied" for r in results)
+
+    def test_partial_skip_when_some_fields_exist(self, tmp_path):
+        """When some deferred fields exist and others don't, add only the new ones."""
+        module_dir = tmp_path / ".planning" / "modules" / "hr_contract"
+        module_dir.mkdir(parents=True)
+        spec = {
+            "module_name": "hr_contract",
+            "models": [{"name": "hr.contract", "fields": [
+                {"name": "name", "type": "Char"},
+                {"name": "slip_ids", "type": "One2many"},
+            ]}],
+        }
+        (module_dir / "spec.json").write_text(json.dumps(spec))
+
+        patch = {
+            "target_module": "hr_contract",
+            "target_model": "hr.contract",
+            "deferred_fields": [
+                {"name": "slip_ids", "type": "One2many",
+                 "comodel_name": "hr.payslip", "inverse_name": "contract_id"},
+                {"name": "payroll_line_ids", "type": "One2many",
+                 "comodel_name": "hr.payroll.line", "inverse_name": "contract_id"},
+            ],
+        }
+        result = apply_circular_patches(tmp_path, [patch])
+        assert result[0]["status"] == "applied"
+        assert "payroll_line_ids" in result[0]["added"]
+        assert "slip_ids" in result[0]["skipped"]
+
+        updated_spec = json.loads((module_dir / "spec.json").read_text())
+        field_names = [f["name"] for f in updated_spec["models"][0]["fields"]]
+        assert "payroll_line_ids" in field_names

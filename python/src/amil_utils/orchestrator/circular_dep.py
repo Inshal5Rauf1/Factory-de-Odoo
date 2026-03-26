@@ -10,6 +10,9 @@ Strategy: When modules A and B circularly reference each other:
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 
 def analyze_circular_pair(circular_risk: dict, prov_registry: object) -> dict:
     """Analyze a circular dependency pair and determine build order.
@@ -104,3 +107,90 @@ def plan_build_order(
     patch_rounds = [p for p in patch_rounds if p is not None]
 
     return {"order": adjusted_order, "patch_rounds": patch_rounds}
+
+
+def apply_circular_patches(
+    cwd: Path,
+    patch_rounds: list[dict],
+) -> list[dict]:
+    """Apply deferred back-reference fields to already-built module specs.
+
+    For each patch dict:
+    - Load the module's spec.json from .planning/modules/<target_module>/
+    - Find the target model in the spec
+    - Add deferred fields that don't already exist
+    - Write updated spec back
+
+    Args:
+        cwd: Project root directory containing .planning/modules/.
+        patch_rounds: List of patch dicts, each with keys:
+            - target_module: name of the module to patch
+            - target_model: dotted model name to add fields to
+            - deferred_fields: list of field dicts to add
+
+    Returns:
+        List of result dicts with status: "applied", "skipped", or "error".
+    """
+    results: list[dict] = []
+
+    for patch in patch_rounds:
+        target_module = patch.get("target_module", "")
+        target_model = patch.get("target_model", "")
+        deferred_fields = patch.get("deferred_fields", [])
+
+        spec_path = Path(cwd) / ".planning" / "modules" / target_module / "spec.json"
+        if not spec_path.exists():
+            results.append({
+                "module": target_module,
+                "status": "error",
+                "message": f"spec.json not found at {spec_path}",
+            })
+            continue
+
+        spec = json.loads(spec_path.read_text(encoding="utf-8"))
+
+        # Find target model in the spec
+        model_entry = None
+        for model in spec.get("models", []):
+            if model.get("name") == target_model:
+                model_entry = model
+                break
+
+        if model_entry is None:
+            results.append({
+                "module": target_module,
+                "status": "error",
+                "message": f"Model '{target_model}' not found in spec",
+            })
+            continue
+
+        existing_names = {f["name"] for f in model_entry.get("fields", [])}
+        added: list[str] = []
+        skipped: list[str] = []
+
+        for field in deferred_fields:
+            if field["name"] in existing_names:
+                skipped.append(field["name"])
+            else:
+                model_entry.setdefault("fields", []).append(field)
+                added.append(field["name"])
+
+        if added:
+            spec_path.write_text(
+                json.dumps(spec, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            results.append({
+                "module": target_module,
+                "status": "applied",
+                "added": added,
+                "skipped": skipped,
+            })
+        else:
+            results.append({
+                "module": target_module,
+                "status": "skipped",
+                "message": f"All fields already exist: {skipped}",
+            })
+
+    return results
