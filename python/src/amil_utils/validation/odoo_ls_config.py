@@ -84,7 +84,7 @@ def generate_odools_toml(
         f'    "{addons_output_dir}",\n'
         f']\n'
         f'python_path = "{python_line}"\n'
-        f'diag_missing_imports = "All"\n'
+        f'diag_missing_imports = "all"\n'
         f'refresh_mode = "off"\n'
     )
 

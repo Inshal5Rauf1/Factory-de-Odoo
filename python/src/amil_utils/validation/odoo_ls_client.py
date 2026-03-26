@@ -126,6 +126,7 @@ class OdooLSClient:
         log_level: str = "info",
         index_timeout: int = 120,
         diag_timeout: int = 30,
+        profile_name: str = "factory",
     ) -> None:
         self._binary_path = binary_path
         self._config_path = config_path
@@ -133,6 +134,7 @@ class OdooLSClient:
         self._log_level = log_level
         self._index_timeout = index_timeout
         self._diag_timeout = diag_timeout
+        self._profile_name = profile_name
 
         # Subprocess handle
         self._process: subprocess.Popen[bytes] | None = None
@@ -341,9 +343,6 @@ class OdooLSClient:
 
                 self._handle_message(msg)
 
-                # Send any queued responses
-                self._flush_pending_responses()
-
         except (OSError, ValueError):
             # Process exited or stream error
             return
@@ -360,7 +359,11 @@ class OdooLSClient:
         # Notification (has "method" but no "id")
         if method == "$/Odoo/loadingStatusUpdate":
             params = msg.get("params", {})
-            state = params.get("state", "")
+            # params can be a string ("start"/"stop") or a dict ({"state": "start"})
+            if isinstance(params, str):
+                state = params
+            else:
+                state = params.get("state", "")
             logger.info("odoo-ls loading status: %s", state)
             if state == "stop":
                 self._ready.set()
@@ -385,13 +388,36 @@ class OdooLSClient:
         request_id = msg["id"]
 
         if method == "workspace/configuration":
+            # Respond immediately (not queued) to avoid deadlock.
+            # The server asks for the "Odoo" section. It expects
+            # {"selectedProfile": "<name>"} matching a profile in odools.toml.
+            # The profile name defaults to "factory" (our config generator's default).
+            params = msg.get("params", {})
+            items = params.get("items", []) if isinstance(params, dict) else []
+            config_entry = {"selectedProfile": self._profile_name}
+            result = [config_entry] * max(len(items), 1)
             response = {
                 "jsonrpc": "2.0",
                 "id": request_id,
-                "result": [{"Odoo": {"selectedProfile": "factory"}}],
+                "result": result,
             }
-            with self._lock:
-                self._pending_responses.append(response)
+            self._write(encode_lsp_message(response))
+        elif method == "client/registerCapability":
+            # Acknowledge capability registration
+            response = {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "result": None,
+            }
+            self._write(encode_lsp_message(response))
+        elif method == "window/workDoneProgress/create":
+            # Acknowledge progress token creation
+            response = {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "result": None,
+            }
+            self._write(encode_lsp_message(response))
         else:
             # Respond with null for unknown requests
             response = {
@@ -399,8 +425,7 @@ class OdooLSClient:
                 "id": request_id,
                 "result": None,
             }
-            with self._lock:
-                self._pending_responses.append(response)
+            self._write(encode_lsp_message(response))
 
     def _handle_diagnostics(self, msg: dict[str, Any]) -> None:
         """Process a textDocument/publishDiagnostics notification."""

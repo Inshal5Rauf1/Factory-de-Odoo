@@ -99,14 +99,14 @@ class TestGenerateOdoolsToml:
         assert result == target
 
     def test_diag_missing_imports_all(self, tmp_path: Path) -> None:
-        """diag_missing_imports should be set to 'All'."""
+        """diag_missing_imports should be set to 'all' (lowercase — odoo-ls enum)."""
         config = generate_odools_toml(
             output_path=tmp_path / "odools.toml",
             odoo_source_path=Path("/opt/odoo/19.0"),
             addons_output_dir=tmp_path / "modules",
         )
         content = config.read_text()
-        assert 'diag_missing_imports = "All"' in content
+        assert 'diag_missing_imports = "all"' in content
 
 
 class TestFindPythonPath:
