@@ -10,6 +10,7 @@ from pathlib import Path
 _logger = logging.getLogger(__name__)
 import click
 from amil_utils import __version__
+from amil_utils.version_defaults import get_default_version
 
 @click.group()
 @click.version_option(version=__version__)
@@ -248,7 +249,7 @@ def search_modules_cmd(query: str, limit: int, db_path: str|None, json_output: b
 @click.option("--repo", required=True)
 @click.option("--output-dir", default=".", type=click.Path())
 @click.option("--spec-file", type=click.Path(exists=True))
-@click.option("--branch", default="19.0")
+@click.option("--branch", default=get_default_version())
 @click.option("--json", "json_output", is_flag=True)
 @click.option("--no-wizard", is_flag=True)
 def extend_module_cmd(module_name: str, repo: str, output_dir: str, spec_file: str|None, branch: str, json_output: bool, no_wizard: bool) -> None:

@@ -11,6 +11,8 @@ import re
 import subprocess
 from pathlib import Path
 
+from amil_utils.version_defaults import get_default_version
+
 _SAFE_REPO_NAME = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._-]*$")
 _SAFE_BRANCH = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9./_-]*$")
 _SAFE_MODULE_NAME = re.compile(r"^[a-zA-Z][a-zA-Z0-9_]*$")
@@ -30,7 +32,7 @@ def clone_oca_module(
     repo_name: str,
     module_name: str,
     output_dir: Path,
-    branch: str = "19.0",
+    branch: str = get_default_version(),
 ) -> Path:
     """Clone a single OCA module via git sparse checkout.
 
@@ -41,7 +43,7 @@ def clone_oca_module(
         repo_name: OCA repository name (e.g., "sale-workflow").
         module_name: Module directory name within the repo (e.g., "sale_order_type").
         output_dir: Parent directory where the clone will be created.
-        branch: Git branch to clone (default: "19.0").
+        branch: Git branch to clone (default: current default Odoo version).
 
     Returns:
         Path to the cloned module directory (clone_dir / module_name).

@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any, Callable
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from amil_utils.validation.types import Result
+from amil_utils.version_defaults import get_default_version
 
 from amil_utils.renderer_utils import (
     _is_monetary_field,
@@ -152,7 +153,7 @@ def create_renderer(template_dir: Path) -> Environment:
     # Detect if this is the base templates dir (reorganized layout)
     base_templates = Path(__file__).parent / "templates"
     if template_dir.resolve() == base_templates.resolve():
-        return create_versioned_renderer("19.0")
+        return create_versioned_renderer(get_default_version())
 
     env = Environment(
         loader=FileSystemLoader(str(template_dir)),
@@ -1470,13 +1471,13 @@ def render_module(
                 sorted(affected_stages),
             )
 
-    env = create_versioned_renderer(spec.get("odoo_version", "19.0"))
+    env = create_versioned_renderer(spec.get("odoo_version", get_default_version()))
 
     # Phase 54: GenerationSession replaces artifact_state tracking
     session = GenerationSession(
         module_name=spec.get("module_name", "unknown"),
         spec_sha256=compute_spec_sha256(spec),
-        odoo_version=spec.get("odoo_version", "19.0"),
+        odoo_version=spec.get("odoo_version", get_default_version()),
     )
 
     # Phase 54: Resume spec SHA256 check
@@ -1504,7 +1505,7 @@ def render_module(
             spec, _c7_client,
             cache_dir=_c7_cache,
             fresh=fresh_context7,
-            odoo_version=spec.get("odoo_version", "19.0"),
+            odoo_version=spec.get("odoo_version", get_default_version()),
         )
     module_name = spec["module_name"]
     module_dir = output_dir / module_name

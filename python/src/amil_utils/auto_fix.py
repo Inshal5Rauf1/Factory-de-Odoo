@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 from amil_utils.validation.pylint_runner import run_pylint_odoo
 from amil_utils.validation.types import Result, Violation
+from amil_utils.version_defaults import get_default_manifest_version
 
 # -------------------------------------------------------------------------
 # Constants
@@ -63,7 +64,7 @@ _MANIFEST_KEY_DEFAULTS: dict[str, str] = {
     "author": "",
     "website": "",
     "category": "Uncategorized",
-    "version": "19.0.1.0.0",
+    "version": get_default_manifest_version(),
     "application": "False",
     # "installable" intentionally omitted — True is the default (C8116)
 }
