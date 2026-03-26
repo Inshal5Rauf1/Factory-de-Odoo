@@ -3,9 +3,11 @@
 Defines typed models mirroring the spec JSON hierarchy:
 ModuleSpec > ModelSpec > FieldSpec + supporting specs.
 
-All models use ``ConfigDict(extra='allow', protected_namespaces=())``
-to preserve unknown keys and avoid conflicts with Odoo's ``model_``
-prefixed field names.
+``ModuleSpec`` uses ``extra='forbid'`` to reject unknown/typo'd keys.
+Inner models use ``extra='allow'`` with a ``_warn_unknown_keys`` validator
+that emits warnings for likely typos (using difflib close-match detection).
+All models use ``protected_namespaces=()`` to avoid conflicts with Odoo's
+``model_`` prefixed field names.
 
 Usage::
 
@@ -16,6 +18,8 @@ Usage::
 from __future__ import annotations
 
 import logging
+import warnings
+from difflib import get_close_matches
 from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
@@ -505,7 +509,11 @@ class MigrationSpec(BaseModel):
 
 
 class ModelSpec(BaseModel):
-    """Specification for a single Odoo model."""
+    """Specification for a single Odoo model.
+
+    Uses ``extra='allow'`` so Odoo-specific extra keys are preserved, but
+    warns on likely typos via ``_warn_unknown_keys``.
+    """
 
     model_config = ConfigDict(extra="allow", protected_namespaces=())
 
@@ -532,6 +540,25 @@ class ModelSpec(BaseModel):
     server_actions: list[ServerActionSpec] = []
     display_name_pattern: str | None = None
     expected_examples: list[dict] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _warn_unknown_keys(cls, values: Any) -> Any:
+        """Emit a warning for unknown keys that look like typos of known fields."""
+        if not isinstance(values, dict):
+            return values
+        known = set(cls.model_fields.keys())
+        unknown = set(values.keys()) - known
+        for key in unknown:
+            close = get_close_matches(key, known, n=1, cutoff=0.85)
+            if close:
+                warnings.warn(
+                    f"Unknown key '{key}' in {cls.__name__}"
+                    f" — did you mean '{close[0]}'?",
+                    UserWarning,
+                    stacklevel=2,
+                )
+        return values
 
 
 # ---------------------------------------------------------------------------
@@ -604,12 +631,15 @@ class SettingSpec(BaseModel):
 class ModuleSpec(BaseModel):
     """Root specification for an Odoo module.
 
+    Uses ``extra='forbid'`` so that typos in top-level keys are immediately
+    rejected by Pydantic validation rather than silently accepted.
+
     Cross-reference validators check:
     - Approval level roles exist in per-model security.roles
     - audit_exclude fields exist in per-model field lists
     """
 
-    model_config = ConfigDict(extra="allow", protected_namespaces=())
+    model_config = ConfigDict(extra="forbid", protected_namespaces=())
 
     module_name: str
     module_title: str = ""
@@ -642,6 +672,39 @@ class ModuleSpec(BaseModel):
     settings: list[SettingSpec] = []
     migrations: list[MigrationSpec] = []
     multi_company: bool = False
+    notifications: list[dict] = []
+    localization: str | None = None
+    document_management: bool = False
+    document_config: dict = {}
+    academic_calendar: bool = False
+    academic_config: dict = {}
+
+    @model_validator(mode="before")
+    @classmethod
+    def _reject_unknown_with_suggestions(cls, values: Any) -> Any:
+        """Provide helpful 'did you mean?' suggestions for unknown keys.
+
+        Runs before Pydantic's ``extra='forbid'`` check so the error
+        message includes the closest valid field name.
+        """
+        if not isinstance(values, dict):
+            return values
+        known = set(cls.model_fields.keys())
+        unknown = set(values.keys()) - known
+        if not unknown:
+            return values
+        messages: list[str] = []
+        for key in sorted(unknown):
+            close = get_close_matches(key, known, n=1, cutoff=0.6)
+            if close:
+                messages.append(
+                    f"Unknown key '{key}' — did you mean '{close[0]}'?"
+                )
+            else:
+                messages.append(f"Unknown key '{key}' is not a valid field.")
+        raise ValueError(
+            f"ModuleSpec received unknown key(s): {'; '.join(messages)}"
+        )
 
     @model_validator(mode="after")
     def check_no_duplicate_extends(self) -> ModuleSpec:

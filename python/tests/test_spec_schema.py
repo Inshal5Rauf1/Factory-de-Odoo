@@ -100,22 +100,31 @@ class TestFieldTypeValidation:
 
 
 # ---------------------------------------------------------------------------
-# TestExtraAllow
+# TestExtraForbid (ModuleSpec rejects unknown keys)
 # ---------------------------------------------------------------------------
-class TestExtraAllow:
-    """Test extra='allow' preserves unknown keys."""
+class TestExtraForbid:
+    """Test that ModuleSpec (top-level) rejects unknown keys."""
 
-    def test_unknown_keys_preserved(self):
-        """Unknown extra keys are preserved through validate -> model_dump."""
-        raw = {
-            "module_name": "test_mod",
-            "custom_key": "custom_value",
-            "another_extra": 42,
-        }
-        result = validate_spec(raw)
-        dumped = result.model_dump()
-        assert dumped["custom_key"] == "custom_value"
-        assert dumped["another_extra"] == 42
+    def test_module_spec_rejects_unknown_key(self):
+        """ModuleSpec should reject completely unknown keys."""
+        with pytest.raises(ValidationError):
+            ModuleSpec(module_name="test", completely_fake_key="value")
+
+    def test_module_spec_rejects_typo_with_suggestion(self):
+        """Typo near a valid key should include suggestion in error."""
+        with pytest.raises(ValidationError, match="wizards"):
+            ModuleSpec(module_name="test", wizardd=[])
+
+    def test_module_spec_accepts_valid_keys(self):
+        """All valid keys should still be accepted."""
+        spec = ModuleSpec(
+            module_name="test",
+            models=[],
+            wizards=[],
+            cron_jobs=[],
+            reports=[],
+        )
+        assert spec.module_name == "test"
 
     def test_roundtrip_fidelity(self):
         """model_dump() output matches original spec dict for known keys."""
@@ -129,6 +138,38 @@ class TestExtraAllow:
         assert len(dumped["models"]) == len(raw["models"])
         assert len(dumped["cron_jobs"]) == len(raw["cron_jobs"])
         assert len(dumped["reports"]) == len(raw["reports"])
+
+
+# ---------------------------------------------------------------------------
+# TestInnerModelTypoWarning
+# ---------------------------------------------------------------------------
+class TestInnerModelTypoWarning:
+    """Test that inner models (ModelSpec, etc.) warn on likely typos."""
+
+    def test_model_spec_warns_on_typo(self):
+        """ModelSpec should warn when a key is close to a known field name."""
+        import warnings
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            ModelSpec(name="test.model", fieldss=[])
+            typo_warnings = [x for x in w if "fieldss" in str(x.message)]
+            assert len(typo_warnings) == 1
+            assert "fields" in str(typo_warnings[0].message)
+
+    def test_model_spec_no_warning_for_distant_key(self):
+        """ModelSpec should NOT warn when a key is far from any known field."""
+        import warnings
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            ModelSpec(name="test.model", zzz_completely_unknown_xyz=True)
+            typo_warnings = [x for x in w if "zzz_completely_unknown_xyz" in str(x.message)]
+            assert len(typo_warnings) == 0
+
+    def test_inner_model_still_accepts_extra_keys(self):
+        """Inner models should still accept extra keys (extra='allow')."""
+        model = ModelSpec(name="test.model", custom_odoo_field=True)
+        dumped = model.model_dump()
+        assert dumped["custom_odoo_field"] is True
 
 
 # ---------------------------------------------------------------------------
