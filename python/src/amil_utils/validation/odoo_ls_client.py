@@ -9,7 +9,7 @@ Wire format (LSP base protocol)::
     \\r\\n
     <json-payload>
 
-The server emits a custom notification ``$/Odoo/loadingStatusUpdate``
+The server emits a custom notification ``$Odoo/loadingStatusUpdate``
 with ``{"state": "stop"}`` when indexing is complete.  Diagnostics are
 pushed via standard ``textDocument/publishDiagnostics`` notifications.
 """
@@ -17,8 +17,10 @@ from __future__ import annotations
 
 import json
 import logging
+import queue
 import subprocess
 import threading
+import time
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote as url_unquote
@@ -144,6 +146,11 @@ class OdooLSClient:
         self._diag_event = threading.Event()
         self._lock = threading.Lock()
         self._reader_thread: threading.Thread | None = None
+        # Queue for responses that must be written to stdin from a
+        # separate thread (avoids deadlock: reader blocks on stdout read
+        # while stdin write blocks because the server's stdin buffer is full).
+        self._response_queue: "queue.Queue[dict[str, Any]]" = queue.Queue()
+        self._writer_thread: threading.Thread | None = None
 
         # State
         self._diagnostics: dict[str, list[OLSDiagnostic]] = {}
@@ -197,11 +204,17 @@ class OdooLSClient:
             logger.error("Failed to start odoo-ls binary: %s", self._binary_path)
             raise
 
-        # Start background reader
+        # Start background reader + writer threads.
+        # Writer is separate to avoid deadlock: reader can't write to stdin
+        # while blocking on stdout read (server's stdin buffer may be full).
         self._reader_thread = threading.Thread(
             target=self._read_loop, daemon=True, name="odoo-ls-reader"
         )
         self._reader_thread.start()
+        self._writer_thread = threading.Thread(
+            target=self._write_loop, daemon=True, name="odoo-ls-writer"
+        )
+        self._writer_thread.start()
 
         # Send initialize request
         self._send_initialize()
@@ -295,6 +308,8 @@ class OdooLSClient:
         else:
             self._kill()
 
+        # Stop the writer thread
+        self._response_queue.put(None)  # Poison pill
         self._process = None
         logger.info("odoo-ls shut down")
 
@@ -308,7 +323,12 @@ class OdooLSClient:
     # ------------------------------------------------------------------
 
     def _read_loop(self) -> None:
-        """Read JSON-RPC messages from stdout until the stream closes."""
+        """Read JSON-RPC messages from stdout until the stream closes.
+
+        Reads one byte at a time for headers (required to avoid blocking
+        past a message boundary when the server is waiting for a response)
+        but uses exact-length reads for bodies.
+        """
         assert self._process is not None
         stdout = self._process.stdout
         if stdout is None:
@@ -316,8 +336,12 @@ class OdooLSClient:
 
         try:
             while True:
-                # Read headers byte-by-byte until \r\n\r\n
-                header_buf = b""
+                # Read header byte-by-byte until \r\n\r\n.
+                # We MUST use read(1) here because read(N) for N>1 would
+                # block if the server sent fewer than N bytes and is waiting
+                # for a response from us (deadlock). The header is typically
+                # ~30 bytes so this is ~30 syscalls per message.
+                header_buf = bytearray()
                 while not header_buf.endswith(b"\r\n\r\n"):
                     byte = stdout.read(1)
                     if not byte:
@@ -325,12 +349,11 @@ class OdooLSClient:
                     header_buf += byte
 
                 # Parse Content-Length
-                content_length = _parse_content_length(header_buf)
+                content_length = _parse_content_length(bytes(header_buf))
                 if content_length is None:
-                    logger.warning("Missing Content-Length in header: %r", header_buf)
                     continue
 
-                # Read body
+                # Read body in one call (exact length = won't over-read)
                 body_bytes = stdout.read(content_length)
                 if len(body_bytes) < content_length:
                     return  # Stream closed mid-message
@@ -343,8 +366,11 @@ class OdooLSClient:
 
                 self._handle_message(msg)
 
-        except (OSError, ValueError):
-            # Process exited or stream error
+        except (OSError, ValueError) as exc:
+            logger.debug("Reader loop ended: %s", exc)
+            return
+        except Exception as exc:
+            logger.error("Reader loop crashed: %s", exc, exc_info=True)
             return
 
     def _handle_message(self, msg: dict[str, Any]) -> None:
@@ -357,7 +383,7 @@ class OdooLSClient:
             return
 
         # Notification (has "method" but no "id")
-        if method == "$/Odoo/loadingStatusUpdate":
+        if method == "$Odoo/loadingStatusUpdate":
             params = msg.get("params", {})
             # params can be a string ("start"/"stop") or a dict ({"state": "start"})
             if isinstance(params, str):
@@ -371,27 +397,29 @@ class OdooLSClient:
         elif method == "textDocument/publishDiagnostics":
             self._handle_diagnostics(msg)
 
-        elif method == "$/Odoo/displayCrashNotification":
+        elif method == "$Odoo/displayCrashNotification":
             params = msg.get("params", {})
             logger.error("odoo-ls CRASH: %s", params.get("message", "unknown"))
             self._crashed = True
 
-        elif method == "$/Odoo/restartNeeded":
+        elif method == "$Odoo/restartNeeded":
             logger.warning("odoo-ls requested restart")
 
         else:
             logger.debug("Unhandled message: %s", method)
 
     def _handle_server_request(self, msg: dict[str, Any]) -> None:
-        """Handle a request from the server that expects a response."""
+        """Handle a request from the server that expects a response.
+
+        Responses are queued to ``_response_queue`` and written by the
+        separate writer thread.  This avoids a deadlock where the reader
+        thread blocks on ``stdin.write()`` while the server's stdin buffer
+        is full and the server is blocked on stdout write.
+        """
         method = msg.get("method", "")
         request_id = msg["id"]
 
         if method == "workspace/configuration":
-            # Respond immediately (not queued) to avoid deadlock.
-            # The server asks for the "Odoo" section. It expects
-            # {"selectedProfile": "<name>"} matching a profile in odools.toml.
-            # The profile name defaults to "factory" (our config generator's default).
             params = msg.get("params", {})
             items = params.get("items", []) if isinstance(params, dict) else []
             config_entry = {"selectedProfile": self._profile_name}
@@ -401,31 +429,15 @@ class OdooLSClient:
                 "id": request_id,
                 "result": result,
             }
-            self._write(encode_lsp_message(response))
-        elif method == "client/registerCapability":
-            # Acknowledge capability registration
-            response = {
-                "jsonrpc": "2.0",
-                "id": request_id,
-                "result": None,
-            }
-            self._write(encode_lsp_message(response))
-        elif method == "window/workDoneProgress/create":
-            # Acknowledge progress token creation
-            response = {
-                "jsonrpc": "2.0",
-                "id": request_id,
-                "result": None,
-            }
-            self._write(encode_lsp_message(response))
         else:
-            # Respond with null for unknown requests
+            # Acknowledge all other requests with null
             response = {
                 "jsonrpc": "2.0",
                 "id": request_id,
                 "result": None,
             }
-            self._write(encode_lsp_message(response))
+
+        self._response_queue.put(response)
 
     def _handle_diagnostics(self, msg: dict[str, Any]) -> None:
         """Process a textDocument/publishDiagnostics notification."""
@@ -547,6 +559,24 @@ class OdooLSClient:
                 }
             },
         )
+
+    # ------------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # Background writer (avoids reader/writer deadlock on pipes)
+    # ------------------------------------------------------------------
+
+    def _write_loop(self) -> None:
+        """Drain the response queue and write to stdin."""
+        while True:
+            try:
+                msg = self._response_queue.get(timeout=1.0)
+            except queue.Empty:
+                if self._process is None or self._process.poll() is not None:
+                    return  # Process exited
+                continue
+            if msg is None:
+                return  # Poison pill = shutdown
+            self._write(encode_lsp_message(msg))
 
     # ------------------------------------------------------------------
     # Cleanup

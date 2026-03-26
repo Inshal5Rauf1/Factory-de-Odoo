@@ -155,7 +155,7 @@ class TestMessageHandling:
         )
         msg = {
             "jsonrpc": "2.0",
-            "method": "$/Odoo/loadingStatusUpdate",
+            "method": "$Odoo/loadingStatusUpdate",
             "params": {"state": "stop"},
         }
         client._handle_message(msg)
@@ -171,7 +171,7 @@ class TestMessageHandling:
         )
         msg = {
             "jsonrpc": "2.0",
-            "method": "$/Odoo/loadingStatusUpdate",
+            "method": "$Odoo/loadingStatusUpdate",
             "params": {"state": "loading"},
         }
         client._handle_message(msg)
@@ -240,7 +240,7 @@ class TestMessageHandling:
         )
         msg = {
             "jsonrpc": "2.0",
-            "method": "$/Odoo/displayCrashNotification",
+            "method": "$Odoo/displayCrashNotification",
             "params": {"message": "Server crashed"},
         }
         client._handle_message(msg)

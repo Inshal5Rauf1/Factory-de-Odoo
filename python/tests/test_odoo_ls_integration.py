@@ -24,7 +24,7 @@ ODOO_SOURCE = Path(os.environ.get("ODOO_SOURCE_PATH", str(_DEFAULT_SOURCE)))
 
 # Indexing the full Odoo 19.0 source tree can take several minutes on
 # slower machines.  Allow overriding via an env-var for CI flexibility.
-_INDEX_TIMEOUT: Final[int] = int(os.environ.get("ODOO_LS_INDEX_TIMEOUT", "300"))
+_INDEX_TIMEOUT: Final[int] = int(os.environ.get("ODOO_LS_INDEX_TIMEOUT", "60"))
 
 skip_no_ols = pytest.mark.skipif(
     not OLS_BINARY.exists(),
