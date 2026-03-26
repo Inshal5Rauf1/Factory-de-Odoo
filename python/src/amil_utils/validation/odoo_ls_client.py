@@ -75,12 +75,25 @@ def decode_lsp_message(raw: bytes) -> dict[str, Any]:
     return json.loads(body_bytes.decode(_BODY_ENCODING))
 
 
-def _uri_to_path(uri: str) -> str:
-    """Convert a ``file://`` URI to a local filesystem path."""
+def _uri_to_path(uri: str, *, workspace_root: Path | None = None) -> str:
+    """Convert a ``file://`` URI to a local filesystem path.
+
+    When *workspace_root* is provided, the resolved path is checked to
+    ensure it does not escape the workspace (guards against directory
+    traversal from a malicious or compromised language server).
+    """
     prefix = "file://"
-    if uri.startswith(prefix):
-        return url_unquote(uri[len(prefix) :])
-    return uri
+    raw = url_unquote(uri[len(prefix):]) if uri.startswith(prefix) else uri
+    if workspace_root is not None:
+        resolved = Path(raw).resolve()
+        ws_resolved = workspace_root.resolve()
+        if not resolved.is_relative_to(ws_resolved):
+            logger.warning(
+                "Path %s escapes workspace %s — returning raw URI",
+                resolved, ws_resolved,
+            )
+            return uri  # Return the raw URI, not the decoded path
+    return raw
 
 
 def _path_to_uri(path: Path) -> str:
@@ -445,7 +458,7 @@ class OdooLSClient:
         uri = params.get("uri", "")
         raw_diags = params.get("diagnostics", [])
 
-        file_path = _uri_to_path(uri)
+        file_path = _uri_to_path(uri, workspace_root=self._workspace_root)
 
         diags = [
             OLSDiagnostic(

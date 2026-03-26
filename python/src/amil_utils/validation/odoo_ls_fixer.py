@@ -12,6 +12,7 @@ from __future__ import annotations
 import ast
 import logging
 import re
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from amil_utils.validation.odoo_ls_validator import OLS_FIXABLE_CODES
@@ -137,7 +138,7 @@ def dispatch_ols_fix(module_dir: Path, diag: OLSDiagnostic) -> bool:
 
 
 def run_ols_fix_loop(
-    diagnostics_fn: object,
+    diagnostics_fn: Callable[[Path], Sequence[OLSDiagnostic]],
     module_dir: Path,
     max_iterations: int = 3,
 ) -> int:
@@ -151,7 +152,7 @@ def run_ols_fix_loop(
     total_fixes = 0
 
     for iteration in range(1, max_iterations + 1):
-        diagnostics = diagnostics_fn(module_dir)  # type: ignore[operator]
+        diagnostics = diagnostics_fn(module_dir)
         fixable = [d for d in diagnostics if d.code in OLS_FIXABLE_CODES]
 
         if not fixable:

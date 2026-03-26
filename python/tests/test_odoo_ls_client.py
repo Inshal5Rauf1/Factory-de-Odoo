@@ -183,11 +183,12 @@ class TestMessageHandling:
             config_path=tmp_path / "odools.toml",
             workspace_root=tmp_path,
         )
+        test_file = tmp_path / "models" / "test.py"
         msg = {
             "jsonrpc": "2.0",
             "method": "textDocument/publishDiagnostics",
             "params": {
-                "uri": "file:///tmp/test/models/test.py",
+                "uri": test_file.as_uri(),
                 "diagnostics": [
                     {
                         "range": {
@@ -202,8 +203,9 @@ class TestMessageHandling:
             },
         }
         client._handle_message(msg)
-        assert "/tmp/test/models/test.py" in client._diagnostics
-        diags = client._diagnostics["/tmp/test/models/test.py"]
+        expected_path = str(test_file)
+        assert expected_path in client._diagnostics
+        diags = client._diagnostics[expected_path]
         assert len(diags) == 1
         assert diags[0].code == "OLS30101"
         assert diags[0].severity == 1
@@ -218,19 +220,20 @@ class TestMessageHandling:
             config_path=tmp_path / "odools.toml",
             workspace_root=tmp_path,
         )
+        test_file = tmp_path / "test.py"
         # First add a diagnostic
-        client._diagnostics["/tmp/test.py"] = ["placeholder"]
+        client._diagnostics[str(test_file)] = ["placeholder"]
         # Then publish empty list
         msg = {
             "jsonrpc": "2.0",
             "method": "textDocument/publishDiagnostics",
             "params": {
-                "uri": "file:///tmp/test.py",
+                "uri": test_file.as_uri(),
                 "diagnostics": [],
             },
         }
         client._handle_message(msg)
-        assert client._diagnostics.get("/tmp/test.py") == []
+        assert client._diagnostics.get(str(test_file)) == []
 
     def test_handle_crash_notification_sets_crashed(self, tmp_path: Path) -> None:
         client = OdooLSClient(
