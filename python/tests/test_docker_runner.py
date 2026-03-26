@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, call, patch
 import pytest
 
 from amil_utils.validation.docker_runner import (
+    _unique_project_name,
     check_docker_available,
     docker_install_module,
     docker_run_tests,
@@ -89,8 +90,9 @@ class TestDockerInstallModuleSuccess:
         compose_file: Path,
     ) -> None:
         mock_available.return_value = True
-        # First call: start db only (not full stack)
-        # Second call: run --rm (not exec) for install
+        # First call: pre-cleanup (down --remove-orphans)
+        # Second call: start db only (not full stack)
+        # Third call: run --rm (not exec) for install
         success_log = (
             "2026-03-02 10:00:00,000 1 INFO test_db "
             "odoo.modules.loading: 1 modules loaded, 0 modules updated, 0 tests\n"
@@ -98,6 +100,7 @@ class TestDockerInstallModuleSuccess:
             "odoo.modules.loading: Modules loaded.\n"
         )
         mock_run.side_effect = [
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
             MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
             MagicMock(stdout=success_log, stderr="", returncode=0),  # run --rm
         ]
@@ -131,17 +134,18 @@ class TestDockerInstallUsesRunNotExec:
             "odoo.modules.loading: Modules loaded.\n"
         )
         mock_run.side_effect = [
-            MagicMock(stdout="", stderr="", returncode=0),
-            MagicMock(stdout=success_log, stderr="", returncode=0),
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=success_log, stderr="", returncode=0),  # run --rm
         ]
 
         docker_install_module(module_dir, compose_file=compose_file)
 
-        # First call must start only db service
-        first_call_args = mock_run.call_args_list[0]
-        assert "db" in first_call_args[0][1], (
-            f"First _run_compose call should include 'db' for db-only startup, "
-            f"got args: {first_call_args[0][1]}"
+        # Second call (index 1) must start only db service (index 0 is pre-cleanup)
+        db_call_args = mock_run.call_args_list[1]
+        assert "db" in db_call_args[0][1], (
+            f"DB startup _run_compose call should include 'db', "
+            f"got args: {db_call_args[0][1]}"
         )
 
     @patch("amil_utils.validation.docker_runner._teardown")
@@ -161,23 +165,24 @@ class TestDockerInstallUsesRunNotExec:
             "odoo.modules.loading: Modules loaded.\n"
         )
         mock_run.side_effect = [
-            MagicMock(stdout="", stderr="", returncode=0),
-            MagicMock(stdout=success_log, stderr="", returncode=0),
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=success_log, stderr="", returncode=0),  # run --rm
         ]
 
         docker_install_module(module_dir, compose_file=compose_file)
 
-        # Second call must use 'run --rm', not 'exec'
-        second_call_args = mock_run.call_args_list[1]
-        install_args = second_call_args[0][1]
+        # Third call (index 2) must use 'run --rm', not 'exec'
+        install_call_args = mock_run.call_args_list[2]
+        install_args = install_call_args[0][1]
         assert "run" in install_args, (
-            f"Second _run_compose call should use 'run', got args: {install_args}"
+            f"Install _run_compose call should use 'run', got args: {install_args}"
         )
         assert "--rm" in install_args, (
-            f"Second _run_compose call should include '--rm', got args: {install_args}"
+            f"Install _run_compose call should include '--rm', got args: {install_args}"
         )
         assert "exec" not in install_args, (
-            f"Second _run_compose call should NOT use 'exec', got args: {install_args}"
+            f"Install _run_compose call should NOT use 'exec', got args: {install_args}"
         )
 
 
@@ -201,8 +206,9 @@ class TestDockerInstallModuleFailure:
             "odoo.modules.registry: Failed to load module test_mod\n"
         )
         mock_run.side_effect = [
-            MagicMock(stdout="", stderr="", returncode=0),  # up
-            MagicMock(stdout=error_log, stderr="", returncode=1),  # exec
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=error_log, stderr="", returncode=1),  # run --rm
         ]
 
         result = docker_install_module(module_dir, compose_file=compose_file)
@@ -229,7 +235,13 @@ class TestDockerInstallTeardown:
         compose_file: Path,
     ) -> None:
         mock_available.return_value = True
-        mock_run.side_effect = Exception("Subprocess failed")
+        # Pre-cleanup succeeds; all subsequent calls (db startup retries) fail
+        mock_run.side_effect = [
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            Exception("Subprocess failed"),  # db attempt 1
+            Exception("Subprocess failed"),  # db attempt 2
+            Exception("Subprocess failed"),  # db attempt 3
+        ]
 
         result = docker_install_module(module_dir, compose_file=compose_file)
 
@@ -266,8 +278,9 @@ class TestDockerRunTestsSuccess:
             "odoo.addons.test_mod.tests.test_model: Ran 2 tests in 0.1s\n"
         )
         mock_run.side_effect = [
-            MagicMock(stdout="", stderr="", returncode=0),  # up
-            MagicMock(stdout=test_log, stderr="", returncode=0),  # exec
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=test_log, stderr="", returncode=0),  # run --rm
         ]
 
         result = docker_run_tests(module_dir, compose_file=compose_file)
@@ -304,8 +317,9 @@ class TestDockerRunTestsFailure:
             "odoo.addons.test_mod.tests.test_model: Ran 2 tests in 0.2s\n"
         )
         mock_run.side_effect = [
-            MagicMock(stdout="", stderr="", returncode=0),  # up
-            MagicMock(stdout=test_log, stderr="", returncode=1),  # exec
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=test_log, stderr="", returncode=1),  # run --rm
         ]
 
         result = docker_run_tests(module_dir, compose_file=compose_file)
@@ -333,7 +347,13 @@ class TestDockerRunTestsTeardown:
         compose_file: Path,
     ) -> None:
         mock_available.return_value = True
-        mock_run.side_effect = Exception("Test exec failed")
+        # Pre-cleanup succeeds; all subsequent calls (db startup retries) fail
+        mock_run.side_effect = [
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            Exception("Test exec failed"),  # db attempt 1
+            Exception("Test exec failed"),  # db attempt 2
+            Exception("Test exec failed"),  # db attempt 3
+        ]
 
         result = docker_run_tests(module_dir, compose_file=compose_file)
 
@@ -396,8 +416,9 @@ class TestDockerTimeout:
         compose_file: Path,
     ) -> None:
         mock_available.return_value = True
-        # DB startup succeeds, install command times out
+        # Pre-cleanup succeeds, DB startup succeeds, install command times out
         mock_run.side_effect = [
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
             MagicMock(stdout="", stderr="", returncode=0),  # DB startup
             subprocess.TimeoutExpired(cmd="docker", timeout=300),  # Install
         ]
@@ -441,8 +462,9 @@ class TestInstallIntegrationWithRealLogParsing:
             "Modules loaded.\n"
         )
         mock_run.side_effect = [
-            MagicMock(stdout="", stderr="", returncode=0),
-            MagicMock(stdout=odoo17_log, stderr="", returncode=0),
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=odoo17_log, stderr="", returncode=0),  # run --rm
         ]
 
         result = docker_install_module(module_dir, compose_file=compose_file)
@@ -475,8 +497,9 @@ class TestInstallIntegrationWithRealLogParsing:
             "KeyError: 'missing_field'\n"
         )
         mock_run.side_effect = [
-            MagicMock(stdout="", stderr="", returncode=0),
-            MagicMock(stdout=odoo17_error_log, stderr="", returncode=1),
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=odoo17_error_log, stderr="", returncode=1),  # run --rm
         ]
 
         result = docker_install_module(module_dir, compose_file=compose_file)
@@ -499,8 +522,9 @@ class TestInstallIntegrationWithRealLogParsing:
         """Empty log output results in install failure (not crash)."""
         mock_available.return_value = True
         mock_run.side_effect = [
-            MagicMock(stdout="", stderr="", returncode=0),
-            MagicMock(stdout="", stderr="", returncode=0),
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout="", stderr="", returncode=0),  # run --rm
         ]
 
         result = docker_install_module(module_dir, compose_file=compose_file)
@@ -535,8 +559,9 @@ class TestRunTestsIntegrationWithRealLogParsing:
             "odoo.tests.stats: test_mod: 2 tests 1.0s 42 queries\n"
         )
         mock_run.side_effect = [
-            MagicMock(stdout="", stderr="", returncode=0),
-            MagicMock(stdout=odoo17_test_log, stderr="", returncode=0),
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=odoo17_test_log, stderr="", returncode=0),  # run --rm
         ]
 
         result = docker_run_tests(module_dir, compose_file=compose_file)
@@ -573,8 +598,9 @@ class TestRunTestsIntegrationWithRealLogParsing:
             "odoo.tests.stats: test_mod: 2 tests 1.5s 50 queries\n"
         )
         mock_run.side_effect = [
-            MagicMock(stdout="", stderr="", returncode=0),
-            MagicMock(stdout=mixed_log, stderr="", returncode=1),
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=mixed_log, stderr="", returncode=1),  # run --rm
         ]
 
         result = docker_run_tests(module_dir, compose_file=compose_file)
@@ -608,8 +634,9 @@ class TestRunTestsIntegrationWithRealLogParsing:
             "odoo.addons.test_mod.tests.test_model: Ran 1 tests in 0.1s\n"
         )
         mock_run.side_effect = [
-            MagicMock(stdout="", stderr="", returncode=0),
-            MagicMock(stdout="", stderr=stderr_log, returncode=0),
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout="", stderr=stderr_log, returncode=0),  # run --rm
         ]
 
         result = docker_run_tests(module_dir, compose_file=compose_file)
@@ -663,3 +690,143 @@ class TestModuleNameValidation:
         result = docker_run_tests(bad_mod, compose_file=tmp_path / "c.yml")
         assert result.success is False
         assert any("invalid" in e.lower() for e in result.errors)
+
+
+# --- Unique project name tests ---
+
+
+class TestUniqueProjectNameFormat:
+    """Project name should be factory-{module}-{hex8}."""
+
+    def test_format(self) -> None:
+        name = _unique_project_name("hr_payroll")
+        assert name.startswith("factory-hr_payroll-")
+        suffix = name.split("-")[-1]
+        assert len(suffix) == 8
+        # Verify suffix is valid hex
+        int(suffix, 16)
+
+    def test_different_modules_have_different_prefixes(self) -> None:
+        name1 = _unique_project_name("hr_payroll")
+        name2 = _unique_project_name("sale_order")
+        assert name1.startswith("factory-hr_payroll-")
+        assert name2.startswith("factory-sale_order-")
+
+
+class TestUniqueProjectNamesAreUnique:
+    """Two calls should produce different names."""
+
+    def test_uniqueness(self) -> None:
+        name1 = _unique_project_name("test_mod")
+        name2 = _unique_project_name("test_mod")
+        assert name1 != name2
+
+
+class TestProjectNameUsedInComposeCommands:
+    """Verify --project-name is passed to all docker compose calls."""
+
+    @patch("amil_utils.validation.docker_runner._unique_project_name")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
+    def test_install_passes_project_name(
+        self,
+        mock_available: MagicMock,
+        mock_run: MagicMock,
+        mock_teardown: MagicMock,
+        mock_proj_name: MagicMock,
+        module_dir: Path,
+        compose_file: Path,
+    ) -> None:
+        """docker_install_module passes project_name to _run_compose and _teardown."""
+        mock_available.return_value = True
+        mock_proj_name.return_value = "factory-test_mod-abcd1234"
+        success_log = (
+            "2026-03-02 10:00:00,000 1 INFO test_db "
+            "odoo.modules.loading: Modules loaded.\n"
+        )
+        mock_run.side_effect = [
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=success_log, stderr="", returncode=0),  # run --rm
+        ]
+
+        docker_install_module(module_dir, compose_file=compose_file)
+
+        # All _run_compose calls should include project_name
+        for call_args in mock_run.call_args_list:
+            assert call_args.kwargs.get("project_name") == "factory-test_mod-abcd1234" or \
+                (len(call_args.args) >= 4 and call_args.args[3] == "factory-test_mod-abcd1234") or \
+                "project_name" in str(call_args)
+
+    @patch("amil_utils.validation.docker_runner._unique_project_name")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
+    def test_run_tests_passes_project_name(
+        self,
+        mock_available: MagicMock,
+        mock_run: MagicMock,
+        mock_teardown: MagicMock,
+        mock_proj_name: MagicMock,
+        module_dir: Path,
+        compose_file: Path,
+    ) -> None:
+        """docker_run_tests passes project_name to _run_compose and _teardown."""
+        mock_available.return_value = True
+        mock_proj_name.return_value = "factory-test_mod-abcd1234"
+        test_log = (
+            "2026-03-02 10:00:00,000 1 INFO test_db "
+            "odoo.addons.test_mod.tests.test_model: test_create ... ok\n"
+        )
+        mock_run.side_effect = [
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=test_log, stderr="", returncode=0),  # run --rm
+        ]
+
+        docker_run_tests(module_dir, compose_file=compose_file)
+
+        # _teardown should be called with project_name
+        mock_teardown.assert_called()
+        for tc in mock_teardown.call_args_list:
+            assert tc.kwargs.get("project_name") == "factory-test_mod-abcd1234" or \
+                (len(tc.args) >= 3 and tc.args[2] == "factory-test_mod-abcd1234")
+
+
+class TestPreCleanupOnStart:
+    """Pre-cleanup with down --remove-orphans runs before starting containers."""
+
+    @patch("amil_utils.validation.docker_runner._unique_project_name")
+    @patch("amil_utils.validation.docker_runner._teardown")
+    @patch("amil_utils.validation.docker_runner._run_compose")
+    @patch("amil_utils.validation.docker_runner.check_docker_available")
+    def test_pre_cleanup_is_first_compose_call(
+        self,
+        mock_available: MagicMock,
+        mock_run: MagicMock,
+        mock_teardown: MagicMock,
+        mock_proj_name: MagicMock,
+        module_dir: Path,
+        compose_file: Path,
+    ) -> None:
+        """First _run_compose call should be down --remove-orphans (pre-cleanup)."""
+        mock_available.return_value = True
+        mock_proj_name.return_value = "factory-test_mod-abcd1234"
+        success_log = (
+            "2026-03-02 10:00:00,000 1 INFO test_db "
+            "odoo.modules.loading: Modules loaded.\n"
+        )
+        mock_run.side_effect = [
+            MagicMock(stdout="", stderr="", returncode=0),  # pre-cleanup
+            MagicMock(stdout="", stderr="", returncode=0),  # up -d --wait db
+            MagicMock(stdout=success_log, stderr="", returncode=0),  # run --rm
+        ]
+
+        docker_install_module(module_dir, compose_file=compose_file)
+
+        # First call should be the pre-cleanup (down --remove-orphans)
+        first_call_args = mock_run.call_args_list[0]
+        compose_args = first_call_args[0][1]  # second positional arg is the args list
+        assert "down" in compose_args
+        assert "--remove-orphans" in compose_args

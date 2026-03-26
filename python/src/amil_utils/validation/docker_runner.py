@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import time
+import uuid
 from pathlib import Path
 
 from amil_utils.validation.log_parser import parse_install_log, parse_test_log
@@ -22,6 +23,15 @@ from amil_utils.validation.types import InstallResult, Result, TestResult
 logger = logging.getLogger(__name__)
 
 _VALID_MODULE_NAME = re.compile(r"[a-z][a-z0-9_]+$")
+
+
+def _unique_project_name(module_name: str) -> str:
+    """Generate a unique Docker Compose project name.
+
+    Returns a name in the format ``factory-{module_name}-{hex8}`` to prevent
+    port conflicts between concurrent or orphaned Docker Compose environments.
+    """
+    return f"factory-{module_name}-{uuid.uuid4().hex[:8]}"
 
 
 def _validate_module_name(name: str) -> str | None:
@@ -82,6 +92,7 @@ def _run_compose(
     args: list[str],
     env: dict[str, str],
     timeout: int = 120,
+    project_name: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     """Run a docker compose command with the given arguments.
 
@@ -90,11 +101,13 @@ def _run_compose(
         args: Arguments to pass after 'docker compose -f <file>'.
         env: Environment variables to merge with os.environ.
         timeout: Subprocess timeout in seconds.
+        project_name: Optional Docker Compose project name (``--project-name``).
 
     Returns:
         CompletedProcess with stdout and stderr captured as text.
     """
-    cmd = ["docker", "compose", "-f", str(compose_file), *args]
+    project_args = ["--project-name", project_name] if project_name else []
+    cmd = ["docker", "compose", *project_args, "-f", str(compose_file), *args]
     merged_env = {**os.environ, **env}
     return subprocess.run(
         cmd,
@@ -105,16 +118,22 @@ def _run_compose(
     )
 
 
-def _teardown(compose_file: Path, env: dict[str, str]) -> None:
+def _teardown(
+    compose_file: Path,
+    env: dict[str, str],
+    project_name: str | None = None,
+) -> None:
     """Tear down Docker containers and volumes.
 
     Runs 'docker compose down -v --remove-orphans' with up to 3 retry
     attempts using exponential backoff. Logs to stderr on final failure.
     This function never raises.
     """
+    project_args = ["--project-name", project_name] if project_name else []
     cmd = [
         "docker",
         "compose",
+        *project_args,
         "-f",
         str(compose_file),
         "down",
@@ -158,6 +177,7 @@ def _start_db_with_retry(
     env: dict[str, str],
     max_attempts: int = 3,
     timeout: int = 120,
+    project_name: str | None = None,
 ) -> None:
     """Start the database service with retry and teardown between attempts.
 
@@ -165,7 +185,13 @@ def _start_db_with_retry(
     """
     for attempt in range(1, max_attempts + 1):
         try:
-            _run_compose(compose_file, ["up", "-d", "--wait", "db"], env, timeout=timeout)
+            _run_compose(
+                compose_file,
+                ["up", "-d", "--wait", "db"],
+                env,
+                timeout=timeout,
+                project_name=project_name,
+            )
             return  # Success
         except Exception:
             if attempt < max_attempts:
@@ -177,7 +203,7 @@ def _start_db_with_retry(
                     backoff,
                     exc_info=True,
                 )
-                _teardown(compose_file, env)
+                _teardown(compose_file, env, project_name=project_name)
                 time.sleep(backoff)
             else:
                 raise
@@ -213,14 +239,25 @@ def docker_install_module(
     if name_error:
         return Result.fail(name_error)
 
+    project_name = _unique_project_name(module_name)
+
     env = {
         "MODULE_PATH": str(module_path.resolve()),
         "MODULE_NAME": module_name,
     }
 
     try:
+        # Pre-cleanup: remove any orphaned containers from previous runs.
+        _run_compose(
+            compose_file,
+            ["down", "--remove-orphans", "-v", "--timeout", "5"],
+            env,
+            timeout=30,
+            project_name=project_name,
+        )
+
         # Start only the database service with retry for transient failures.
-        _start_db_with_retry(compose_file, env)
+        _start_db_with_retry(compose_file, env, project_name=project_name)
 
         # Install in a fresh container (no entrypoint server conflict).
         result = _run_compose(
@@ -241,6 +278,7 @@ def docker_install_module(
             ],
             env,
             timeout=timeout,
+            project_name=project_name,
         )
 
         combined_output = result.stdout + result.stderr
@@ -258,7 +296,7 @@ def docker_install_module(
     except Exception as exc:
         return Result.fail(str(exc))
     finally:
-        _teardown(compose_file, env)
+        _teardown(compose_file, env, project_name=project_name)
 
 
 def docker_run_tests(
@@ -292,14 +330,25 @@ def docker_run_tests(
     if name_error:
         return Result.fail(name_error)
 
+    project_name = _unique_project_name(module_name)
+
     env = {
         "MODULE_PATH": str(module_path.resolve()),
         "MODULE_NAME": module_name,
     }
 
     try:
+        # Pre-cleanup: remove any orphaned containers from previous runs.
+        _run_compose(
+            compose_file,
+            ["down", "--remove-orphans", "-v", "--timeout", "5"],
+            env,
+            timeout=30,
+            project_name=project_name,
+        )
+
         # Start only the database service with retry for transient failures.
-        _start_db_with_retry(compose_file, env)
+        _start_db_with_retry(compose_file, env, project_name=project_name)
 
         # Run tests in a fresh container (no entrypoint server conflict).
         # --test-tags filters to only this module's tests, avoiding the
@@ -324,6 +373,7 @@ def docker_run_tests(
             ],
             env,
             timeout=timeout,
+            project_name=project_name,
         )
 
         combined_output = result.stdout + result.stderr
@@ -335,4 +385,4 @@ def docker_run_tests(
         logger.warning("Docker test run failed", exc_info=True)
         return Result.fail(f"Docker test run failed: {exc}")
     finally:
-        _teardown(compose_file, env)
+        _teardown(compose_file, env, project_name=project_name)
