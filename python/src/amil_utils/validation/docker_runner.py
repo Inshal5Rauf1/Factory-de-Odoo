@@ -25,6 +25,17 @@ logger = logging.getLogger(__name__)
 
 _VALID_MODULE_NAME = re.compile(r"[a-z][a-z0-9_]+$")
 
+# Only these host env vars are passed to Docker compose subprocesses.
+# Prevents leaking secrets (AWS keys, GitHub tokens, etc.) — CWE-200.
+_PASSTHROUGH_ENV_VARS = frozenset({
+    "PATH", "HOME", "USER", "LANG", "LC_ALL",
+    "DOCKER_HOST", "DOCKER_CERT_PATH", "DOCKER_TLS_VERIFY",
+    "DOCKER_CONFIG", "COMPOSE_FILE", "COMPOSE_PROJECT_NAME",
+    "TMPDIR", "TMP", "TEMP",
+    # Factory-specific vars needed by compose files
+    "FACTORY_DB_PASSWORD", "ODOO_MAJOR_VERSION", "POSTGRES_VERSION",
+})
+
 
 def _unique_project_name(module_name: str) -> str:
     """Generate a unique Docker Compose project name.
@@ -109,7 +120,8 @@ def _run_compose(
     """
     project_args = ["--project-name", project_name] if project_name else []
     cmd = ["docker", "compose", *project_args, "-f", str(compose_file), *args]
-    merged_env = {**os.environ, **env}
+    base_env = {k: v for k, v in os.environ.items() if k in _PASSTHROUGH_ENV_VARS}
+    merged_env = {**base_env, **env}
     return subprocess.run(
         cmd,
         capture_output=True,
@@ -141,7 +153,8 @@ def _teardown(
         "-v",
         "--remove-orphans",
     ]
-    merged_env = {**os.environ, **env}
+    base_env = {k: v for k, v in os.environ.items() if k in _PASSTHROUGH_ENV_VARS}
+    merged_env = {**base_env, **env}
     max_attempts = 3
 
     for attempt in range(1, max_attempts + 1):
