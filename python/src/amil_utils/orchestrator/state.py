@@ -6,9 +6,12 @@ decisions, blockers, session tracking, metrics, frontmatter sync.
 """
 from __future__ import annotations
 
+import logging
 import re
 from datetime import date, datetime, timezone
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from amil_utils.orchestrator.core import (
     get_milestone_info,
@@ -83,8 +86,8 @@ def build_state_frontmatter(body_content: str, cwd: str | Path | None = None) ->
             info = get_milestone_info(cwd)
             milestone = info["version"]
             milestone_name = info["name"]
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Failed to read milestone info: %s", exc)
 
     total_phases = int(total_phases_raw) if total_phases_raw else None
     completed_phases = None
@@ -122,8 +125,8 @@ def build_state_frontmatter(body_content: str, cwd: str | Path | None = None) ->
                 completed_phases = disk_completed_phases
                 total_plans = disk_total_plans
                 completed_plans = disk_total_summaries
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Failed to read phase directories: %s", exc)
 
     progress_percent = None
     if progress_raw:
