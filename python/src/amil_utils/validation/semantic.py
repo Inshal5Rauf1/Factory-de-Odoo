@@ -100,6 +100,9 @@ from amil_utils.validation.semantic_checks import (  # noqa: E402
     _check_w4,
     _check_w5,
     _check_w8,
+    _check_w10,
+    _check_w11,
+    _check_w12,
     check_comodel_depends,
 )
 
@@ -351,6 +354,33 @@ def semantic_validate_full(
 
     # W9: Comodel depends cross-validation
     result.warnings.extend(check_comodel_depends(output_dir))
+
+    # W10-W12: Spec-based ORM checks (require spec)
+    if spec is not None:
+        for issue_dict in _check_w10(output_dir, spec):
+            result.warnings.append(ValidationIssue(
+                code=issue_dict["code"],
+                severity=issue_dict["severity"],
+                file="",
+                line=None,
+                message=issue_dict["message"],
+            ))
+        for issue_dict in _check_w11(output_dir, spec):
+            result.warnings.append(ValidationIssue(
+                code=issue_dict["code"],
+                severity=issue_dict["severity"],
+                file="",
+                line=None,
+                message=issue_dict["message"],
+            ))
+        for issue_dict in _check_w12(output_dir, spec):
+            result.warnings.append(ValidationIssue(
+                code=issue_dict["code"],
+                severity=issue_dict["severity"],
+                file="",
+                line=None,
+                message=issue_dict["message"],
+            ))
 
     elapsed = time.perf_counter() - start
     result.duration_ms = int(elapsed * 1000)

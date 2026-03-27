@@ -68,12 +68,17 @@ class {{ class_name }}(models.Model):
     )
 {% endfor %}
 {% if sql_constraints %}
-
+{% if odoo_version is defined and odoo_version >= "19.0" %}
+{% for c in sql_constraints %}
+    {{ c.name }} = models.Constraint('{{ c.definition }}', '{{ c.message }}')
+{% endfor %}
+{% else %}
     _sql_constraints = [
 {% for c in sql_constraints %}
         ('{{ c.name }}', '{{ c.definition }}', '{{ c.message }}'),
 {% endfor %}
     ]
+{% endif %}
 {% endif %}
 {% for field in computed_fields %}
 

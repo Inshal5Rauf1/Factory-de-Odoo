@@ -1748,3 +1748,70 @@ def check_comodel_depends(output_dir: Path) -> list[ValidationIssue]:
                 ))
 
     return issues
+
+
+def _check_w10(module_dir: Path, spec: dict, **kwargs) -> list[dict]:
+    """Computed field used in search view without store=True."""
+    issues = []
+    for model in spec.get("models", []):
+        computed = {f["name"] for f in model.get("fields", []) if f.get("compute")}
+        stored_computed = {f["name"] for f in model.get("fields", []) if f.get("compute") and f.get("store")}
+        unstored = computed - stored_computed
+        if not unstored:
+            continue
+        # Check search views for references to unstored computes
+        model_var = model["name"].replace(".", "_")
+        search_view = module_dir / "views" / f"{model_var}_views.xml"
+        if not search_view.exists():
+            continue
+        content = search_view.read_text(encoding="utf-8")
+        for field_name in unstored:
+            if f'name="{field_name}"' in content and "<search" in content:
+                issues.append({
+                    "code": "W10",
+                    "message": f"Computed field '{field_name}' on {model['name']} is used in search view but lacks store=True",
+                    "model": model["name"],
+                    "field": field_name,
+                    "severity": "warning",
+                })
+    return issues
+
+
+def _check_w11(module_dir: Path, spec: dict, **kwargs) -> list[dict]:
+    """_order references non-existent field."""
+    issues = []
+    implicit_fields = {"id", "create_date", "write_date", "create_uid", "write_uid", "display_name"}
+    for model in spec.get("models", []):
+        order = model.get("order") or model.get("_order", "")
+        if not order:
+            continue
+        field_names = {f["name"] for f in model.get("fields", [])} | implicit_fields
+        for part in order.split(","):
+            order_field = part.strip().split()[0].strip()
+            if order_field and order_field not in field_names:
+                issues.append({
+                    "code": "W11",
+                    "message": f"_order references '{order_field}' which is not a field on {model['name']}",
+                    "model": model["name"],
+                    "field": order_field,
+                    "severity": "warning",
+                })
+    return issues
+
+
+def _check_w12(module_dir: Path, spec: dict, **kwargs) -> list[dict]:
+    """Required Many2one with incompatible ondelete."""
+    issues = []
+    for model in spec.get("models", []):
+        for field in model.get("fields", []):
+            if field.get("type") != "Many2one":
+                continue
+            if field.get("required") and field.get("ondelete") in ("set null", "set default"):
+                issues.append({
+                    "code": "W12",
+                    "message": f"Field '{field['name']}' on {model['name']} is required=True but ondelete='{field['ondelete']}' — incompatible",
+                    "model": model["name"],
+                    "field": field["name"],
+                    "severity": "warning",
+                })
+    return issues

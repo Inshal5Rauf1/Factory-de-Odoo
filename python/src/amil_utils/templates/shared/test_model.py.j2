@@ -11,7 +11,7 @@ class Test{{ model_name | to_class }}(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.test_record = cls.env["{{ model_name }}"].create({
+        cls.test_record_vals = {
 {% for field in required_fields %}
 {% if field.type == 'Char' %}
             "{{ field.name }}": "Test {{ field.string | default(field.name | replace('_', ' ') | title) }}",
@@ -39,11 +39,19 @@ class Test{{ model_name | to_class }}(TransactionCase):
             "{{ field.name }}": "Test value",
 {% endif %}
 {% endfor %}
-        })
+        }
+        cls.test_record = cls.env["{{ model_name }}"].create(cls.test_record_vals)
 
     def test_create(self):
         """Test that a {{ model_description }} record can be created."""
         self.assertTrue(self.test_record.id, "Record should have been created successfully")
+{% for field in required_fields %}
+        self.assertEqual(
+            self.test_record.{{ field.name }},
+            self.test_record_vals.get("{{ field.name }}"),
+            "Field '{{ field.name }}' should match the creation value",
+        )
+{% endfor %}
 
     def test_read(self):
         """Test that {{ model_description }} fields are readable."""
@@ -202,6 +210,7 @@ class Test{{ model_name | to_class }}(TransactionCase):
         record = self.test_record
         # Verify computed field has a value after creation
         self.assertIsNotNone(record.{{ field.name }})
+        self.assertNotEqual(record.{{ field.name }}, False, "Computed field '{{ field.name }}' should have a non-False value")
 {% endif %}
 {% endfor %}
 

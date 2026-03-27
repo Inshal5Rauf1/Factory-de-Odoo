@@ -9,9 +9,30 @@ Reads module dependency data from module_status.json and provides:
 """
 from __future__ import annotations
 
+import json
+from functools import lru_cache
 from pathlib import Path
 
 from amil_utils.orchestrator.module_status import read_status_file
+
+
+@lru_cache(maxsize=1)
+def _load_external_module_names() -> frozenset[str]:
+    """Load known Odoo module names that are external (not generated)."""
+    data_file = Path(__file__).parent.parent / "data" / "known_odoo_models.json"
+    try:
+        raw = json.loads(data_file.read_text(encoding="utf-8"))
+        if isinstance(raw, dict) and "models" in raw:
+            modules = set()
+            for model_name in raw["models"]:
+                parts = model_name.split(".")
+                if parts:
+                    modules.add(parts[0])
+            modules.update({"base", "web", "mail", "account", "stock", "hr", "sale", "purchase", "project", "crm", "website", "portal", "board", "bus"})
+            return frozenset(modules)
+    except (OSError, json.JSONDecodeError):
+        pass
+    return frozenset({"base", "web", "mail"})
 
 # ── Constants ────────────────────────────────────────────────────────────────
 
@@ -32,12 +53,14 @@ def _visit(
     ancestors: list[str],
     *,
     strict: bool = True,
+    external_modules: frozenset[str] | None = None,
 ) -> None:
     """DFS visit for topological sort with cycle detection.
 
     Args:
         strict: If True (default), raise ValueError on unknown dependencies.
                 If False, log a warning and skip the phantom.
+        external_modules: Known external Odoo module names to skip silently.
     """
     if name in visited:
         return
@@ -46,6 +69,10 @@ def _visit(
         cycle_start = ancestors.index(name)
         cycle_path = ancestors[cycle_start:] + [name]
         raise ValueError(f"Circular dependency detected: {' -> '.join(cycle_path)}")
+
+    if external_modules and name not in modules and name in external_modules:
+        visited.add(name)
+        return
 
     if name not in modules:
         referrer = ancestors[-1] if ancestors else "<root>"
@@ -72,6 +99,7 @@ def _visit(
             _visit(
                 dep, modules, visited, visiting, result, [*ancestors, name],
                 strict=strict,
+                external_modules=external_modules,
             )
 
     visiting.discard(name)
@@ -82,7 +110,12 @@ def _visit(
 # ── Public API ───────────────────────────────────────────────────────────────
 
 
-def topo_sort(modules: dict[str, dict], *, strict: bool = True) -> list[str]:
+def topo_sort(
+    modules: dict[str, dict],
+    *,
+    strict: bool = True,
+    external_modules: frozenset[str] | None = None,
+) -> list[str]:
     """DFS-based topological sort with cycle detection.
 
     Args:
@@ -90,6 +123,8 @@ def topo_sort(modules: dict[str, dict], *, strict: bool = True) -> list[str]:
         strict: If True (default), raise ValueError when a dependency references
                 a name not present in *modules*. If False, log a warning and
                 skip the phantom dependency.
+        external_modules: Known external Odoo module names to skip silently.
+                          Defaults to names derived from known_odoo_models.json.
 
     Returns:
         Module names in dependency order (deps before dependents).
@@ -98,12 +133,17 @@ def topo_sort(modules: dict[str, dict], *, strict: bool = True) -> list[str]:
         ValueError: If a circular dependency is detected, or if strict=True
                     and an unknown dependency is encountered.
     """
+    external_modules = external_modules or _load_external_module_names()
     visited: set[str] = set()
     visiting: set[str] = set()
     result: list[str] = []
 
     for name in modules:
-        _visit(name, modules, visited, visiting, result, [], strict=strict)
+        _visit(
+            name, modules, visited, visiting, result, [],
+            strict=strict,
+            external_modules=external_modules,
+        )
 
     return result
 

@@ -20,6 +20,9 @@ _logger = logging.getLogger(__name__)
 class {{ model_name | to_class }}(models.Model):
     _name = "{{ model_name }}"
     _description = "{{ model_description }}"
+{% if check_company_auto is defined and check_company_auto %}
+    _check_company_auto = True
+{% endif %}
 {% if inherit_list %}
     _inherit = [{% for inh in inherit_list %}"{{ inh }}"{% if not loop.last %}, {% endif %}{% endfor %}]
 {% endif %}
@@ -598,4 +601,13 @@ class {{ model_name | to_class }}(models.Model):
     def _compute_display_name(self):
         for record in self:
             record.display_name = f"{{ display_name_pattern | replace('{', '{record.') }}"
+{% endif %}
+{% if model is defined and model.search_display_fields is defined and model.search_display_fields %}
+
+    def _search_display_name(self, operator, value):
+        """Custom search on display name — searches across multiple fields."""
+        domain = []
+        for field_name in {{ model.search_display_fields | tojson }}:
+            domain = ['|'] + domain + [(field_name, operator, value)]
+        return self.search(domain)
 {% endif %}

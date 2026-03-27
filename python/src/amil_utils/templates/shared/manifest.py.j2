@@ -18,6 +18,10 @@
 {% endfor %}
     ],
 {% if not no_demo | default(false) %}
+{% if odoo_version is defined and odoo_version >= "19.0" %}
+    # NOTE: Odoo 19.0+ does not auto-load demo data.
+    # Use --load-demo flag during installation to include demo records.
+{% endif %}
     "demo": [
         "demo/demo_data.xml",
     ],

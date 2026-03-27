@@ -194,8 +194,13 @@ def execute_render_module(
             reg_errors = [str(e) for e in vr.errors]
 
             inferred = reg.infer_depends(spec)
-            reg.register_module(spec["module_name"], spec)
-            reg.save()
+            try:
+                reg.register_module(spec["module_name"], spec)
+                reg.save()
+            except Exception:
+                from amil_utils.orchestrator.registry import rollback_registry
+                rollback_registry(output_dir)
+                raise
             model_count = len(spec.get("models", []))
 
             result["registry_update"] = {

@@ -110,29 +110,55 @@ def check_computed_depends(spec: dict, registry: dict) -> dict:
     """Check that computed field depends paths resolve to existing fields."""
     violations: list[dict] = []
     registry_models = registry.get("models") or {}
+    base_models = _load_base_models()
 
     for model in spec.get("models") or []:
+        model_name = model["name"]
         spec_field_names = {f["name"] for f in (model.get("fields") or [])}
-        reg_model = registry_models.get(model["name"])
+        reg_model = registry_models.get(model_name)
         reg_field_names = set((reg_model.get("fields") or {}).keys()) if reg_model else set()
 
         for field in model.get("fields") or []:
+            field_name = field["name"]
             if not field.get("compute") or not field.get("depends"):
                 continue
 
             for dep_path in field["depends"]:
-                first_segment = dep_path.split(".")[0]
-                if first_segment in spec_field_names:
-                    continue
-                if first_segment in reg_field_names:
+                segments = dep_path.split(".")
+                first_segment = segments[0]
+                if first_segment not in spec_field_names and first_segment not in reg_field_names:
+                    violations.append({
+                        "model": model_name,
+                        "field": field_name,
+                        "depends_path": dep_path,
+                        "reason": f"First segment '{first_segment}' not found in model fields",
+                    })
                     continue
 
-                violations.append({
-                    "model": model["name"],
-                    "field": field["name"],
-                    "depends_path": dep_path,
-                    "reason": f'field "{first_segment}" not found on model',
-                })
+                # Validate deeper segments if path has 2+ parts
+                if len(segments) > 1:
+                    field_def = next(
+                        (f for f in (model.get("fields") or []) if f["name"] == first_segment),
+                        None,
+                    )
+                    if field_def and field_def.get("comodel_name"):
+                        comodel = field_def["comodel_name"]
+                        second_segment = segments[1]
+                        comodel_fields = set()
+                        reg_comodel = registry_models.get(comodel, {})
+                        for f in (reg_comodel.get("fields") or []):
+                            if isinstance(f, dict):
+                                comodel_fields.add(f.get("name", ""))
+                            elif isinstance(f, str):
+                                comodel_fields.add(f)
+                        if second_segment not in comodel_fields and comodel not in base_models:
+                            violations.append({
+                                "model": model_name,
+                                "field": field_name,
+                                "depends_path": dep_path,
+                                "reason": f"Cannot verify '{second_segment}' on '{comodel}'",
+                                "severity": "warning",
+                            })
 
     return {
         "check": "computed_depends",

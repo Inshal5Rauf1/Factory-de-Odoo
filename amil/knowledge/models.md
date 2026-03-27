@@ -687,12 +687,10 @@ _sql_constraints = [
 ```python
 from odoo import models
 
-_constraints = [
-    models.Constraint(
-        "UNIQUE(code)",
-        "The code must be unique.",
-    ),
-]
+code_unique = models.Constraint(
+    "UNIQUE(code)",
+    "The code must be unique.",
+)
 ```
 
 **Why:** The `models.Constraint` class provides a more structured and extensible way to define SQL constraints. The old `_sql_constraints` list-of-tuples pattern still works but the new class is preferred for new modules.

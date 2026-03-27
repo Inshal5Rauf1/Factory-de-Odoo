@@ -344,5 +344,35 @@ def update_from_spec(cwd: str | Path, spec: dict) -> dict:
         "models": new_models,
     }
 
+    # F7: Track security group XML IDs
+    security = spec.get("security", {})
+    security_groups = {}
+    for role in (security.get("roles") or []):
+        if isinstance(role, str):
+            security_groups[role] = f"{module_name}.group_{role}"
+        elif isinstance(role, dict):
+            role_name = role.get("name", "")
+            security_groups[role_name] = role.get("xml_id", f"{module_name}.group_{role_name}")
+    if security_groups:
+        new_registry["security_groups"] = {
+            **new_registry.get("security_groups", {}),
+            module_name: security_groups,
+        }
+
+    # F8: Track view XML IDs for cross-module inheritance
+    view_xml_ids = []
+    for model in spec.get("models", []):
+        model_var = model["name"].replace(".", "_")
+        view_xml_ids.extend([
+            f"{module_name}.view_{model_var}_form",
+            f"{module_name}.view_{model_var}_list",
+            f"{module_name}.view_{model_var}_search",
+        ])
+    if view_xml_ids:
+        new_registry["view_xml_ids"] = {
+            **new_registry.get("view_xml_ids", {}),
+            module_name: view_xml_ids,
+        }
+
     _atomic_write_json(_registry_path(cwd), new_registry)
     return new_registry

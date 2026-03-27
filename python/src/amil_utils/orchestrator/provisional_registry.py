@@ -148,6 +148,26 @@ def mark_built(registry: dict, module_name: str) -> dict:
     return new_reg
 
 
+def check_broken_references(registry: dict) -> list[dict]:
+    """Check for references pointing to non-existent models.
+
+    Returns a list of broken references with from_module, from_model,
+    field_name, to_model, and reason.
+    """
+    all_model_names = set(registry.get("models", {}).keys())
+    broken = []
+    for ref in registry.get("references", []):
+        if ref["to_model"] not in all_model_names:
+            broken.append({
+                "from_module": ref["from_module"],
+                "from_model": ref["from_model"],
+                "field_name": ref["field_name"],
+                "to_model": ref["to_model"],
+                "reason": f"Target model '{ref['to_model']}' does not exist in registry",
+            })
+    return broken
+
+
 def resolve_reference(
     model_name: str,
     real_registry: dict | None,

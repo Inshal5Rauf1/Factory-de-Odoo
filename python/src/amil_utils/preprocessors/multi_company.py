@@ -61,4 +61,5 @@ def inject_multi_company_fields(spec: dict[str, Any]) -> dict[str, Any]:
         if _has_company_id(fields):
             continue
         model.setdefault("fields", []).append(_make_company_id_field())
+        model["check_company_auto"] = True
     return spec
