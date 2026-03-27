@@ -20,7 +20,6 @@ import logging
 import queue
 import subprocess
 import threading
-import time
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote as url_unquote
