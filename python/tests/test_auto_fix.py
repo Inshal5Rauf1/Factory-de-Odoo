@@ -1683,7 +1683,7 @@ class TestDockerFixLoopIterations:
                 error_message="still broken",
             ))
 
-        with patch('amil_utils.auto_fix._dispatch_docker_fix') as mock_dispatch:
+        with patch('amil_utils.auto_fix_docker._dispatch_docker_fix') as mock_dispatch:
             # Return a different pattern_id each time so smart guard doesn't skip
             mock_dispatch.side_effect = [
                 (True, "pattern_a"),
@@ -2226,7 +2226,7 @@ class TestRunDockerFixLoopTriedPatterns:
                 'error_message': '',
             })())
 
-        with patch('amil_utils.auto_fix._dispatch_docker_fix') as mock_dispatch:
+        with patch('amil_utils.auto_fix_docker._dispatch_docker_fix') as mock_dispatch:
             # First call: fix applied, returns missing_acl pattern
             # Second call: same pattern in tried_patterns, returns skip
             mock_dispatch.side_effect = [
@@ -2252,7 +2252,7 @@ class TestRunDockerFixLoopTriedPatterns:
         module_dir = tmp_path / "test_module"
         module_dir.mkdir()
 
-        with patch('amil_utils.auto_fix._dispatch_docker_fix') as mock_dispatch:
+        with patch('amil_utils.auto_fix_docker._dispatch_docker_fix') as mock_dispatch:
             # First call: no fix applied (pattern already tried externally)
             mock_dispatch.return_value = (False, None)
             result = run_docker_fix_loop(
