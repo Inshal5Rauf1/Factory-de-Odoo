@@ -52,6 +52,17 @@ VALID_FIELD_TYPES: frozenset[str] = frozenset({
     "Json",
 })
 
+
+def _validate_field_type_value(v: str) -> str:
+    """Shared field type validator for FieldSpec and ExtensionFieldSpec."""
+    if v not in VALID_FIELD_TYPES:
+        valid_sorted = ", ".join(sorted(VALID_FIELD_TYPES))
+        raise ValueError(
+            f"Value '{v}' is not a valid field type. "
+            f"Valid types: {valid_sorted}"
+        )
+    return v
+
 # ---------------------------------------------------------------------------
 # Chain-level specs (Phase 61)
 # ---------------------------------------------------------------------------
@@ -236,13 +247,7 @@ class FieldSpec(BaseModel):
     @field_validator("type")
     @classmethod
     def validate_field_type(cls, v: str) -> str:
-        if v not in VALID_FIELD_TYPES:
-            valid_sorted = ", ".join(sorted(VALID_FIELD_TYPES))
-            raise ValueError(
-                f"Value '{v}' is not a valid field type. "
-                f"Valid types: {valid_sorted}"
-            )
-        return v
+        return _validate_field_type_value(v)
 
 
 class ConstraintSpec(BaseModel):
@@ -335,13 +340,7 @@ class ExtensionFieldSpec(BaseModel):
     @field_validator("type")
     @classmethod
     def validate_field_type(cls, v: str) -> str:
-        if v not in VALID_FIELD_TYPES:
-            valid_sorted = ", ".join(sorted(VALID_FIELD_TYPES))
-            raise ValueError(
-                f"Value '{v}' is not a valid field type. "
-                f"Valid types: {valid_sorted}"
-            )
-        return v
+        return _validate_field_type_value(v)
 
 
 class ViewInsertionSpec(BaseModel):
