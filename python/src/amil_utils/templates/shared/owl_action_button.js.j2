@@ -1,0 +1,26 @@
+/** @odoo-module */
+import { Component } from "@odoo/owl";
+import { useService } from "@web/core/utils/hooks";
+
+export class {{ component_class }} extends Component {
+    static template = "{{ module_name }}.{{ component_class }}";
+    static props = { record: Object };
+
+    setup() {
+        this.orm = useService("orm");
+        this.notification = useService("notification");
+    }
+
+    async onClick() {
+        try {
+            await this.orm.call(
+                "{{ target_model }}",
+                "{{ action_method }}",
+                [this.props.record.resId]
+            );
+            this.notification.add("Action completed successfully", { type: "success" });
+        } catch (e) {
+            this.notification.add(e.message || "Action failed", { type: "danger" });
+        }
+    }
+}

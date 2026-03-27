@@ -1,0 +1,32 @@
+/** @odoo-module */
+import { Component, useState } from "@odoo/owl";
+import { useService } from "@web/core/utils/hooks";
+import { registry } from "@web/core/registry";
+
+export class {{ component_class }} extends Component {
+    static template = "{{ module_name }}.{{ component_class }}";
+    static props = { record: Object };
+
+    setup() {
+        this.state = useState({ count: 0, loading: true });
+        this.orm = useService("orm");
+        this.action = useService("action");
+    }
+
+    async onWillStart() {
+        this.state.count = await this.orm.searchCount(
+            "{{ target_model }}", [["{{ link_field }}", "=", this.props.record.resId]]
+        );
+        this.state.loading = false;
+    }
+
+    async onClick() {
+        await this.action.doAction({
+            type: "ir.actions.act_window",
+            res_model: "{{ target_model }}",
+            domain: [["{{ link_field }}", "=", this.props.record.resId]],
+            views: [[false, "list"], [false, "form"]],
+            name: "{{ component_title }}",
+        });
+    }
+}
