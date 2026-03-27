@@ -132,6 +132,26 @@ def fix_missing_mail_thread(module_path: Path) -> bool:
     new_content = "\n".join(new_lines)
 
     model_file.write_text(new_content, encoding="utf-8")
+
+    # Also add 'mail' to manifest depends
+    manifest_path = module_path / "__manifest__.py"
+    if manifest_path.exists():
+        import ast as _ast
+        manifest_text = manifest_path.read_text(encoding="utf-8")
+        try:
+            _ast.parse(manifest_text)
+            if "'mail'" not in manifest_text and '"mail"' not in manifest_text:
+                if "'depends'" in manifest_text or '"depends"' in manifest_text:
+                    manifest_text = re.sub(
+                        r"(['\"]depends['\"]:\s*\[)",
+                        r"\1\n        'mail',",
+                        manifest_text,
+                        count=1,
+                    )
+                    manifest_path.write_text(manifest_text, encoding="utf-8")
+        except SyntaxError:
+            pass
+
     return True
 
 
@@ -651,7 +671,8 @@ def run_docker_fix_loop(
             tried_patterns.add(pattern_id)
 
         if revalidate_fn is None:
-            # Single-pass mode (no re-validation)
+            # Single-pass mode (no re-validation); clear error since fix applied
+            current_error = ""
             break
 
         # Re-validate to get new error output (revalidate_fn returns Result[InstallResult])
@@ -680,4 +701,8 @@ def run_docker_fix_loop(
             current_error = f"{current_error}\n{cap_msg}" if current_error else cap_msg
             logger.warning("run_docker_fix_loop: %s", cap_msg)
 
+    if current_error and current_error.strip():
+        return Result.fail(
+            f"Docker fix ceiling reached: {current_error}"
+        )
     return Result.ok((any_fix_applied, current_error))

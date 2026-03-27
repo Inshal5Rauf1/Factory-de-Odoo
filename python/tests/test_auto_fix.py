@@ -340,11 +340,9 @@ class TestRunPylintFixLoop:
             with patch("amil_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
                 result = run_pylint_fix_loop(mod)
 
-            assert result.success
-            total_fixed, remaining = result.data
+            assert not result.success
+            assert "Auto-fix ceiling reached" in result.errors[0]
             assert cycle_count == 5
-            assert total_fixed >= 1
-            assert any(v.rule_code == "E8103" for v in remaining)
 
     def test_skips_cycle_2_when_no_fixable(self):
         """If cycle 1 produces 0 fixable violations, skip cycle 2."""
@@ -365,11 +363,9 @@ class TestRunPylintFixLoop:
             with patch("amil_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
                 result = run_pylint_fix_loop(mod)
 
-            assert result.success
-            total_fixed, remaining = result.data
+            assert not result.success
+            assert "Auto-fix ceiling reached" in result.errors[0]
             assert cycle_count == 1
-            assert total_fixed == 0
-            assert len(remaining) == 1
 
 
 # ---------------------------------------------------------------------------
@@ -1021,9 +1017,8 @@ class TestRunDockerFixLoop:
 
         error_text = "Something completely unknown with no matching pattern"
         result = run_docker_fix_loop(module_dir, error_text)
-        assert result.success
-        any_fixed, remaining = result.data
-        assert any_fixed is False
+        assert not result.success
+        assert "Docker fix ceiling reached" in result.errors[0]
 
     def test_empty_error_returns_false(self, tmp_path: Path):
         """run_docker_fix_loop with empty error text returns False."""
@@ -1466,8 +1461,9 @@ class TestPylintFixLoopMaxIterations:
 
             with patch("amil_utils.auto_fix.run_pylint_odoo", side_effect=mock_run_pylint):
                 result = run_pylint_fix_loop(mod)
-                total_fixed, remaining = result.data
 
+            assert not result.success
+            assert "Auto-fix ceiling reached" in result.errors[0]
             assert cycle_count == 5
 
     def test_max_iterations_one_runs_one_cycle(self):
@@ -1579,9 +1575,8 @@ class TestDockerFixLoopIterations:
         result = run_docker_fix_loop(
             module_dir, error_text, max_iterations=5, revalidate_fn=revalidate_fn
         )
-        assert result.success
-        any_fixed, remaining = result.data
-        assert any_fixed is True
+        assert not result.success
+        assert "Docker fix ceiling reached" in result.errors[0]
 
     def test_stops_when_no_fix_applied(self, tmp_path: Path):
         """run_docker_fix_loop stops when fix function returns False."""
@@ -1594,9 +1589,8 @@ class TestDockerFixLoopIterations:
         result = run_docker_fix_loop(
             module_dir, error_text, max_iterations=5
         )
-        assert result.success
-        any_fixed, remaining = result.data
-        assert any_fixed is False
+        assert not result.success
+        assert "Docker fix ceiling reached" in result.errors[0]
 
     def test_stops_when_tried_pattern_repeated(self, tmp_path: Path):
         """run_docker_fix_loop stops when same pattern is tried again (smart guard).
@@ -1654,9 +1648,8 @@ class TestDockerFixLoopIterations:
         result = run_docker_fix_loop(
             module_dir, error_text, max_iterations=5, revalidate_fn=revalidate_fn
         )
-        assert result.success
-        any_fixed, remaining = result.data
-        assert any_fixed is True
+        assert not result.success
+        assert "Docker fix ceiling reached" in result.errors[0]
         # Smart guard: loop breaks after 2 iterations (fix + skip) not at cap
         assert revalidate_count == 1
 
@@ -1693,10 +1686,9 @@ class TestDockerFixLoopIterations:
             result = run_docker_fix_loop(
                 module_dir, "some error", max_iterations=3, revalidate_fn=revalidate_fn
             )
-        assert result.success
-        any_fixed, remaining = result.data
-        assert "Iteration cap (3) reached" in remaining
-        assert "manual review" in remaining.lower()
+        assert not result.success
+        assert "Docker fix ceiling reached" in result.errors[0]
+        assert "Iteration cap (3) reached" in result.errors[0]
 
 
 # ---------------------------------------------------------------------------
@@ -2069,9 +2061,8 @@ class TestMissingImportPatternDispatch:
 
         error_text = "ImportError: No module named 'some_missing_addon'"
         result = run_docker_fix_loop(module_dir, error_text)
-        assert result.success
-        any_fixed, remaining = result.data
-        assert any_fixed is False
+        assert not result.success
+        assert "Docker fix ceiling reached" in result.errors[0]
 
     def test_missing_import_identify_docker_fix(self):
         """identify_docker_fix returns 'missing_import' for ModuleNotFoundError."""
@@ -2239,9 +2230,8 @@ class TestRunDockerFixLoopTriedPatterns:
                 max_iterations=5,
                 revalidate_fn=mock_revalidate,
             )
-            assert result.success
-            any_fixed, _ = result.data
-            assert any_fixed is True
+            assert not result.success
+            assert "Docker fix ceiling reached" in result.errors[0]
             # Should have called dispatch exactly 2 times (not 5)
             assert mock_dispatch.call_count == 2
 
@@ -2260,9 +2250,8 @@ class TestRunDockerFixLoopTriedPatterns:
                 "some error that doesn't match",
                 max_iterations=5,
             )
-            assert result.success
-            any_fixed, _ = result.data
-            assert any_fixed is False
+            assert not result.success
+            assert "Docker fix ceiling reached" in result.errors[0]
             assert mock_dispatch.call_count == 1
 
 

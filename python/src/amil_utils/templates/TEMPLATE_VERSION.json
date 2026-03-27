@@ -1,0 +1,42 @@
+{
+  "last_verified": "2026-03-28",
+  "odoo_versions": {
+    "17.0": {
+      "last_verified_commit": "manual-audit-2026-03-28",
+      "breaking_changes_covered": [
+        "attrs_removed",
+        "states_attribute_removed",
+        "name_get_to_display_name"
+      ]
+    },
+    "18.0": {
+      "last_verified_commit": "manual-audit-2026-03-28",
+      "breaking_changes_covered": [
+        "numbercall_removed",
+        "name_get_fully_removed",
+        "aggregator_replaces_group_operator",
+        "search_display_name_replaces_name_search"
+      ]
+    },
+    "19.0": {
+      "last_verified_commit": "manual-audit-2026-03-28",
+      "breaking_changes_covered": [
+        "models_constraint_class",
+        "jsonrpc_controller_type",
+        "res_groups_privilege",
+        "kanban_card_t_name",
+        "demo_not_auto_loaded",
+        "list_replaces_tree"
+      ]
+    }
+  },
+  "shared": {
+    "version_guards": [
+      "cron_data.xml.j2: numbercall gated on < 18.0",
+      "security_group.xml.j2: privilege model gated on >= 19.0",
+      "view_kanban.xml.j2: t-name=card gated on >= 19.0",
+      "controller.py.j2: jsonrpc gated on >= 19.0",
+      "test_model.py.j2: name_get test gated on < 18.0"
+    ]
+  }
+}

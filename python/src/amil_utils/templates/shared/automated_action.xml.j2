@@ -1,0 +1,21 @@
+{# automated_action.xml.j2 -- base.automation records from notification preprocessor #}
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+{% for model in models if model.get("notification_automated_actions") %}
+{% for action in model.notification_automated_actions %}
+    <record id="{{ action.xml_id }}" model="base.automation">
+        <field name="name">{{ action.name }}</field>
+        <field name="model_id" ref="{{ model.name | model_ref }}"/>
+        <field name="trigger">{{ action.get("trigger", "on_write") }}</field>
+{% if action.get("trigger_field_ids") %}
+        <field name="trigger_field_ids" eval="[(6, 0, [ref('{{ model.name | model_ref }}').fields_get()['{{ f }}'].id for f in {{ action.trigger_field_ids | tojson }}])]"/>
+{% endif %}
+{% if action.get("filter_domain") %}
+        <field name="filter_domain">{{ action.filter_domain }}</field>
+{% endif %}
+        <field name="state">code</field>
+        <field name="code">{{ action.code }}</field>
+    </record>
+{% endfor %}
+{% endfor %}
+</odoo>

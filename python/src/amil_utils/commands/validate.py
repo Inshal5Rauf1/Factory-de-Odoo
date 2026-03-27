@@ -6,8 +6,87 @@ can decide how to display results.
 
 from __future__ import annotations
 
+import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
+
+_logger = logging.getLogger(__name__)
+
+
+def execute_validate_parallel(
+    module_paths: list[str],
+    *,
+    pylint_only: bool = False,
+    auto_fix: bool = False,
+    pylintrc: str | None = None,
+    concurrency: int = 2,
+) -> list[dict[str, Any]]:
+    """Validate multiple Odoo modules in parallel.
+
+    Each module is validated independently using ``execute_validate``.
+    Results are returned in the original submission order.
+
+    Parameters
+    ----------
+    module_paths:
+        List of module directory paths to validate.
+    pylint_only:
+        If True, skip Docker steps.
+    auto_fix:
+        If True, attempt auto-fix loops.
+    pylintrc:
+        Optional path to a pylintrc file.
+    concurrency:
+        Maximum number of parallel validations (default 2).
+
+    Returns
+    -------
+    list[dict[str, Any]]
+        One result dict per module, in the same order as *module_paths*.
+    """
+    if not module_paths:
+        return []
+
+    results: dict[str, dict[str, Any]] = {}
+
+    def _validate_one(mod_path: str) -> dict[str, Any]:
+        return execute_validate(
+            mod_path,
+            pylint_only=pylint_only,
+            auto_fix=auto_fix,
+            pylintrc=pylintrc,
+        )
+
+    with ThreadPoolExecutor(max_workers=max(1, concurrency)) as pool:
+        future_to_path = {
+            pool.submit(_validate_one, p): p for p in module_paths
+        }
+        for future in as_completed(future_to_path):
+            mod = future_to_path[future]
+            try:
+                result = future.result()
+                results[mod] = result
+                status = "CLEAN" if not result.get("has_issues") else "ISSUES"
+                _logger.info("Parallel validate %s: %s", mod, status)
+            except Exception as exc:
+                _logger.error("Parallel validate %s crashed: %s", mod, exc)
+                results[mod] = {
+                    "module_name": Path(mod).name,
+                    "has_issues": True,
+                    "error": str(exc),
+                    "violations": (),
+                    "auto_fix_count": 0,
+                    "auto_fix_escalation": None,
+                    "install_result": None,
+                    "test_results": (),
+                    "diagnosis": (),
+                    "docker_available": False,
+                    "report": None,
+                }
+
+    # Return in original submission order
+    return [results[p] for p in module_paths]
 
 
 def execute_validate(

@@ -798,6 +798,10 @@ def run_pylint_fix_loop(
         if cycle_fixed == 0 and not w0611_applied:
             break
 
+    if len(remaining) > 0:
+        return Result.fail(
+            f"Auto-fix ceiling reached: {len(remaining)} pylint violations remain after {total_fixed} fixes"
+        )
     return Result.ok((total_fixed, remaining))
 
 

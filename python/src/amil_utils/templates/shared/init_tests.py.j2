@@ -2,3 +2,4 @@
 {% for model in models %}
 from . import test_{{ model.name | to_python_var }}
 {% endfor %}
+from . import test_behavioral

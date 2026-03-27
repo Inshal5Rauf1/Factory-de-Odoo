@@ -202,24 +202,84 @@ def check_edition(spec_file: str, json_output: bool) -> None:
 # -- validate ----------------------------------------------------------------
 
 @main.command()
-@click.argument("module_path", type=click.Path(exists=True))
+@click.argument("module_path", type=click.Path(exists=True), nargs=-1, required=True)
 @click.option("--pylint-only", is_flag=True)
 @click.option("--auto-fix", is_flag=True)
 @click.option("--json", "json_output", is_flag=True)
 @click.option("--pylintrc", type=click.Path(exists=True))
-def validate(module_path: str, pylint_only: bool, auto_fix: bool, json_output: bool, pylintrc: str | None) -> None:
+@click.option("--parallel", is_flag=True, default=False, help="Validate multiple modules in parallel")
+@click.option("--concurrency", default=2, type=int, help="Max parallel validations (default 2)")
+def validate(
+    module_path: tuple[str, ...],
+    pylint_only: bool,
+    auto_fix: bool,
+    json_output: bool,
+    pylintrc: str | None,
+    parallel: bool,
+    concurrency: int,
+) -> None:
     """Validate an Odoo module against OCA quality standards."""
-    from amil_utils.commands.validate import execute_validate
-    r = execute_validate(module_path, pylint_only=pylint_only, auto_fix=auto_fix, pylintrc=pylintrc)
-    if r.get("error"): click.echo(r["error"], err=True); sys.exit(1)
-    if r.get("auto_fix_count", 0) > 0: click.echo(f"Auto-fix: {r['auto_fix_count']} fixed")
-    for k in ("auto_fix_escalation","docker_error","docker_retry_error","test_error"):
-        if r.get(k): click.echo(r[k], err=True)
-    if r.get("docker_fix_applied"): click.echo("Auto-fix: Docker fix(es) applied...")
-    if r.get("docker_iteration_cap"): click.echo(r["docker_iteration_cap"])
-    rpt = r["report"]
-    click.echo(json.dumps(r["format_report_json"](rpt), indent=2) if json_output else r["format_report_markdown"](rpt))
-    if r["has_issues"]: sys.exit(1)
+    from amil_utils.commands.validate import execute_validate, execute_validate_parallel
+
+    paths = list(module_path)
+
+    # Parallel mode: multiple modules validated concurrently
+    if parallel and len(paths) > 1:
+        results = execute_validate_parallel(
+            paths,
+            pylint_only=pylint_only,
+            auto_fix=auto_fix,
+            pylintrc=pylintrc,
+            concurrency=concurrency,
+        )
+        any_issues = False
+        for r in results:
+            mod_name = r.get("module_name", "?")
+            if r.get("error"):
+                click.echo(f"[{mod_name}] {r['error']}", err=True)
+                any_issues = True
+                continue
+            rpt = r.get("report")
+            if rpt is not None:
+                label = f"[{mod_name}] "
+                fmt_fn = r.get("format_report_json") if json_output else r.get("format_report_markdown")
+                if json_output and fmt_fn:
+                    click.echo(label + json.dumps(fmt_fn(rpt), indent=2))
+                elif fmt_fn:
+                    click.echo(label + fmt_fn(rpt))
+            if r.get("has_issues"):
+                any_issues = True
+        if any_issues:
+            sys.exit(1)
+        return
+
+    # Sequential mode: single module (or multiple modules one-by-one)
+    any_issues = False
+    for p in paths:
+        r = execute_validate(p, pylint_only=pylint_only, auto_fix=auto_fix, pylintrc=pylintrc)
+        if r.get("error"):
+            click.echo(r["error"], err=True)
+            any_issues = True
+            continue
+        if r.get("auto_fix_count", 0) > 0:
+            click.echo(f"Auto-fix: {r['auto_fix_count']} fixed")
+        for k in ("auto_fix_escalation", "docker_error", "docker_retry_error", "test_error"):
+            if r.get(k):
+                click.echo(r[k], err=True)
+        if r.get("docker_fix_applied"):
+            click.echo("Auto-fix: Docker fix(es) applied...")
+        if r.get("docker_iteration_cap"):
+            click.echo(r["docker_iteration_cap"])
+        rpt = r["report"]
+        click.echo(
+            json.dumps(r["format_report_json"](rpt), indent=2)
+            if json_output
+            else r["format_report_markdown"](rpt)
+        )
+        if r["has_issues"]:
+            any_issues = True
+    if any_issues:
+        sys.exit(1)
 
 # -- Search helpers / commands -----------------------------------------------
 
