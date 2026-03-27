@@ -10,7 +10,8 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
 
-from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from jinja2 import FileSystemLoader, StrictUndefined
+from jinja2.sandbox import SandboxedEnvironment as Environment  # CWE-1336: prevent SSTI
 
 from amil_utils.validation.types import Result
 from amil_utils.version_defaults import get_default_version
