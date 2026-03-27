@@ -27,8 +27,11 @@ from pathlib import Path
 from dataclasses import dataclass, field
 
 from .types import Result, InstallResult, TestResult
+from .docker_runner import _DOCKER_RETRY_DELAY_SECONDS, _DB_STARTUP_TIMEOUT_SECONDS
 
 _MODULE_NAME_RE = re.compile(r"^[a-z][a-z0-9_]*$")
+
+_SANITIZE_MAX_LENGTH: int = 200
 
 _INFRA_PATTERNS = re.compile(
     r"(?:Container\s+\w{12})|"   # Container IDs (12 hex chars)
@@ -38,7 +41,7 @@ _INFRA_PATTERNS = re.compile(
 )
 
 
-def _sanitize_docker_error(stderr: str, max_length: int = 200) -> str:
+def _sanitize_docker_error(stderr: str, max_length: int = _SANITIZE_MAX_LENGTH) -> str:
     """Truncate and sanitize Docker stderr for error messages.
 
     Removes infrastructure details (container IDs, network names, IP:port)
@@ -94,12 +97,12 @@ class PersistentDockerManager:
             return False
 
         # Wait for Odoo to be healthy
-        for attempt in range(30):
+        for attempt in range(_DB_STARTUP_TIMEOUT_SECONDS):
             if self._health_check():
                 self._running = True
                 self._save_state()
                 return True
-            time.sleep(2)
+            time.sleep(_DOCKER_RETRY_DELAY_SECONDS)
 
         return False
 

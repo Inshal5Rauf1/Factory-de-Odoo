@@ -28,6 +28,8 @@ from amil_utils.preprocessors.validation import _validate_no_cycles
 from amil_utils.spec_schema import validate_spec
 from amil_utils.version_defaults import get_default_version
 from amil_utils.context7 import build_context7_from_env, context7_enrich
+
+_OLS_MAX_FIX_ITERATIONS: int = 3
 from amil_utils.renderer_context import _build_module_context
 from amil_utils.validation.types import Result
 
@@ -493,7 +495,7 @@ def _run_ols_validation(
             fixed = run_ols_fix_loop(
                 lambda path: ols_client.validate_module(path),
                 module_dir,
-                max_iterations=3,
+                max_iterations=_OLS_MAX_FIX_ITERATIONS,
             )
             _logger.info("OLS auto-fix applied %d fixes", fixed)
             ols_diags = ols_client.validate_module(module_dir)

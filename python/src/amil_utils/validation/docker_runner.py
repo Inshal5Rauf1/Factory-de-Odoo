@@ -24,6 +24,10 @@ logger = logging.getLogger(__name__)
 
 _VALID_MODULE_NAME = re.compile(r"[a-z][a-z0-9_]+$")
 
+_DOCKER_MAX_RETRY_ATTEMPTS: int = 3
+_DOCKER_RETRY_DELAY_SECONDS: float = 2.0
+_DB_STARTUP_TIMEOUT_SECONDS: int = 30
+
 # Only these host env vars are passed to Docker compose subprocesses.
 # Prevents leaking secrets (AWS keys, GitHub tokens, etc.) — CWE-200.
 _PASSTHROUGH_ENV_VARS = frozenset({
@@ -154,7 +158,7 @@ def _teardown(
     ]
     base_env = {k: v for k, v in os.environ.items() if k in _PASSTHROUGH_ENV_VARS}
     merged_env = {**base_env, **env}
-    max_attempts = 3
+    max_attempts = _DOCKER_MAX_RETRY_ATTEMPTS
 
     for attempt in range(1, max_attempts + 1):
         try:
@@ -190,7 +194,7 @@ def _teardown(
 def _start_db_with_retry(
     compose_file: Path,
     env: dict[str, str],
-    max_attempts: int = 3,
+    max_attempts: int = _DOCKER_MAX_RETRY_ATTEMPTS,
     timeout: int = 120,
     project_name: str | None = None,
 ) -> None:
@@ -274,7 +278,7 @@ def docker_install_module(
             compose_file,
             ["down", "--remove-orphans", "-v", "--timeout", "5"],
             env,
-            timeout=30,
+            timeout=_DB_STARTUP_TIMEOUT_SECONDS,
             project_name=project_name,
         )
 
@@ -371,7 +375,7 @@ def docker_run_tests(
             compose_file,
             ["down", "--remove-orphans", "-v", "--timeout", "5"],
             env,
-            timeout=30,
+            timeout=_DB_STARTUP_TIMEOUT_SECONDS,
             project_name=project_name,
         )
 
