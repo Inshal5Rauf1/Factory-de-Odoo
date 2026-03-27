@@ -8,7 +8,7 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: odoo
-      POSTGRES_PASSWORD: odoo
+      POSTGRES_PASSWORD: ${ODOO_DEV_DB_PASSWORD:?Set ODOO_DEV_DB_PASSWORD in docker/dev/.env}
       POSTGRES_DB: postgres
     volumes:
       - odoo-dev-db:/var/lib/postgresql/data
@@ -25,11 +25,11 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "${ODOO_DEV_PORT:-8069}:8069"
+      - "127.0.0.1:${ODOO_DEV_PORT:-8069}:8069"
     environment:
       HOST: db
       USER: odoo
-      PASSWORD: odoo
+      PASSWORD: ${ODOO_DEV_DB_PASSWORD:?Set ODOO_DEV_DB_PASSWORD in docker/dev/.env}
     volumes:
       - odoo-dev-data:/var/lib/odoo
       - ./odoo.conf:/etc/odoo/odoo.conf:ro
