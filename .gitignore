@@ -46,3 +46,5 @@ pgdata/
 docker/dev/.env
 .mcp.json
 python/uni_fee/
+tools/odoo-ls/
+tools/odoo-source/
