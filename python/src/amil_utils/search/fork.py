@@ -67,18 +67,21 @@ def clone_oca_module(
             str(clone_dir),
         ],
         check=True,
+        capture_output=True,
     )
 
     # Step 2: Set sparse-checkout to only include the target module
     subprocess.run(
         ["git", "-C", str(clone_dir), "sparse-checkout", "set", module_name],
         check=True,
+        capture_output=True,
     )
 
     # Step 3: Checkout the branch
     subprocess.run(
         ["git", "-C", str(clone_dir), "checkout", branch],
         check=True,
+        capture_output=True,
     )
 
     return clone_dir / module_name
