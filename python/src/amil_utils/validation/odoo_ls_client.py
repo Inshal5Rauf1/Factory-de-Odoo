@@ -35,6 +35,8 @@ logger = logging.getLogger(__name__)
 
 _HEADER_ENCODING = "ascii"
 _BODY_ENCODING = "utf-8"
+_MAX_HEADER_SIZE = 8192  # 8 KB — guards against unbounded header accumulation
+_MAX_BODY_SIZE = 10 * 1024 * 1024  # 10 MB — guards against oversized messages
 
 
 def encode_lsp_message(msg: dict[str, Any]) -> bytes:
@@ -360,10 +362,16 @@ class OdooLSClient:
                     if not byte:
                         return  # Stream closed
                     header_buf += byte
+                    if len(header_buf) > _MAX_HEADER_SIZE:
+                        logger.error("LSP header exceeded %d bytes, dropping", _MAX_HEADER_SIZE)
+                        return
 
                 # Parse Content-Length
                 content_length = _parse_content_length(bytes(header_buf))
                 if content_length is None:
+                    continue
+                if content_length > _MAX_BODY_SIZE:
+                    logger.error("Content-Length %d exceeds max %d", content_length, _MAX_BODY_SIZE)
                     continue
 
                 # Read body in one call (exact length = won't over-read)

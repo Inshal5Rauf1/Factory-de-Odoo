@@ -74,16 +74,20 @@ def generate_odools_toml(
     odoo_addons = odoo_source_path / "addons"
     odoo_core_addons = odoo_source_path / "odoo" / "addons"
 
+    def _esc(s: str) -> str:
+        """Escape backslashes and double quotes for TOML string values."""
+        return str(s).replace("\\", "\\\\").replace('"', '\\"')
+
     content = (
         f'[[config]]\n'
-        f'name = "{profile_name}"\n'
-        f'odoo_path = "{odoo_source_path}"\n'
+        f'name = "{_esc(profile_name)}"\n'
+        f'odoo_path = "{_esc(str(odoo_source_path))}"\n'
         f'addons_paths = [\n'
-        f'    "{odoo_addons}",\n'
-        f'    "{odoo_core_addons}",\n'
-        f'    "{addons_output_dir}",\n'
+        f'    "{_esc(str(odoo_addons))}",\n'
+        f'    "{_esc(str(odoo_core_addons))}",\n'
+        f'    "{_esc(str(addons_output_dir))}",\n'
         f']\n'
-        f'python_path = "{python_line}"\n'
+        f'python_path = "{_esc(python_line)}"\n'
         f'diag_missing_imports = "all"\n'
         f'refresh_mode = "off"\n'
     )
