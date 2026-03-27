@@ -58,6 +58,27 @@ class TestConstraintCodeValidation:
         assert _validate_generated_code("subprocess.run(['ls'])") is False
         assert _validate_generated_code("os.system('whoami')") is False
 
+    def test_ast_validator_rejects_builtins_access(self):
+        from amil_utils.preprocessors.constraints import _validate_generated_code
+
+        # Accessing __builtins__ as a name should be rejected
+        assert _validate_generated_code("__builtins__['eval']('1+1')") is False
+        assert _validate_generated_code("x = __builtins__") is False
+
+    def test_ast_validator_rejects_globals_access(self):
+        from amil_utils.preprocessors.constraints import _validate_generated_code
+
+        # Accessing __globals__ as a name or attribute should be rejected
+        assert _validate_generated_code("__globals__['os']") is False
+        assert _validate_generated_code("func.__globals__['os']") is False
+
+    def test_ast_validator_rejects_subclasses(self):
+        from amil_utils.preprocessors.constraints import _validate_generated_code
+
+        # Accessing __subclasses__ as an attribute should be rejected
+        assert _validate_generated_code("().__class__.__bases__[0].__subclasses__()") is False
+        assert _validate_generated_code("obj.__subclasses__()") is False
+
     def test_multiline_check_body_validated(self):
         from amil_utils.preprocessors.constraints import _validate_generated_code
 

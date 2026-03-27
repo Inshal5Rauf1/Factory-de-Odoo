@@ -19,11 +19,14 @@ _DANGEROUS_NODES = (ast.Import, ast.ImportFrom)
 _DANGEROUS_CALLS = frozenset({
     "exec", "eval", "compile", "__import__", "globals", "locals",
     "getattr", "setattr", "delattr", "breakpoint",
+    "type", "vars", "dir", "open", "input",
 })
 # Dangerous attribute access patterns
 _DANGEROUS_ATTRS = frozenset({
     "system", "popen", "run", "call", "check_output", "check_call",
     "Popen",
+    "__globals__", "__builtins__", "__subclasses__", "__class__",
+    "__mro__", "__bases__", "__code__", "__closure__",
 })
 
 
@@ -44,11 +47,15 @@ def _validate_generated_code(code: str) -> bool:
     for node in ast.walk(tree):
         if isinstance(node, _DANGEROUS_NODES):
             return False
+        if isinstance(node, ast.Name) and node.id in {
+            "__builtins__", "__globals__", "__import__",
+        }:
+            return False
+        if isinstance(node, ast.Attribute) and node.attr in _DANGEROUS_ATTRS:
+            return False
         if isinstance(node, ast.Call):
             func = node.func
             if isinstance(func, ast.Name) and func.id in _DANGEROUS_CALLS:
-                return False
-            if isinstance(func, ast.Attribute) and func.attr in _DANGEROUS_ATTRS:
                 return False
     return True
 
@@ -100,14 +107,6 @@ def _process_constraints(spec: dict[str, Any]) -> dict[str, Any]:
                 validate_identifier(f, "temporal constraint field")
             guards = " and ".join(f"rec.{f}" for f in fields)
             condition = c["condition"]
-            # Defense-in-depth: reject conditions with dangerous constructs
-            _DANGEROUS = ("__import__", "__class__", "__mro__",
-                          "exec(", "eval(", "os.system", "subprocess")
-            if any(p in condition for p in _DANGEROUS):
-                logger.warning(
-                    "Temporal constraint condition contains dangerous pattern — "
-                    "skipping constraint '%s'", c.get("name", "?"))
-                return enriched  # Return unenriched (no check_expr)
             # Prefix field references with rec.
             check_condition = condition
             for field in fields:
