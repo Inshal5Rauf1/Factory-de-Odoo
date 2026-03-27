@@ -1,0 +1,58 @@
+{# view_kanban.xml.j2 -- Kanban view for dashboard cards #}
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_{{ model_xml_id }}_kanban" model="ir.ui.view">
+        <field name="name">{{ dashboard.model_name }}.view.kanban</field>
+        <field name="model">{{ dashboard.model_name }}</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard"
+{% if dashboard.get('default_group_by') %}
+                    default_group_by="{{ dashboard.default_group_by }}"
+{% endif %}
+{% if dashboard.get('quick_create') is sameas false %}
+                    quick_create="false"
+{% endif %}
+            >
+                <field name="id"/>
+{% for dim in dashboard.get('dimensions', []) %}
+                <field name="{{ dim.field }}"/>
+{% endfor %}
+{% for measure in dashboard.get('measures', []) %}
+                <field name="{{ measure.field }}"/>
+{% endfor %}
+{% for extra in dashboard.get('kanban_fields', []) %}
+                <field name="{{ extra.field }}"/>
+{% endfor %}
+                <templates>
+{% if odoo_version is defined and odoo_version >= "19.0" %}
+                    <t t-name="card">
+{% else %}
+                    <t t-name="kanban-card">
+{% endif %}
+                        <div class="oe_kanban_details">
+{% if dashboard.get('kanban_title_field') %}
+                            <strong><field name="{{ dashboard.kanban_title_field }}"/></strong>
+{% else %}
+                            <strong><field name="display_name"/></strong>
+{% endif %}
+{% for measure in dashboard.get('measures', []) %}
+                            <div>
+                                <span class="text-muted">{{ measure.get('label', measure.field | replace('_', ' ') | title) }}:</span>
+                                <field name="{{ measure.field }}"{% if measure.get('widget') %} widget="{{ measure.widget }}"{% endif %}/>
+                            </div>
+{% endfor %}
+{% for extra in dashboard.get('kanban_fields', []) %}
+                            <div>
+                                <span class="text-muted">{{ extra.get('label', extra.field | replace('_', ' ') | title) }}:</span>
+                                <field name="{{ extra.field }}"/>
+                            </div>
+{% endfor %}
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+</odoo>

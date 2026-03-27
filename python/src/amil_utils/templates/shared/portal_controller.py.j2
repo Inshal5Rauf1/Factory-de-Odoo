@@ -1,0 +1,190 @@
+{# portal_controller.py.j2 -- Portal controller inheriting CustomerPortal #}
+from collections import OrderedDict
+
+from odoo import http
+from odoo.exceptions import AccessError, MissingError
+from odoo.http import request
+from odoo.addons.portal.controllers.portal import CustomerPortal, pager as portal_pager
+
+
+class {{ controller_class }}(CustomerPortal):
+{% set counter_pages = portal_pages | selectattr("home_counter") | list %}
+{% if not portal_pages and not portal_models %}
+    pass
+{% elif counter_pages %}
+
+    def _prepare_home_portal_values(self, counters):
+        values = super()._prepare_home_portal_values(counters)
+{% for page in counter_pages %}
+        if '{{ page.id }}_count' in counters:
+            Model = request.env['{{ page.model }}']
+{% if page.counter_domain is defined and page.counter_domain %}
+            domain = self._get_{{ page.model_var }}_domain() + {{ page.counter_domain }}
+{% else %}
+            domain = self._get_{{ page.model_var }}_domain()
+{% endif %}
+            count = Model.search_count(domain) if Model.check_access_rights('read', raise_exception=False) else 0
+            values['{{ page.id }}_count'] = count
+{% endfor %}
+        return values
+{% endif %}
+
+    # -------------------------------------------------------------------------
+    # Domain helpers
+    # -------------------------------------------------------------------------
+{% for model_info in portal_models %}
+
+    def _get_{{ model_info.model_var }}_domain(self):
+        return [('{{ model_info.ownership }}', '=', request.env.user.id)]
+{% endfor %}
+
+    # -------------------------------------------------------------------------
+    # Portal pages
+    # -------------------------------------------------------------------------
+{% for page in portal_pages %}
+{% if page.type == "list" %}
+
+    @http.route(
+        ['/{{ page.route.lstrip("/") }}', '/{{ page.route.lstrip("/") }}/page/<int:page>'],
+        type='http', auth='user', website=True,
+    )
+    def portal_my_{{ page.id }}(self, page=1, sortby=None, **kw):
+        Model = request.env['{{ page.model }}']
+        domain = self._get_{{ page.model_var }}_domain()
+        # --- BUSINESS LOGIC START ---
+        # TODO: implement portal_my_{{ page.id }} logic
+        # --- BUSINESS LOGIC END ---
+        searchbar_sortings = {
+            '{{ page.default_sort | default("id desc") }}': {
+                'label': 'Default',
+                'order': '{{ page.default_sort | default("id desc") }}',
+            },
+        }
+        sort_order = searchbar_sortings.get(sortby, {}).get(
+            'order', '{{ page.default_sort | default("id desc") }}'
+        )
+        {{ page.model_var }}_count = Model.search_count(domain)
+        pager = portal_pager(
+            url='{{ page.route }}',
+            total={{ page.model_var }}_count,
+            page=page,
+            step=20,
+            url_args={'sortby': sortby},
+        )
+        {{ page.plural_name }} = Model.search(
+            domain, order=sort_order, limit=20, offset=pager['offset'],
+        )
+        values = {
+            '{{ page.plural_name }}': {{ page.plural_name }}.sudo(),
+            'page_name': '{{ page.id }}',
+            'pager': pager,
+            'default_url': '{{ page.route }}',
+            'searchbar_sortings': searchbar_sortings,
+            'sortby': sortby,
+        }
+        return request.render(
+            '{{ module_name }}.portal_my_{{ page.id }}', values
+        )
+{% if page.detail_route is defined and page.detail_route %}
+
+    @http.route(
+        '{{ page.detail_route }}',
+        type='http', auth='user', website=True,
+    )
+    def portal_{{ page.id }}_detail(self, {{ page.singular_name }}_id, **kw):
+        try:
+            {{ page.singular_name }}_sudo = self._document_check_access(
+                '{{ page.model }}', {{ page.singular_name }}_id
+            )
+        except (AccessError, MissingError):
+            return request.redirect('/my')
+        values = {
+            '{{ page.singular_name }}': {{ page.singular_name }}_sudo,
+            'page_name': '{{ page.id }}',
+        }
+        return request.render(
+            '{{ module_name }}.portal_{{ page.id }}_detail', values
+        )
+{% endif %}
+{% if page.detail_actions is defined and page.detail_actions %}
+{% for action in page.detail_actions %}
+{% if action.type == "report" %}
+
+    @http.route(
+        '{{ page.detail_route | replace("<int:" ~ page.singular_name ~ "_id>", "<int:" ~ page.singular_name ~ "_id>") }}/{{ action.name }}',
+        type='http', auth='user', website=True,
+    )
+    def portal_{{ page.id }}_{{ action.name }}(self, {{ page.singular_name }}_id, **kw):
+        try:
+            {{ page.singular_name }}_sudo = self._document_check_access(
+                '{{ page.model }}', {{ page.singular_name }}_id
+            )
+        except (AccessError, MissingError):
+            return request.redirect('/my')
+{% if action.states %}
+        if {{ page.singular_name }}_sudo.state not in {{ action.states }}:
+            return request.redirect('/my')
+{% endif %}
+        return self._show_report(
+            model={{ page.singular_name }}_sudo,
+            report_type='pdf',
+            report_ref='{{ action.report_ref }}',
+            download=True,
+        )
+{% endif %}
+{% endfor %}
+{% endif %}
+{% elif page.type == "detail" %}
+{% if page.fields_editable is defined and page.fields_editable %}
+
+    @http.route(
+        '{{ page.route }}',
+        type='http', auth='user', website=True,
+        methods=['GET', 'POST'],
+    )
+    def portal_my_{{ page.id }}(self, **post):
+        {{ page.singular_name }} = request.env['{{ page.model }}'].search(
+            self._get_{{ page.model_var }}_domain(), limit=1
+        )
+        if not {{ page.singular_name }}:
+            return request.redirect('/my')
+        if request.httprequest.method == 'POST':
+            allowed_fields = {{ '{' }}{% for f in page.fields_editable %}'{{ f }}'{% if not loop.last %}, {% endif %}{% endfor %}{{ '}' }}
+            vals = {k: v for k, v in post.items() if k in allowed_fields}
+            # --- BUSINESS LOGIC START ---
+            # SECURITY: Validate field values before writing.
+            # .sudo() bypasses access rules -- ensure the portal user
+            # is authorized to modify this specific record.
+            # TODO: Add type coercion and domain-specific validation for each field.
+            # --- BUSINESS LOGIC END ---
+            {{ page.singular_name }}.sudo().write(vals)
+            return request.redirect('{{ page.route }}')
+        values = {
+            '{{ page.singular_name }}': {{ page.singular_name }}.sudo(),
+            'page_name': '{{ page.id }}',
+        }
+        return request.render(
+            '{{ module_name }}.portal_my_{{ page.id }}', values
+        )
+{% else %}
+
+    @http.route(
+        '{{ page.route }}',
+        type='http', auth='user', website=True,
+    )
+    def portal_my_{{ page.id }}(self, **kw):
+        {{ page.singular_name }} = request.env['{{ page.model }}'].search(
+            self._get_{{ page.model_var }}_domain(), limit=1
+        )
+        if not {{ page.singular_name }}:
+            return request.redirect('/my')
+        values = {
+            '{{ page.singular_name }}': {{ page.singular_name }}.sudo(),
+            'page_name': '{{ page.id }}',
+        }
+        return request.render(
+            '{{ module_name }}.portal_my_{{ page.id }}', values
+        )
+{% endif %}
+{% endif %}
+{% endfor %}

@@ -1,0 +1,182 @@
+{# import_wizard.py.j2 -- Import/Export TransientModel wizard #}
+import base64
+import io
+
+from markupsafe import escape
+
+from odoo import api, fields, models
+from odoo.exceptions import UserError, ValidationError
+
+
+class {{ wizard_class }}(models.TransientModel):
+    _name = "{{ model_name }}.import.wizard"
+    _description = "Import {{ model_description }}"
+    _transient_max_hours = {{ transient_max_hours | default(1.0) }}
+    _transient_max_count = {{ transient_max_count | default(0) }}
+
+    state = fields.Selection(
+        selection=[
+            ("upload", "Upload"),
+            ("preview", "Preview"),
+            ("done", "Done"),
+        ],
+        string="State",
+        default="upload",
+        required=True,
+    )
+    file_data = fields.Binary(string="File", attachment=False)
+    file_name = fields.Char(string="File Name")
+    preview_html = fields.Html(string="Preview", readonly=True)
+    import_count = fields.Integer(string="Imported Records", readonly=True)
+    error_log = fields.Text(string="Error Log", readonly=True)
+
+    def _validate_file_content(self):
+        """Validate uploaded file is a valid xlsx (ZIP) by checking magic bytes."""
+        self.ensure_one()
+        if not self.file_data:
+            raise ValidationError(self.env._("No file uploaded."))
+        raw = base64.b64decode(self.file_data)
+        if not raw[:4] == b'PK\x03\x04':
+            raise ValidationError(
+                self.env._("Invalid file format. Please upload a valid .xlsx file.")
+            )
+
+    def action_preview(self):
+        """Parse first rows of uploaded xlsx and show HTML preview."""
+        self.ensure_one()
+        self._validate_file_content()
+        import openpyxl
+        raw = base64.b64decode(self.file_data)
+        wb = openpyxl.load_workbook(io.BytesIO(raw), read_only=True)
+        ws = wb.active
+        rows = list(ws.iter_rows(max_row=6, values_only=True))
+        wb.close()
+        if not rows:
+            self.write({"state": "preview", "preview_html": "<p>Empty file</p>"})
+            return self._reopen_wizard()
+        html = "<table class='table table-sm'>"
+        html += "<thead><tr>"
+        for cell in rows[0]:
+            html += f"<th>{escape(cell or '')}</th>"
+        html += "</tr></thead><tbody>"
+        for row in rows[1:]:
+            html += "<tr>"
+            for cell in row:
+                html += f"<td>{escape(cell or '')}</td>"
+            html += "</tr>"
+        html += "</tbody></table>"
+        self.write({"state": "preview", "preview_html": html})
+        return self._reopen_wizard()
+
+    def action_import(self):
+        """Import all rows from uploaded xlsx file."""
+        self.ensure_one()
+        self._validate_file_content()
+        import openpyxl
+        raw = base64.b64decode(self.file_data)
+        wb = openpyxl.load_workbook(io.BytesIO(raw), read_only=True)
+        ws = wb.active
+        rows = list(ws.iter_rows(min_row=2, values_only=True))
+        headers = [
+            cell.value for cell in next(ws.iter_rows(max_row=1))
+        ] if ws.max_row else []
+        wb.close()
+        errors, count = self._do_import(rows, headers)
+        vals = {"state": "done", "import_count": count}
+        if errors:
+            vals["error_log"] = "\n".join(errors)
+        self.write(vals)
+        return self._reopen_wizard()
+
+    def _do_import(self, rows, headers=None):
+        """Batch import rows with per-row error handling.
+
+        Returns:
+            Tuple of (error_messages, success_count).
+        """
+        errors = []
+        count = 0
+        for idx, row in enumerate(rows, start=2):
+            try:
+                vals = self._parse_row(row, headers)
+                if vals:
+                    self.env["{{ model_name }}"].create(vals)
+                    count += 1
+            except Exception as exc:
+                errors.append("Row %d: %s" % (idx, exc))
+        return errors, count
+
+    def _parse_row(self, row, headers=None):
+        """Parse a single spreadsheet row into a create vals dict.
+
+        TODO: implement field mapping for {{ model_name }}.
+        """
+        if not headers:
+            return {}
+        return dict(zip(headers, row))
+
+    def action_download_template(self):
+        """Generate and download an empty xlsx template with correct headers."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Template"
+        export_fields = [
+{%- for field in export_fields %}
+            "{{ field.name }}",
+{%- endfor %}
+        ]
+        ws.append(export_fields)
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        attachment = self.env["ir.attachment"].create({
+            "name": "{{ model_description }}_template.xlsx",
+            "datas": base64.b64encode(output.read()),
+            "type": "binary",
+        })
+        return {
+            "type": "ir.actions.act_url",
+            "url": "/web/content/%d?download=true" % attachment.id,
+            "target": "new",
+        }
+
+    def action_export(self):
+        """Export all records of {{ model_name }} to xlsx and return download action."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "{{ model_description }}"
+        # Field headers
+        export_fields = [
+{%- for field in export_fields %}
+            "{{ field.name }}",
+{%- endfor %}
+        ]
+        ws.append(export_fields)
+        records = self.env["{{ model_name }}"].search([])
+        for rec in records:
+            ws.append([getattr(rec, f, "") for f in export_fields])
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        attachment = self.env["ir.attachment"].create({
+            "name": "{{ model_description }}_export.xlsx",
+            "datas": base64.b64encode(output.read()),
+            "type": "binary",
+        })
+        return {
+            "type": "ir.actions.act_url",
+            "url": "/web/content/%d?download=true" % attachment.id,
+            "target": "new",
+        }
+
+    def _reopen_wizard(self):
+        """Return act_window action to reopen this wizard."""
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": self._name,
+            "res_id": self.id,
+            "view_mode": "form",
+            "target": "new",
+        }

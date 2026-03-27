@@ -1,0 +1,20 @@
+/** @odoo-module */
+import { Component, useState, onWillStart } from "@odoo/owl";
+import { useService } from "@web/core/utils/hooks";
+import { registry } from "@web/core/registry";
+
+export class {{ component_class }} extends Component {
+    static template = "{{ module_name }}.{{ component_class }}";
+
+    setup() {
+        this.state = useState({ metrics: {}, loading: true });
+        this.rpc = useService("rpc");
+        onWillStart(() => this.loadMetrics());
+    }
+
+    async loadMetrics() {
+        this.state.loading = true;
+        this.state.metrics = await this.rpc("/{{ module_name }}/dashboard/metrics");
+        this.state.loading = false;
+    }
+}

@@ -1,0 +1,89 @@
+{
+  "module_name": "test_university",
+  "module_title": "Test University",
+  "summary": "Test university module with CGPA chain",
+  "author": "Test",
+  "website": "https://test.example.com",
+  "license": "LGPL-3",
+  "category": "Education",
+  "odoo_version": "19.0",
+  "depends": ["base"],
+  "application": true,
+  "models": [
+    {
+      "name": "exam.result",
+      "description": "Exam Result",
+      "fields": [
+        {"name": "enrollment_id", "type": "Many2one", "comodel_name": "uni.enrollment", "required": true}
+      ]
+    },
+    {
+      "name": "uni.enrollment",
+      "description": "Enrollment",
+      "fields": [
+        {"name": "student_id", "type": "Many2one", "comodel_name": "uni.student", "required": true},
+        {"name": "course_id", "type": "Many2one", "comodel_name": "uni.course", "required": true},
+        {"name": "result_ids", "type": "One2many", "comodel_name": "exam.result", "inverse_name": "enrollment_id"}
+      ]
+    },
+    {
+      "name": "uni.student",
+      "description": "Student",
+      "fields": [
+        {"name": "name", "type": "Char", "required": true},
+        {"name": "enrollment_ids", "type": "One2many", "comodel_name": "uni.enrollment", "inverse_name": "student_id"}
+      ]
+    },
+    {
+      "name": "uni.course",
+      "description": "Course",
+      "fields": [
+        {"name": "name", "type": "Char", "required": true},
+        {"name": "credit_hours", "type": "Integer"}
+      ]
+    }
+  ],
+  "computation_chains": [
+    {
+      "chain_id": "cgpa_chain",
+      "description": "Grade -> Grade Points -> CGPA",
+      "steps": [
+        {
+          "model": "exam.result",
+          "field": "grade",
+          "type": "Selection",
+          "source": "direct_input",
+          "description": "Faculty enters letter grade"
+        },
+        {
+          "model": "exam.result",
+          "field": "grade_point",
+          "type": "Float",
+          "source": "lookup",
+          "depends": ["grade"],
+          "description": "Map letter grade to numeric",
+          "lookup_table": {"A": 4.0, "A-": 3.7, "B+": 3.3, "B": 3.0, "B-": 2.7, "C+": 2.3, "C": 2.0, "C-": 1.7, "D": 1.0, "F": 0.0}
+        },
+        {
+          "model": "uni.enrollment",
+          "field": "weighted_grade_points",
+          "type": "Float",
+          "source": "computation",
+          "depends": ["result_ids.grade_point", "course_id.credit_hours"],
+          "description": "grade_point x credit_hours for this enrollment"
+        },
+        {
+          "model": "uni.student",
+          "field": "cgpa",
+          "type": "Float",
+          "source": "aggregation",
+          "aggregation": "weighted_average",
+          "depends": ["enrollment_ids.weighted_grade_points", "enrollment_ids.course_id.credit_hours"],
+          "description": "Weighted average of all enrollment grade points",
+          "digits": [3, 2]
+        }
+      ]
+    }
+  ],
+  "wizards": []
+}

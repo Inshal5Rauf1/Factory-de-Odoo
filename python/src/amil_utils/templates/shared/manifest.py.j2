@@ -1,0 +1,47 @@
+{# manifest.py.j2 -- Odoo __manifest__.py module descriptor #}
+{
+    "name": "{{ module_title }}",
+    "version": "{{ odoo_version }}.1.0.0",
+    "author": "{{ author }}",
+    "website": "{{ website }}",
+    "license": "{{ license | default('LGPL-3') }}",
+    "category": "{{ category | default('Uncategorized') }}",
+    "summary": "{{ summary }}",
+    "depends": [
+{% for dep in depends %}
+        "{{ dep }}",
+{% endfor %}
+    ],
+    "data": [
+{% for f in manifest_files %}
+        "{{ f }}",
+{% endfor %}
+    ],
+{% if not no_demo | default(false) %}
+    "demo": [
+        "demo/demo_data.xml",
+    ],
+{% endif %}
+{% if manifest_assets | default([]) %}
+    "assets": {
+{% for asset in manifest_assets %}
+        "{{ asset.bundle }}": [
+            "{{ module_name }}/{{ asset.path }}",
+        ],
+{% endfor %}
+    },
+{% endif %}
+    "development_status": "Alpha",
+    "application": {{ application | default(True) }},
+{% if external_dependencies is defined and external_dependencies %}
+    "external_dependencies": {
+{% for dep_type, dep_list in external_dependencies.items() %}
+        "{{ dep_type }}": [
+{% for dep in dep_list %}
+            "{{ dep }}",
+{% endfor %}
+        ],
+{% endfor %}
+    },
+{% endif %}
+}

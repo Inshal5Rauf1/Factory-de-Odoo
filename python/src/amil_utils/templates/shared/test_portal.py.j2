@@ -1,0 +1,42 @@
+{# test_portal.py.j2 -- Odoo HttpCase tests for portal controllers #}
+from odoo.tests import HttpCase, tagged
+
+
+@tagged("post_install", "-at_install")
+class Test{{ model_name | to_class }}Portal(HttpCase):
+    """Portal access tests for {{ model_description }}."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+{% for field in required_fields %}
+{% if loop.first %}
+        cls.test_record = cls.env["{{ model_name }}"].create({
+{% endif %}
+{% if field.type == 'Char' %}
+            "{{ field.name }}": "Test Portal {{ field.string | default(field.name) }}",
+{% elif field.type == 'Integer' %}
+            "{{ field.name }}": 1,
+{% elif field.type == 'Float' %}
+            "{{ field.name }}": 1.0,
+{% elif field.type == 'Boolean' %}
+            "{{ field.name }}": True,
+{% else %}
+            "{{ field.name }}": "Test value",
+{% endif %}
+{% if loop.last %}
+        })
+{% endif %}
+{% endfor %}
+
+    def test_portal_list_page(self):
+        """Test portal list page is accessible."""
+        self.authenticate("portal", "portal")
+        response = self.url_open("/my/{{ model_xml_id }}s")
+        self.assertEqual(response.status_code, 200)
+
+    def test_portal_detail_page(self):
+        """Test portal detail page is accessible."""
+        self.authenticate("portal", "portal")
+        response = self.url_open(f"/my/{{ model_xml_id }}/{self.test_record.id}")
+        self.assertEqual(response.status_code, 200)

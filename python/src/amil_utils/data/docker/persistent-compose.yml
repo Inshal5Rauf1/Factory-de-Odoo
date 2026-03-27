@@ -1,0 +1,80 @@
+services:
+  db:
+    image: postgres:${POSTGRES_VERSION:-16}
+    environment:
+      POSTGRES_USER: ${FACTORY_DB_USER:-odoo}
+      POSTGRES_PASSWORD: ${FACTORY_DB_PASSWORD:?Set FACTORY_DB_PASSWORD env var}
+      POSTGRES_DB: odoo_factory
+    volumes:
+      - factory-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${FACTORY_DB_USER:-odoo}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # At 90+ modules, PostgreSQL needs more resources
+    shm_size: '512mb'
+    command: >
+      postgres
+        -c shared_buffers=256MB
+        -c work_mem=16MB
+        -c maintenance_work_mem=128MB
+        -c max_connections=100
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - FOWNER
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - db-internal
+
+  odoo:
+    image: odoo:${ODOO_MAJOR_VERSION:-19}.0
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${FACTORY_PORT:-8069}:8069"
+    volumes:
+      - factory-addons:/mnt/extra-addons
+      - factory-odoo-data:/var/lib/odoo
+    environment:
+      HOST: db
+      USER: ${FACTORY_DB_USER:-odoo}
+      PASSWORD: ${FACTORY_DB_PASSWORD:?Set FACTORY_DB_PASSWORD env var}
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8069/web/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    # At 90+ modules, Odoo needs more memory for module loading
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - FOWNER
+      - SETGID
+      - SETUID
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - db-internal
+      - default
+
+networks:
+  db-internal:
+    internal: true
+
+volumes:
+  factory-db-data:
+  factory-addons:
+  factory-odoo-data:

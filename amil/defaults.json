@@ -1,0 +1,15 @@
+{
+  "odoo": {
+    "odoo_version": "19.0",
+    "edition": "community",
+    "output_dir": ".",
+    "license": "LGPL-3",
+    "author": "",
+    "website": "",
+    "api_keys": {
+      "_comment": "API keys are resolved from environment variables. Never store actual keys here.",
+      "openai": "$OPENAI_API_KEY",
+      "github": "$GITHUB_TOKEN"
+    }
+  }
+}

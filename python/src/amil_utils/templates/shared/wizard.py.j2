@@ -1,0 +1,89 @@
+{# wizard.py.j2 -- Odoo TransientModel wizard #}
+from odoo import {{ 'api, ' if needs_api }}fields, models
+
+
+class {{ wizard_class }}(models.TransientModel):
+    _name = "{{ wizard.name }}"
+    _description = "{{ wizard.name | replace('.', ' ') | title }}"
+{% if transient_max_hours is defined and transient_max_hours is not none %}
+    _transient_max_hours = {{ transient_max_hours }}
+{% endif %}
+{% if transient_max_count is defined and transient_max_count is not none %}
+    _transient_max_count = {{ transient_max_count }}
+{% endif %}
+
+{% for field in wizard.fields %}
+{% if field.type == 'Selection' %}
+    {{ field.name }} = fields.{{ field.type }}(
+        string="{{ field.string | default(field.name | replace('_', ' ') | title) }}",
+        selection=[
+{% for opt in field.selection %}
+            ("{{ opt[0] }}", "{{ opt[1] }}"),
+{% endfor %}
+        ],
+{% if field.required is defined and field.required %}
+        required=True,
+{% endif %}
+    )
+{% elif field.type in ('Many2one', 'One2many', 'Many2many') %}
+    {{ field.name }} = fields.{{ field.type }}(
+        comodel_name="{{ field.comodel_name }}",
+        string="{{ field.string | default(field.name | replace('_', ' ') | title) }}",
+    )
+{% else %}
+    {{ field.name }} = fields.{{ field.type }}(
+        string="{{ field.string | default(field.name | replace('_', ' ') | title) }}",
+{% if field.required is defined and field.required %}
+        required=True,
+{% endif %}
+    )
+{% endif %}
+{% endfor %}
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        active_id = self.env.context.get("active_id")
+        if active_id:
+            res["active_id"] = active_id
+        return res
+
+    def button_confirm(self):
+        self.ensure_one()
+        # TODO: implement — perform action on target model {{ wizard.target_model }}
+        return {"type": "ir.actions.act_window_close"}
+{% if wizard.steps is defined and wizard.steps %}
+
+    state = fields.Selection([
+{% for step in wizard.steps %}
+        ("{{ step.key }}", "{{ step.label }}"),
+{% endfor %}
+    ], default="{{ wizard.steps[0].key }}")
+
+    def action_next(self):
+        """Navigate to the next wizard step."""
+        steps = [{{ wizard.steps | map(attribute='key') | map('tojson') | join(', ') }}]
+        current_idx = steps.index(self.state)
+        if current_idx < len(steps) - 1:
+            self.state = steps[current_idx + 1]
+            return self._reopen_wizard()
+        return self.action_confirm()
+
+    def action_previous(self):
+        """Navigate to the previous wizard step."""
+        steps = [{{ wizard.steps | map(attribute='key') | map('tojson') | join(', ') }}]
+        current_idx = steps.index(self.state)
+        if current_idx > 0:
+            self.state = steps[current_idx - 1]
+            return self._reopen_wizard()
+
+    def _reopen_wizard(self):
+        """Re-open the wizard at the current step."""
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": self._name,
+            "res_id": self.id,
+            "view_mode": "form",
+            "target": "new",
+        }
+{% endif %}

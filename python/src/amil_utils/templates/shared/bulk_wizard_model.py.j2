@@ -1,0 +1,250 @@
+{# bulk_wizard_model.py.j2 -- Bulk operation wizard TransientModel with 4-state machine #}
+import logging
+import math
+
+from odoo import api, fields, models
+from odoo.exceptions import UserError
+{# self.env._() used directly in methods (W8161) #}
+
+_logger = logging.getLogger(__name__)
+
+
+class {{ op.source_model_class }}Bulk{{ op.id | replace('bulk_', '') | title | replace('_', '') }}Wizard(models.TransientModel):
+    _name = '{{ op.wizard_model }}'
+    _description = '{{ op.name }}'
+    _transient_max_hours = 2.0
+
+    # -- Class attributes for batch processing --
+    _source_model = '{{ op.source_model }}'
+    _batch_size = {{ op.batch_size }}
+    _allow_partial = {{ op.allow_partial }}
+    _operation_type = '{{ op.operation }}'
+
+    # -- Fields --
+    state = fields.Selection(
+        selection=[
+            ('select', 'Select Records'),
+            ('preview', 'Preview'),
+            ('process', 'Processing'),
+            ('done', 'Complete'),
+        ],
+        string='State',
+        default='select',
+        required=True,
+    )
+
+{% for wf in op.get('wizard_fields', []) %}
+{% if wf.type == 'Many2one' %}
+    {{ wf.name }} = fields.Many2one(
+        '{{ wf.comodel }}',
+        string='{{ wf.name | replace("_", " ") | title }}',
+        required={{ wf.get('required', False) }},
+    )
+{% elif wf.type == 'Date' %}
+    {{ wf.name }} = fields.Date(
+        string='{{ wf.name | replace("_", " ") | title }}',
+        required={{ wf.get('required', False) }},
+    )
+{% elif wf.type == 'Datetime' %}
+    {{ wf.name }} = fields.Datetime(
+        string='{{ wf.name | replace("_", " ") | title }}',
+        required={{ wf.get('required', False) }},
+    )
+{% elif wf.type == 'Integer' %}
+    {{ wf.name }} = fields.Integer(
+        string='{{ wf.name | replace("_", " ") | title }}',
+        required={{ wf.get('required', False) }},
+    )
+{% elif wf.type == 'Float' %}
+    {{ wf.name }} = fields.Float(
+        string='{{ wf.name | replace("_", " ") | title }}',
+        required={{ wf.get('required', False) }},
+    )
+{% elif wf.type == 'Boolean' %}
+    {{ wf.name }} = fields.Boolean(
+        string='{{ wf.name | replace("_", " ") | title }}',
+    )
+{% elif wf.type == 'Selection' %}
+    {{ wf.name }} = fields.Selection(
+        selection={{ wf.get('selection', []) }},
+        string='{{ wf.name | replace("_", " ") | title }}',
+        required={{ wf.get('required', False) }},
+    )
+{% else %}
+    {{ wf.name }} = fields.Char(
+        string='{{ wf.name | replace("_", " ") | title }}',
+        required={{ wf.get('required', False) }},
+    )
+{% endif %}
+{% endfor %}
+
+    record_count = fields.Integer(
+        string='Record Count',
+        compute='_compute_record_count',
+    )
+    preview_line_ids = fields.One2many(
+        '{{ op.wizard_model }}.line',
+        'wizard_id',
+        string='Preview Lines',
+    )
+
+    # -- Result fields --
+    success_count = fields.Integer(string='Success Count', readonly=True)
+    fail_count = fields.Integer(string='Fail Count', readonly=True)
+    error_log = fields.Text(string='Error Log', readonly=True)
+
+    # -- Computed fields --
+
+    @api.depends()
+    def _compute_record_count(self):
+        """Compute the number of records matching the processing domain."""
+        for record in self:
+            domain = record._get_processing_domain()
+            record.record_count = self.env[self._source_model].search_count(domain)
+
+    # -- Actions --
+
+    def action_preview(self):
+        """Transition to preview state with record preview."""
+        self.ensure_one()
+        # --- BUSINESS LOGIC START ---
+        # TODO: Implement preview assembly -- search records, create preview lines
+{% if op.operation == 'state_transition' %}
+        # Operation: state_transition
+        # Target state: {{ op.target_state }}
+        # Action method: {{ op.action_method }}
+{% elif op.operation == 'create_related' %}
+        # Operation: create_related
+        # Create model: {{ op.get('create_model', '') }}
+        # create_fields mapping: {{ op.get('create_fields', {}) }}
+{% endif %}
+        pass
+        # --- BUSINESS LOGIC END ---
+        self.state = 'preview'
+        return self._reopen_wizard()
+
+    def action_process(self):
+        """Start batch processing and transition to done state."""
+        self.ensure_one()
+        self.state = 'process'
+        self._process_all()
+        self.state = 'done'
+        return self._reopen_wizard()
+
+    def _process_all(self):
+        """Process all matching records in batches.
+
+        Uses chunked batching with configurable batch_size.
+        If _allow_partial is True, commits per batch and logs errors.
+        If _allow_partial is False, rolls back on any failure (all-or-nothing).
+        """
+        domain = self._get_processing_domain()
+        records = self.env[self._source_model].search(domain)
+
+        total = len(records)
+        success = 0
+        errors = []
+        batch_size = self._batch_size
+
+        for i in range(0, total, batch_size):
+            batch = records[i:i + batch_size]
+
+            if self._allow_partial:
+                for record in batch:
+                    try:
+                        self._process_single(record)
+                        success += 1
+                    except Exception as e:
+                        errors.append(
+                            "%s: %s" % (record.display_name, str(e))
+                        )
+                        _logger.warning(
+                            "Bulk %s failed for %s: %s",
+                            self._name, record, e,
+                        )
+                self.env.cr.commit()
+            else:
+                try:
+                    for record in batch:
+                        self._process_single(record)
+                        success += 1
+                except Exception as e:
+                    self.env.cr.rollback()
+                    raise UserError(
+                        self.env._("Batch processing failed at record '%(record)s': %(error)s\n"
+                          "All changes have been rolled back.")
+                        % {'record': record.display_name, 'error': str(e)}
+                    )
+
+            self._notify_progress(processed=i + len(batch), total=total)
+
+        self.write({
+            'success_count': success,
+            'fail_count': len(errors),
+            'error_log': '\n'.join(errors) if errors else False,
+        })
+
+    def _process_single(self, record):
+        """Process a single record.
+
+        Override this method to implement the actual processing logic.
+        """
+        # --- BUSINESS LOGIC START ---
+{% if op.operation == 'state_transition' %}
+        # Operation: state_transition
+        # Target state: {{ op.target_state }}
+        # Action method: {{ op.action_method }}
+        # Call record.{{ op.action_method }}() to transition state to '{{ op.target_state }}'
+{% elif op.operation == 'create_related' %}
+        # Operation: create_related
+        # Create model: {{ op.get('create_model', '') }}
+        # create_fields mapping: {{ op.get('create_fields', {}) }}
+        # Create a new {{ op.get('create_model', '') }} record for each source record
+{% endif %}
+        # Side effects: {{ op.get('side_effects', []) }}
+        pass
+        # --- BUSINESS LOGIC END ---
+
+    # -- Progress notification --
+
+    def _notify_progress(self, processed, total):
+        """Send progress update via bus.bus and log at 25%% intervals."""
+        percentage = int((processed / total) * 100) if total else 100
+
+        try:
+            self.env['bus.bus']._sendone(
+                'bulk_progress_%s_%s' % (self._name, self.env.uid),
+                'bulk_operation_progress',
+                {
+                    'wizard_id': self.id,
+                    'wizard_model': self._name,
+                    'processed': processed,
+                    'total': total,
+                    'percentage': percentage,
+                    'operation_name': self._description,
+                },
+            )
+        except Exception:
+            pass  # No browser connected
+
+        if percentage % 25 == 0:
+            _logger.info(
+                "Bulk %s: %d/%d (%d%%)",
+                self._description, processed, total, percentage,
+            )
+
+    # -- Helpers --
+
+    def _get_processing_domain(self):
+        """Return the domain for selecting records to process."""
+        return {{ op.source_domain }}
+
+    def _reopen_wizard(self):
+        """Return act_window action to reopen this wizard."""
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'new',
+        }

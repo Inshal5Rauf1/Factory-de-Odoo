@@ -1,0 +1,256 @@
+{# test_model.py.j2 -- Odoo TransactionCase tests: CRUD, access rights, workflow #}
+from odoo.tests.common import TransactionCase
+from odoo.tests import tagged
+from odoo.exceptions import AccessError
+
+
+@tagged("post_install", "-at_install")
+class Test{{ model_name | to_class }}(TransactionCase):
+    """Test cases for the {{ model_description }} model."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.test_record = cls.env["{{ model_name }}"].create({
+{% for field in required_fields %}
+{% if field.type == 'Char' %}
+            "{{ field.name }}": "Test {{ field.string | default(field.name | replace('_', ' ') | title) }}",
+{% elif field.type == 'Integer' %}
+            "{{ field.name }}": 1,
+{% elif field.type == 'Float' %}
+            "{{ field.name }}": 1.0,
+{% elif field.type == 'Boolean' %}
+            "{{ field.name }}": True,
+{% elif field.type == 'Text' %}
+            "{{ field.name }}": "Test {{ field.string | default(field.name | replace('_', ' ') | title) }} content",
+{% elif field.type == 'Html' %}
+            "{{ field.name }}": "<p>Test content</p>",
+{% elif field.type == 'Date' %}
+            "{{ field.name }}": fields.Date.today(),
+{% elif field.type == 'Datetime' %}
+            "{{ field.name }}": fields.Datetime.now(),
+{% elif field.type == 'Selection' %}
+{% if field.selection %}
+            "{{ field.name }}": "{{ field.selection[0][0] }}",
+{% endif %}
+{% elif field.type == 'Many2one' %}
+            "{{ field.name }}": cls.env.ref("base.main_company").id,
+{% else %}
+            "{{ field.name }}": "Test value",
+{% endif %}
+{% endfor %}
+        })
+
+    def test_create(self):
+        """Test that a {{ model_description }} record can be created."""
+        self.assertTrue(self.test_record.id, "Record should have been created successfully")
+
+    def test_read(self):
+        """Test that {{ model_description }} fields are readable."""
+        record = self.test_record
+{% for field in required_fields %}
+        self.assertIsNotNone(record.{{ field.name }}, "Field '{{ field.name }}' should be readable")
+{% endfor %}
+
+{% for field in fields %}
+{% if field.name == 'name' %}
+    def test_display_name(self):
+        """Test that display_name returns the expected value."""
+{% if odoo_version >= "18.0" %}
+        self.assertTrue(
+            self.test_record.display_name,
+            "display_name should return a truthy value",
+        )
+{% else %}
+        self.assertTrue(
+            self.test_record.display_name,
+            "display_name should return a truthy value",
+        )
+        result = self.test_record.name_get()
+        self.assertTrue(result, "name_get should return a result")
+        self.assertEqual(result[0][0], self.test_record.id)
+{% endif %}
+{% endif %}
+{% endfor %}
+
+    def test_write(self):
+        """Test that {{ model_description }} record values can be updated."""
+{% set char_field = namespace(found=None) %}
+{% for field in required_fields %}
+{% if field.type == 'Char' and char_field.found is none %}
+{% set char_field.found = field %}
+{% endif %}
+{% endfor %}
+{% if char_field.found is not none %}
+        self.test_record.write({"{{ char_field.found.name }}": "Updated Name"})
+        self.assertEqual(self.test_record.{{ char_field.found.name }}, "Updated Name")
+{% else %}
+        self.assertTrue(self.test_record.id)  # Record is still accessible
+{% endif %}
+
+    def test_unlink(self):
+        """Test that {{ model_description }} record can be deleted."""
+        record_id = self.test_record.id
+        self.test_record.unlink()
+        self.assertFalse(
+            self.env["{{ model_name }}"].browse(record_id).exists(),
+            "Record should not exist after unlink",
+        )
+
+    def test_user_can_create(self):
+        """Test that a user with {{ module_name }} User group can create records."""
+        user = self.env["res.users"].create({
+            "name": "Test Module User",
+            "login": "test_user_{{ model_var }}@example.com",
+            "groups_id": [(6, 0, [self.env.ref("{{ module_name }}.group_{{ module_name }}_user").id])],
+        })
+        record = self.env["{{ model_name }}"].with_user(user).create({
+{% for field in required_fields %}
+{% if field.type == 'Char' %}
+            "{{ field.name }}": "Test {{ field.string | default(field.name | replace('_', ' ') | title) }}",
+{% elif field.type == 'Integer' %}
+            "{{ field.name }}": 1,
+{% elif field.type == 'Float' %}
+            "{{ field.name }}": 1.0,
+{% elif field.type == 'Boolean' %}
+            "{{ field.name }}": True,
+{% elif field.type == 'Text' %}
+            "{{ field.name }}": "Test {{ field.string | default(field.name | replace('_', ' ') | title) }} content",
+{% elif field.type == 'Html' %}
+            "{{ field.name }}": "<p>Test content</p>",
+{% elif field.type == 'Date' %}
+            "{{ field.name }}": fields.Date.today(),
+{% elif field.type == 'Datetime' %}
+            "{{ field.name }}": fields.Datetime.now(),
+{% elif field.type == 'Selection' %}
+{% if field.selection %}
+            "{{ field.name }}": "{{ field.selection[0][0] }}",
+{% endif %}
+{% elif field.type == 'Many2one' %}
+            "{{ field.name }}": self.env.ref("base.main_company").id,
+{% else %}
+            "{{ field.name }}": "Test value",
+{% endif %}
+{% endfor %}
+        })
+        self.assertTrue(record.id, "User with module group should be able to create records")
+
+    def test_no_group_cannot_create(self):
+        """Test that a user without any module group cannot create records."""
+        user = self.env["res.users"].create({
+            "name": "No Group User",
+            "login": "no_group_{{ model_var }}@example.com",
+            "groups_id": [(6, 0, [self.env.ref("base.group_user").id])],
+        })
+        with self.assertRaises(AccessError):
+            self.env["{{ model_name }}"].with_user(user).create({
+{% for field in required_fields %}
+{% if field.type == 'Char' %}
+                "{{ field.name }}": "Test {{ field.string | default(field.name | replace('_', ' ') | title) }}",
+{% elif field.type == 'Integer' %}
+                "{{ field.name }}": 1,
+{% elif field.type == 'Float' %}
+                "{{ field.name }}": 1.0,
+{% elif field.type == 'Boolean' %}
+                "{{ field.name }}": True,
+{% elif field.type == 'Text' %}
+                "{{ field.name }}": "Test {{ field.string | default(field.name | replace('_', ' ') | title) }} content",
+{% elif field.type == 'Html' %}
+                "{{ field.name }}": "<p>Test content</p>",
+{% elif field.type == 'Date' %}
+                "{{ field.name }}": fields.Date.today(),
+{% elif field.type == 'Datetime' %}
+                "{{ field.name }}": fields.Datetime.now(),
+{% elif field.type == 'Selection' %}
+{% if field.selection %}
+                "{{ field.name }}": "{{ field.selection[0][0] }}",
+{% endif %}
+{% elif field.type == 'Many2one' %}
+                "{{ field.name }}": self.env.ref("base.main_company").id,
+{% else %}
+                "{{ field.name }}": "Test value",
+{% endif %}
+{% endfor %}
+            })
+{% if state_field and workflow_states | length >= 2 %}
+{% for i in range(workflow_states | length - 1) %}
+{% set from_state = workflow_states[i] %}
+{% set to_state = workflow_states[i + 1] %}
+{% if to_state is mapping %}
+{% set to_key = to_state['key'] %}
+{% else %}
+{% set to_key = to_state %}
+{% endif %}
+{% if from_state is mapping %}
+{% set from_key = from_state['key'] %}
+{% else %}
+{% set from_key = from_state %}
+{% endif %}
+
+    def test_action_{{ to_key }}(self):
+        """Test state transition from {{ from_key }} to {{ to_key }}."""
+        self.test_record.action_{{ to_key }}()
+        self.assertEqual(self.test_record.{{ state_field.name }}, "{{ to_key }}")
+{% endfor %}
+{% endif %}
+
+{% for field in computed_fields | default([]) %}
+{% if field.depends is defined and field.depends %}
+
+    def test_computed_{{ field.name }}(self):
+        """Test {{ field.name }} is computed correctly."""
+        record = self.test_record
+        # Verify computed field has a value after creation
+        self.assertIsNotNone(record.{{ field.name }})
+{% endif %}
+{% endfor %}
+
+{% for field in constrained_fields | default([]) %}
+
+    def test_constraint_{{ field.name }}(self):
+        """Test {{ field.name }} constraint raises on invalid data."""
+        from odoo.exceptions import ValidationError
+        with self.assertRaises(ValidationError):
+            self.test_record.write({"{{ field.name }}": False})
+{% endfor %}
+
+{% if onchange_fields is defined and onchange_fields %}
+
+    def test_form_onchange(self):
+        """Test onchange methods fire correctly via Form helper."""
+        from odoo.tests import Form
+        form = Form(self.env["{{ model_name }}"])
+{% for field in onchange_fields %}
+{% if field.trigger_type == 'Char' %}
+        form.{{ field.trigger }} = "Test onchange value"
+{% elif field.trigger_type == 'Boolean' %}
+        form.{{ field.trigger }} = True
+{% elif field.trigger_type == 'Integer' %}
+        form.{{ field.trigger }} = 42
+{% elif field.trigger_type == 'Float' %}
+        form.{{ field.trigger }} = 42.0
+{% endif %}
+{% endfor %}
+        record = form.save()
+        self.assertTrue(record.id)
+{% endif %}
+{% if expected_examples is defined and expected_examples %}
+
+
+@tagged("post_install", "-at_install")
+class Test{{ model_name | to_class }}Examples(TransactionCase):
+    """Data-driven tests from spec expected_examples."""
+{% for ex in expected_examples %}
+
+    def test_example_{{ loop.index }}(self):
+        """Verify: create({{ ex.create | tojson }}) => {{ ex.expect | tojson }}"""
+        record = self.env['{{ model_name }}'].create({{ ex.create | tojson }})
+{% for field_name, expected_value in ex.expect.items() %}
+        self.assertEqual(
+            record.{{ field_name }},
+            {{ expected_value }},
+            "Expected {{ field_name }} = {{ expected_value }}",
+        )
+{% endfor %}
+{% endfor %}
+{% endif %}

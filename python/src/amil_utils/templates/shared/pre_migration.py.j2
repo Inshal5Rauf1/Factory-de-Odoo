@@ -1,0 +1,36 @@
+import logging
+
+_logger = logging.getLogger(__name__)
+
+
+def migrate(cr, version):
+    """Pre-migration: {{ migration_version }}."""
+    if not version:
+        return
+{% for op in pre_operations %}
+{% if op.type == 'rename_field' %}
+    cr.execute(
+        "ALTER TABLE {{ op.model | replace('.', '_') }} "
+        "RENAME COLUMN {{ op.old_name }} TO {{ op.new_name }}"
+    )
+    _logger.info("Renamed column {{ op.old_name }} to {{ op.new_name }} on {{ op.model }}")
+{% elif op.type == 'drop_column' %}
+    cr.execute(
+        "ALTER TABLE {{ op.model | replace('.', '_') }} "
+        "DROP COLUMN IF EXISTS {{ op.old_name }}"
+    )
+    _logger.info("Dropped column {{ op.old_name }} from {{ op.model }}")
+{% elif op.type == 'rename_model' %}
+    cr.execute(
+        "ALTER TABLE {{ op.old_name | replace('.', '_') }} "
+        "RENAME TO {{ op.new_name | replace('.', '_') }}"
+    )
+    cr.execute(
+        "UPDATE ir_model_data SET model = '{{ op.new_name }}' WHERE model = '{{ op.old_name }}'"
+    )
+    _logger.info("Renamed model {{ op.old_name }} to {{ op.new_name }}")
+{% elif op.type == 'sql' %}
+    cr.execute("{{ op.sql }}")
+    _logger.info("Executed custom SQL")
+{% endif %}
+{% endfor %}
