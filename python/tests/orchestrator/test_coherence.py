@@ -1,6 +1,8 @@
 """Tests for orchestrator coherence module."""
 from __future__ import annotations
 
+import pytest
+
 from amil_utils.orchestrator.coherence import (
     _load_base_models,
     check_computed_depends,
@@ -14,6 +16,7 @@ from amil_utils.orchestrator.coherence import (
 EMPTY_REGISTRY = {"models": {}}
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 class TestCheckMany2oneTargets:
     def test_passes_with_known_targets(self) -> None:
         spec = {"models": [{"name": "test.model", "fields": [
@@ -88,6 +91,7 @@ class TestCheckMany2oneTargets:
         assert result["status"] == "fail"
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 class TestCheckDuplicateModels:
     def test_passes_when_no_duplicates(self) -> None:
         spec = {"models": [{"name": "new.model", "fields": []}]}
@@ -108,6 +112,7 @@ class TestCheckDuplicateModels:
         assert result["status"] == "pass"
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 class TestCheckComputedDepends:
     def test_passes_with_valid_depends(self) -> None:
         spec = {"models": [{"name": "test.model", "fields": [
@@ -136,6 +141,7 @@ class TestCheckComputedDepends:
         assert result["status"] == "pass"
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 class TestCheckSecurityGroups:
     def test_passes_when_consistent(self) -> None:
         spec = {"security": {
@@ -169,6 +175,7 @@ class TestCheckSecurityGroups:
         assert result["status"] == "pass"
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 class TestRunAllChecks:
     def test_all_pass(self) -> None:
         spec = {"models": [{"name": "test.model", "fields": []}]}
@@ -206,3 +213,27 @@ class TestLoadBaseModels:
     def test_returns_frozenset(self) -> None:
         models = _load_base_models()
         assert isinstance(models, frozenset)
+
+
+class TestCoherenceDeprecationWarnings:
+    """Verify each public function emits DeprecationWarning at runtime."""
+
+    def test_check_many2one_targets_emits_deprecation(self) -> None:
+        with pytest.warns(DeprecationWarning, match="odoo-ls"):
+            check_many2one_targets({"models": []}, {"models": {}})
+
+    def test_check_duplicate_models_emits_deprecation(self) -> None:
+        with pytest.warns(DeprecationWarning, match="odoo-ls"):
+            check_duplicate_models({"models": []}, {"models": {}})
+
+    def test_check_computed_depends_emits_deprecation(self) -> None:
+        with pytest.warns(DeprecationWarning, match="odoo-ls"):
+            check_computed_depends({"models": []}, {"models": {}})
+
+    def test_check_security_groups_emits_deprecation(self) -> None:
+        with pytest.warns(DeprecationWarning, match="odoo-ls"):
+            check_security_groups({}, {"models": {}})
+
+    def test_run_all_checks_emits_deprecation(self) -> None:
+        with pytest.warns(DeprecationWarning, match="odoo-ls"):
+            run_all_checks({"models": []}, {"models": {}})

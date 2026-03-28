@@ -8,6 +8,7 @@ run_all_checks aggregates: {status, checks}
 from __future__ import annotations
 
 import json
+import warnings
 from functools import lru_cache
 from pathlib import Path
 
@@ -46,6 +47,7 @@ _RELATIONAL_TYPES = {"Many2one", "Many2many", "One2many"}
 
 def check_many2one_targets(spec: dict, registry: dict) -> dict:
     """Check that all relational field targets reference known models."""
+    warnings.warn(_DEPRECATION_NOTICE, DeprecationWarning, stacklevel=2)
     violations: list[dict] = []
     spec_model_names = {m["name"] for m in (spec.get("models") or [])}
     registry_model_names = set((registry.get("models") or {}).keys())
@@ -81,6 +83,7 @@ def check_many2one_targets(spec: dict, registry: dict) -> dict:
 
 def check_duplicate_models(spec: dict, registry: dict) -> dict:
     """Check for cross-module duplicate model names."""
+    warnings.warn(_DEPRECATION_NOTICE, DeprecationWarning, stacklevel=2)
     violations: list[dict] = []
     registry_models = registry.get("models") or {}
 
@@ -108,6 +111,7 @@ def check_duplicate_models(spec: dict, registry: dict) -> dict:
 
 def check_computed_depends(spec: dict, registry: dict) -> dict:
     """Check that computed field depends paths resolve to existing fields."""
+    warnings.warn(_DEPRECATION_NOTICE, DeprecationWarning, stacklevel=2)
     violations: list[dict] = []
     registry_models = registry.get("models") or {}
     base_models = _load_base_models()
@@ -169,6 +173,7 @@ def check_computed_depends(spec: dict, registry: dict) -> dict:
 
 def check_security_groups(spec: dict, registry: dict) -> dict:
     """Check that security ACL keys match roles array."""
+    warnings.warn(_DEPRECATION_NOTICE, DeprecationWarning, stacklevel=2)
     violations: list[dict] = []
     security = spec.get("security")
 
@@ -217,6 +222,7 @@ def check_security_groups(spec: dict, registry: dict) -> dict:
 
 def run_all_checks(spec: dict, registry: dict) -> dict:
     """Run all 4 checks and aggregate results."""
+    warnings.warn(_DEPRECATION_NOTICE, DeprecationWarning, stacklevel=2)
     checks = [
         check_many2one_targets(spec, registry),
         check_duplicate_models(spec, registry),
