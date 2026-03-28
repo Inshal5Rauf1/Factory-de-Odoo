@@ -12,6 +12,7 @@ import json
 import re
 import shutil
 import uuid
+from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -297,7 +298,7 @@ def tiered_registry_injection(cwd: str | Path, module_name: str) -> dict:
 
     # Compute transitive deps via BFS
     transitive_deps: set[str] = set()
-    queue: list[str] = []
+    queue: deque[str] = deque()
     for dep in direct_deps:
         dep_mod = status_data.get("modules", {}).get(dep)
         if dep_mod and dep_mod.get("depends"):
@@ -306,7 +307,7 @@ def tiered_registry_injection(cwd: str | Path, module_name: str) -> dict:
                     queue.append(td)
 
     while queue:
-        current = queue.pop(0)
+        current = queue.popleft()
         if current in transitive_deps or current in direct_deps:
             continue
         transitive_deps.add(current)

@@ -139,6 +139,43 @@ class TestTierStatus:
         assert result["tiers"]["core"]["status"] == "complete"
 
 
+    def test_mixed_statuses_reports_incomplete(self, tmp_path: Path) -> None:
+        """Tier with mixed statuses (some shipped, some not) is incomplete."""
+        planning = tmp_path / ".planning"
+        planning.mkdir()
+        (planning / "module_status.json").write_text(json.dumps({
+            "_meta": {"version": 1, "last_updated": None},
+            "modules": {
+                "mod_a": {"status": "shipped", "tier": "core", "depends": []},
+                "mod_b": {"status": "shipped", "tier": "core", "depends": []},
+                "mod_c": {"status": "checked", "tier": "core", "depends": []},
+            },
+            "tiers": {},
+        }))
+        result = tier_status(tmp_path)
+        assert result["tiers"]["core"]["status"] == "incomplete"
+
+    def test_all_shipped_reports_complete(self, tmp_path: Path) -> None:
+        """Tier with all modules shipped is complete."""
+        planning = tmp_path / ".planning"
+        planning.mkdir()
+        (planning / "module_status.json").write_text(json.dumps({
+            "_meta": {"version": 1, "last_updated": None},
+            "modules": {
+                "mod_a": {"status": "shipped", "tier": "core", "depends": []},
+                "mod_b": {"status": "shipped", "tier": "core", "depends": []},
+            },
+            "tiers": {},
+        }))
+        result = tier_status(tmp_path)
+        assert result["tiers"]["core"]["status"] == "complete"
+
+    def test_empty_tier_reports_incomplete(self, tmp_path: Path) -> None:
+        """Tier with no modules reports incomplete (via empty status file)."""
+        result = tier_status(tmp_path)
+        assert result["tiers"] == {}
+
+
 class TestGetGenerationQueue:
     """Tests for get_generation_queue() batch functionality."""
 

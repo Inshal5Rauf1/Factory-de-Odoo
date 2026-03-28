@@ -220,11 +220,9 @@ def tier_status(cwd: str | Path) -> dict:
 
     # Determine tier completion
     for tier_info in tier_map.values():
-        all_shipped = (
-            len(tier_info["modules"]) > 0
-            and len(tier_info["counts"]) == 1
-            and tier_info["counts"].get("shipped", 0) > 0
-        )
+        total = sum(tier_info["counts"].values())
+        shipped = tier_info["counts"].get("shipped", 0)
+        all_shipped = total > 0 and shipped == total
         tier_info["status"] = "complete" if all_shipped else "incomplete"
 
     return {"tiers": tier_map}
