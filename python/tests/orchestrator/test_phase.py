@@ -7,7 +7,10 @@ from pathlib import Path
 
 import pytest
 
+from unittest.mock import patch
+
 from amil_utils.orchestrator.phase import (
+    _REMOVAL_MANIFEST_NAME,
     phase_add,
     phase_complete,
     phase_find,
@@ -15,6 +18,7 @@ from amil_utils.orchestrator.phase import (
     phase_next_decimal,
     phase_plan_index,
     phase_remove,
+    phase_repair,
     phases_list,
 )
 
@@ -308,3 +312,113 @@ class TestPhaseComplete:
         _make_project(tmp_path)
         with pytest.raises(ValueError, match="not found"):
             phase_complete(tmp_path, "99")
+
+
+class TestPhaseRemoveAtomicity:
+    """Tests for transaction manifest and atomic phase removal."""
+
+    def test_successful_removal_cleans_up_manifest(self, tmp_path: Path) -> None:
+        """After a successful removal, no manifest file should remain."""
+        _make_project(tmp_path)
+        phase_remove(tmp_path, "2")
+        manifest_path = tmp_path / ".planning" / "phases" / _REMOVAL_MANIFEST_NAME
+        assert not manifest_path.exists()
+
+    def test_normal_removal_still_works(self, tmp_path: Path) -> None:
+        """Existing behavior is preserved with the manifest wrapper."""
+        _make_project(tmp_path)
+        result = phase_remove(tmp_path, "2")
+        assert result["removed"] == "2"
+        assert result["directory_deleted"] == "02-core"
+        assert result["roadmap_updated"] is True
+
+        phases_dir = tmp_path / ".planning" / "phases"
+        dirs = sorted(d.name for d in phases_dir.iterdir() if d.is_dir())
+        assert any(d.startswith("02-advanced") for d in dirs)
+        assert not any(d.startswith("03-") for d in dirs)
+
+    def test_failure_at_rename_rolls_back(self, tmp_path: Path) -> None:
+        """If rename fails on the second dir rename, the first is reversed."""
+        planning = _make_project(tmp_path, num_phases=3)
+        phases_dir = planning / "phases"
+
+        # Add a 4th phase so we have two subsequent dirs to rename (03, 04)
+        (phases_dir / "04-extra").mkdir()
+        (phases_dir / "04-extra" / ".gitkeep").write_text("")
+        roadmap_path = planning / "ROADMAP.md"
+        roadmap = roadmap_path.read_text()
+        roadmap += "\n### Phase 4: Extra\n**Goal:** Extra\n**Plans:** 0 plans\n"
+        roadmap_path.write_text(roadmap)
+
+        rename_call_count = 0
+        original_rename = Path.rename
+
+        def failing_rename(self_path: Path, target: Path) -> Path:
+            nonlocal rename_call_count
+            rename_call_count += 1
+            # Fail on second dir rename call
+            if rename_call_count == 2:
+                raise OSError("Simulated rename failure")
+            return original_rename(self_path, target)
+
+        with patch.object(Path, "rename", failing_rename):
+            with pytest.raises(OSError, match="Simulated rename failure"):
+                phase_remove(tmp_path, "2")
+
+        # Manifest should be cleaned up after rollback
+        manifest_path = phases_dir / _REMOVAL_MANIFEST_NAME
+        assert not manifest_path.exists()
+
+        # The first rename should have been reversed
+        dirs = sorted(d.name for d in phases_dir.iterdir() if d.is_dir())
+        # Phase 2 directory was deleted (that happened before renames)
+        # but the remaining dirs should be in their original positions
+        # because the first rename was rolled back
+        dir_names = {d for d in dirs}
+        # 03-advanced should be back (reversed from 02-advanced)
+        assert "03-advanced" in dir_names, (
+            f"Rollback should restore original name. Found: {dir_names}"
+        )
+
+    def test_phase_repair_with_orphaned_manifest(self, tmp_path: Path) -> None:
+        """phase_repair reverses completed renames from an orphaned manifest."""
+        planning = _make_project(tmp_path)
+        phases_dir = planning / "phases"
+
+        # Simulate a partial removal: manually rename 03-advanced -> 02-advanced
+        # and leave an orphaned manifest
+        (phases_dir / "03-advanced").rename(phases_dir / "02-advanced-renamed")
+        manifest = {
+            "target_phase": "2",
+            "normalized": "02",
+            "is_decimal": False,
+            "operations": [
+                {"type": "delete_dir", "target": "02-core", "status": "done"},
+                {
+                    "type": "rename_dir",
+                    "from": "03-advanced",
+                    "to": "02-advanced-renamed",
+                    "status": "done",
+                },
+                {"type": "roadmap_update", "status": "pending"},
+            ],
+        }
+        manifest_path = phases_dir / _REMOVAL_MANIFEST_NAME
+        manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+        result = phase_repair(tmp_path)
+
+        assert result["repaired"] is True
+        assert not manifest_path.exists()
+
+        # The rename should have been reversed
+        dirs = sorted(d.name for d in phases_dir.iterdir() if d.is_dir())
+        assert "03-advanced" in dirs
+        assert "02-advanced-renamed" not in dirs
+
+    def test_phase_repair_no_manifest_is_noop(self, tmp_path: Path) -> None:
+        """phase_repair with no manifest does nothing."""
+        _make_project(tmp_path)
+        result = phase_repair(tmp_path)
+        assert result["repaired"] is False
+        assert "No orphaned manifest" in result["details"]

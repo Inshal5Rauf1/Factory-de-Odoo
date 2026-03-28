@@ -8,8 +8,11 @@ run_all_checks aggregates: {status, checks}
 from __future__ import annotations
 
 import json
+import warnings
 from functools import lru_cache
 from pathlib import Path
+
+from amil_utils.orchestrator.dependency_graph import validate_field_reference
 
 # ── Deprecation ──────────────────────────────────────────────────────────────
 __deprecated__ = True
@@ -46,6 +49,7 @@ _RELATIONAL_TYPES = {"Many2one", "Many2many", "One2many"}
 
 def check_many2one_targets(spec: dict, registry: dict) -> dict:
     """Check that all relational field targets reference known models."""
+    warnings.warn(_DEPRECATION_NOTICE, DeprecationWarning, stacklevel=2)
     violations: list[dict] = []
     spec_model_names = {m["name"] for m in (spec.get("models") or [])}
     registry_model_names = set((registry.get("models") or {}).keys())
@@ -81,6 +85,7 @@ def check_many2one_targets(spec: dict, registry: dict) -> dict:
 
 def check_duplicate_models(spec: dict, registry: dict) -> dict:
     """Check for cross-module duplicate model names."""
+    warnings.warn(_DEPRECATION_NOTICE, DeprecationWarning, stacklevel=2)
     violations: list[dict] = []
     registry_models = registry.get("models") or {}
 
@@ -108,6 +113,7 @@ def check_duplicate_models(spec: dict, registry: dict) -> dict:
 
 def check_computed_depends(spec: dict, registry: dict) -> dict:
     """Check that computed field depends paths resolve to existing fields."""
+    warnings.warn(_DEPRECATION_NOTICE, DeprecationWarning, stacklevel=2)
     violations: list[dict] = []
     registry_models = registry.get("models") or {}
     base_models = _load_base_models()
@@ -169,6 +175,7 @@ def check_computed_depends(spec: dict, registry: dict) -> dict:
 
 def check_security_groups(spec: dict, registry: dict) -> dict:
     """Check that security ACL keys match roles array."""
+    warnings.warn(_DEPRECATION_NOTICE, DeprecationWarning, stacklevel=2)
     violations: list[dict] = []
     security = spec.get("security")
 
@@ -212,17 +219,74 @@ def check_security_groups(spec: dict, registry: dict) -> dict:
     }
 
 
+# ── Field/Model Rename Check (NOT deprecated — supplements odoo-ls) ─────────
+
+
+def check_field_renames(spec: dict, odoo_version: str = "19.0") -> dict:
+    """Check that spec fields don't reference renamed Odoo 19 fields/models.
+
+    Unlike other coherence checks, this is NOT deprecated -- it supplements
+    odoo-ls validation with rename-specific checks.
+    """
+    violations: list[dict] = []
+
+    for model in spec.get("models") or []:
+        model_name = model.get("name", "")
+
+        # Check if the model itself was renamed
+        result = validate_field_reference(model_name, "", odoo_version)
+        if result is not None and result["type"] == "model_rename":
+            violations.append(result)
+            continue  # skip field checks for renamed model
+
+        for field in model.get("fields") or []:
+            field_name = field.get("name", "")
+
+            # Check if the field name is a renamed field on this model
+            field_result = validate_field_reference(
+                model_name, field_name, odoo_version,
+            )
+            if field_result is not None and field_result["type"] == "field_rename":
+                violations.append(field_result)
+
+            # Check if comodel_name references a renamed model
+            comodel = field.get("comodel_name")
+            if comodel:
+                comodel_result = validate_field_reference(
+                    comodel, "", odoo_version,
+                )
+                if comodel_result is not None and comodel_result["type"] == "model_rename":
+                    violations.append({
+                        **comodel_result,
+                        "field": field_name,
+                        "message": (
+                            f"Field '{model_name}.{field_name}' references "
+                            f"model '{comodel}' which was renamed to "
+                            f"'{comodel_result['renamed_to']}' in Odoo {odoo_version}"
+                        ),
+                    })
+
+    return {
+        "check": "field_renames",
+        "status": "pass" if not violations else "fail",
+        "violations": violations,
+    }
+
+
 # ── Aggregation ──────────────────────────────────────────────────────────────
 
 
 def run_all_checks(spec: dict, registry: dict) -> dict:
     """Run all 4 checks and aggregate results."""
-    checks = [
-        check_many2one_targets(spec, registry),
-        check_duplicate_models(spec, registry),
-        check_computed_depends(spec, registry),
-        check_security_groups(spec, registry),
-    ]
+    warnings.warn(_DEPRECATION_NOTICE, DeprecationWarning, stacklevel=2)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        checks = [
+            check_many2one_targets(spec, registry),
+            check_duplicate_models(spec, registry),
+            check_computed_depends(spec, registry),
+            check_security_groups(spec, registry),
+        ]
     all_pass = all(c["status"] == "pass" for c in checks)
     return {
         "status": "pass" if all_pass else "fail",

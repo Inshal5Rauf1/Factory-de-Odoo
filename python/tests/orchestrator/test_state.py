@@ -311,6 +311,28 @@ class TestSyncStateFrontmatter:
         assert "amil_state_version" in result
         assert "# State" in result
 
+    def test_preserves_custom_fields(self) -> None:
+        content_with_custom = (
+            "---\ncustom_tag: my_value\nauthor: alice\n---\n\n" + SAMPLE_STATE
+        )
+        result = sync_state_frontmatter(content_with_custom)
+        assert result.startswith("---\n")
+        assert "custom_tag: my_value" in result
+        assert "author: alice" in result
+        # Computed fields should still be present
+        assert "amil_state_version" in result
+        assert "status:" in result
+
+    def test_computed_fields_win_on_conflict(self) -> None:
+        content_with_stale = (
+            "---\nstatus: stale_value\ncustom_tag: keep_me\n---\n\n" + SAMPLE_STATE
+        )
+        result = sync_state_frontmatter(content_with_stale)
+        assert "custom_tag: keep_me" in result
+        # status should be the computed value ("executing"), not "stale_value"
+        assert "stale_value" not in result
+        assert "status: executing" in result
+
 
 class TestWriteStateMd:
     def test_writes_with_frontmatter(self, tmp_path: Path) -> None:

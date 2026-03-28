@@ -5,6 +5,7 @@ Extracted to avoid circular imports between cli.py and cli_groups.py.
 from __future__ import annotations
 
 import json
+from typing import Any, Callable
 
 import click
 
@@ -31,3 +32,11 @@ def _emit(data: dict) -> None:
         click.echo(json.dumps(data))
     else:
         click.echo(json.dumps(data, indent=2))
+
+
+def _safe_emit(fn: Callable[..., dict], *args: Any, **kwargs: Any) -> None:
+    """Call fn and emit result, catching common errors."""
+    try:
+        _emit(fn(*args, **kwargs))
+    except (ValueError, OSError, json.JSONDecodeError) as exc:
+        _emit({"error": str(exc)})

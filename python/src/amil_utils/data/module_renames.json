@@ -1,0 +1,35 @@
+{
+  "_meta": {
+    "description": "Odoo module renames and merges by version",
+    "last_verified": "2026-03-28",
+    "sources": [
+      "https://ocu.winotto.com/articles/whats-new-odoo-19"
+    ]
+  },
+  "19.0": {
+    "modules_renamed": {
+      "hr_contract": "hr",
+      "web_editor": "html_builder",
+      "membership": "partnership",
+      "bus": "mail"
+    },
+    "modules_merged": {
+      "sale_async_emails": "sale"
+    },
+    "fields_renamed": {
+      "res.users": {"groups_id": "group_ids"},
+      "res.groups": {"users": "user_ids", "category_id": "privilege_id"},
+      "hr.work.entry": {"contract_id": "version_id"},
+      "purchase.order.line": {"product_uom": "product_uom_id", "taxes_id": "tax_ids"},
+      "purchase.order": {"notes": "note"},
+      "sale.order.line": {"product_uom": "product_uom_id"}
+    },
+    "models_renamed": {
+      "hr.contract": "hr.version",
+      "procurement.group": "stock.reference",
+      "stock.quant.package": "stock.package",
+      "bus.presence": "mail.presence",
+      "hr.candidate": "hr.applicant"
+    }
+  }
+}

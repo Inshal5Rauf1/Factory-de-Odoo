@@ -191,10 +191,16 @@ def build_state_frontmatter(body_content: str, cwd: str | Path | None = None) ->
 
 
 def sync_state_frontmatter(content: str, cwd: str | Path | None = None) -> str:
-    """Sync YAML frontmatter with STATE.md body content."""
+    """Sync YAML frontmatter with STATE.md body content.
+
+    Preserves any custom YAML keys that already exist in the frontmatter.
+    Computed keys from the body always win on conflict.
+    """
+    existing_fm = extract_frontmatter(content)
     body = _strip_frontmatter(content)
-    fm = build_state_frontmatter(body, cwd)
-    yaml_str = reconstruct_frontmatter(fm)
+    computed_fm = build_state_frontmatter(body, cwd)
+    merged_fm = {**existing_fm, **computed_fm}
+    yaml_str = reconstruct_frontmatter(merged_fm)
     return f"---\n{yaml_str}\n---\n\n{body}"
 
 

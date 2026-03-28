@@ -8,9 +8,11 @@ live in phase_query.py. Re-exported here for backward compatibility.
 """
 from __future__ import annotations
 
+import json
 import logging
 import re
 import shutil
+import uuid
 from datetime import date
 from functools import cmp_to_key
 from pathlib import Path
@@ -171,8 +173,127 @@ def phase_insert(cwd: str | Path, after_phase: str, description: str) -> dict:
     }
 
 
+_REMOVAL_MANIFEST_NAME = ".removal_manifest.json"
+
+
+def _write_manifest(phases_dir: Path, manifest: dict) -> Path:
+    """Write transaction manifest for atomic phase removal."""
+    manifest_path = phases_dir / _REMOVAL_MANIFEST_NAME
+    _atomic_write_manifest(manifest_path, manifest)
+    return manifest_path
+
+
+def _atomic_write_manifest(file_path: Path, data: dict) -> None:
+    """Write manifest JSON atomically via temp file + replace."""
+    tmp = file_path.parent / f"{file_path.name}.{uuid.uuid4().hex[:8]}.tmp"
+    try:
+        tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        tmp.replace(file_path)
+    except OSError:
+        tmp.unlink(missing_ok=True)
+        raise
+
+
+def _update_manifest_op(manifest_path: Path, op_index: int, status: str) -> None:
+    """Update a single operation's status in the manifest."""
+    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    updated_ops = [
+        {**op, "status": status} if i == op_index else op
+        for i, op in enumerate(data["operations"])
+    ]
+    updated_data = {**data, "operations": updated_ops}
+    _atomic_write_manifest(manifest_path, updated_data)
+
+
+def _rollback_operations(manifest_path: Path, phases_dir: Path) -> list[dict]:
+    """Reverse all completed operations from the manifest.
+
+    Returns a list of rollback actions taken.
+    """
+    rollback_actions: list[dict] = []
+    try:
+        data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        logger.debug("Failed to read manifest for rollback: %s", exc)
+        return rollback_actions
+
+    # Process operations in reverse order for proper rollback
+    for op in reversed(data.get("operations", [])):
+        if op.get("status") != "done":
+            continue
+
+        op_type = op.get("type")
+        if op_type == "rename_dir":
+            old_path = phases_dir / op["to"]
+            new_path = phases_dir / op["from"]
+            try:
+                if old_path.exists():
+                    old_path.rename(new_path)
+                    rollback_actions.append({
+                        "action": "rename_reversed",
+                        "from": op["to"],
+                        "to": op["from"],
+                    })
+            except OSError as exc:
+                logger.debug("Rollback rename failed %s -> %s: %s", op["to"], op["from"], exc)
+        elif op_type == "rename_file":
+            parent = phases_dir / op["parent_dir"]
+            old_path = parent / op["to"]
+            new_path = parent / op["from"]
+            try:
+                if old_path.exists():
+                    old_path.rename(new_path)
+                    rollback_actions.append({
+                        "action": "file_rename_reversed",
+                        "from": op["to"],
+                        "to": op["from"],
+                    })
+            except OSError as exc:
+                logger.debug("Rollback file rename failed: %s", exc)
+        elif op_type == "delete_dir":
+            rollback_actions.append({
+                "action": "delete_not_reversible",
+                "directory": op.get("target"),
+            })
+
+    return rollback_actions
+
+
+def phase_repair(cwd: str | Path) -> dict:
+    """Check for and handle orphaned removal manifests.
+
+    If a manifest exists, reverses any completed operations and cleans up.
+    Returns {"repaired": True/False, "details": ...}
+    """
+    cwd = Path(cwd)
+    phases_dir = cwd / ".planning" / "phases"
+    manifest_path = phases_dir / _REMOVAL_MANIFEST_NAME
+
+    if not manifest_path.exists():
+        return {"repaired": False, "details": "No orphaned manifest found"}
+
+    rollback_actions = _rollback_operations(manifest_path, phases_dir)
+
+    try:
+        manifest_path.unlink()
+    except OSError as exc:
+        logger.debug("Failed to remove manifest after repair: %s", exc)
+
+    return {
+        "repaired": True,
+        "details": "Reversed completed operations from orphaned manifest",
+        "rollback_actions": rollback_actions,
+    }
+
+
 def phase_remove(cwd: str | Path, target_phase: str, *, force: bool = False) -> dict:
-    """Remove a phase: delete directory, renumber subsequent, update ROADMAP/STATE."""
+    """Remove a phase: delete directory, renumber subsequent, update ROADMAP/STATE.
+
+    Uses a transaction manifest so that renumbering and ROADMAP/STATE updates
+    are best-effort transactional: if the process fails mid-operation,
+    ``phase_repair()`` can reverse completed rename operations. The initial
+    deletion of the phase directory itself is not rollbackable.
+    """
     if not target_phase:
         raise ValueError("phase number required for phase remove")
 
@@ -211,74 +332,154 @@ def phase_remove(cwd: str | Path, target_phase: str, *, force: bool = False) -> 
                 "Use --force to remove anyway."
             )
 
-    # Delete target directory
+    # Build manifest of planned operations
+    planned_ops: list[dict] = []
     if target_dir:
-        shutil.rmtree(phases_dir / target_dir)
+        planned_ops.append({"type": "delete_dir", "target": target_dir, "status": "pending"})
 
-    # Renumber subsequent phases
-    renamed_dirs: list[dict] = []
-    renamed_files: list[dict] = []
+    # Pre-compute rename operations
+    rename_ops = _plan_rename_operations(phases_dir, normalized, is_decimal)
+    planned_ops.extend(rename_ops)
 
-    if is_decimal:
-        _renumber_decimal_phases(phases_dir, normalized, renamed_dirs, renamed_files)
-    else:
-        _renumber_integer_phases(phases_dir, int(normalized), renamed_dirs, renamed_files)
+    planned_ops.append({"type": "roadmap_update", "status": "pending"})
 
-    # Update ROADMAP.md
-    _update_roadmap_after_remove(roadmap_path, target_phase, is_decimal, int(normalized) if not is_decimal else 0)
-
-    # Update STATE.md phase count
-    state_path = cwd / ".planning" / "STATE.md"
-    state_updated = False
-    if state_path.exists():
-        state_content = state_path.read_text(encoding="utf-8")
-
-        total_pattern = re.compile(r"(\*\*Total Phases:\*\*\s*)(\d+)")
-        total_match = total_pattern.search(state_content)
-        if total_match:
-            old_total = int(total_match.group(2))
-            state_content = total_pattern.sub(rf"\g<1>{old_total - 1}", state_content)
-
-        of_pattern = re.compile(r"(\bof\s+)(\d+)(\s*(?:\(|phases?))", re.IGNORECASE)
-        of_match = of_pattern.search(state_content)
-        if of_match:
-            old_total = int(of_match.group(2))
-            state_content = of_pattern.sub(rf"\g<1>{old_total - 1}\3", state_content)
-
-        write_state_md(state_path, state_content, cwd)
-        state_updated = True
-
-    return {
-        "removed": target_phase,
-        "directory_deleted": target_dir,
-        "renamed_directories": renamed_dirs,
-        "renamed_files": renamed_files,
-        "roadmap_updated": True,
-        "state_updated": state_updated,
+    manifest = {
+        "target_phase": target_phase,
+        "normalized": normalized,
+        "is_decimal": is_decimal,
+        "operations": planned_ops,
     }
+    manifest_path = _write_manifest(phases_dir, manifest)
+
+    # Snapshot ROADMAP.md and STATE.md so we can restore on rollback
+    roadmap_backup = roadmap_path.read_text(encoding="utf-8")
+    state_path = cwd / ".planning" / "STATE.md"
+    state_backup = None
+    if state_path.exists():
+        state_backup = state_path.read_text(encoding="utf-8")
+
+    try:
+        op_index = 0
+
+        # Delete target directory
+        if target_dir:
+            shutil.rmtree(phases_dir / target_dir)
+            _update_manifest_op(manifest_path, op_index, "done")
+            op_index += 1
+
+        # Renumber subsequent phases (execute pre-planned renames)
+        renamed_dirs: list[dict] = []
+        renamed_files: list[dict] = []
+
+        for i, op in enumerate(rename_ops):
+            real_index = op_index + i
+            if op["type"] == "rename_dir":
+                (phases_dir / op["from"]).rename(phases_dir / op["to"])
+                renamed_dirs.append({"from": op["from"], "to": op["to"]})
+                _update_manifest_op(manifest_path, real_index, "done")
+            elif op["type"] == "rename_file":
+                parent = phases_dir / op["parent_dir"]
+                (parent / op["from"]).rename(parent / op["to"])
+                renamed_files.append({"from": op["from"], "to": op["to"]})
+                _update_manifest_op(manifest_path, real_index, "done")
+
+        op_index += len(rename_ops)
+
+        # Update ROADMAP.md
+        _update_roadmap_after_remove(
+            roadmap_path, target_phase, is_decimal,
+            int(normalized) if not is_decimal else 0,
+        )
+        _update_manifest_op(manifest_path, op_index, "done")
+
+        # Update STATE.md phase count
+        state_updated = False
+        if state_path.exists():
+            state_content = state_path.read_text(encoding="utf-8")
+
+            total_pattern = re.compile(r"(\*\*Total Phases:\*\*\s*)(\d+)")
+            total_match = total_pattern.search(state_content)
+            if total_match:
+                old_total = int(total_match.group(2))
+                state_content = total_pattern.sub(rf"\g<1>{old_total - 1}", state_content)
+
+            of_pattern = re.compile(r"(\bof\s+)(\d+)(\s*(?:\(|phases?))", re.IGNORECASE)
+            of_match = of_pattern.search(state_content)
+            if of_match:
+                old_total = int(of_match.group(2))
+                state_content = of_pattern.sub(rf"\g<1>{old_total - 1}\3", state_content)
+
+            write_state_md(state_path, state_content, cwd)
+            state_updated = True
+
+        # Success — remove manifest (non-fatal to avoid triggering rollback)
+        try:
+            manifest_path.unlink(missing_ok=True)
+        except OSError as exc:
+            logger.debug("Failed to delete removal manifest: %s", exc)
+
+        return {
+            "removed": target_phase,
+            "directory_deleted": target_dir,
+            "renamed_directories": renamed_dirs,
+            "renamed_files": renamed_files,
+            "roadmap_updated": True,
+            "state_updated": state_updated,
+        }
+    except Exception:
+        # Restore ROADMAP.md to pre-removal state
+        try:
+            roadmap_path.write_text(roadmap_backup, encoding="utf-8")
+        except OSError as exc:
+            logger.debug("Failed to restore ROADMAP.md during rollback: %s", exc)
+        # Restore STATE.md to pre-removal state
+        if state_backup is not None:
+            try:
+                state_path.write_text(state_backup, encoding="utf-8")
+            except OSError as exc:
+                logger.debug("Failed to restore STATE.md during rollback: %s", exc)
+        # Rollback completed rename operations
+        _rollback_operations(manifest_path, phases_dir)
+        try:
+            manifest_path.unlink(missing_ok=True)
+        except OSError as exc:
+            logger.debug("Failed to remove manifest during rollback: %s", exc)
+        raise
 
 
-def _renumber_decimal_phases(
+def _plan_rename_operations(
     phases_dir: Path,
     normalized: str,
-    renamed_dirs: list[dict],
-    renamed_files: list[dict],
-) -> None:
-    """Renumber sibling decimal phases after one is removed."""
-    base_int = normalized.split(".")[0]
-    removed_decimal = int(normalized.split(".")[1])
+    is_decimal: bool,
+) -> list[dict]:
+    """Pre-compute all rename operations needed after phase removal.
+
+    Returns a flat list of rename operations (dirs first, then files within
+    each dir) in the order they should be executed.
+    """
+    ops: list[dict] = []
 
     try:
         entries = sorted(
             [e.name for e in phases_dir.iterdir() if e.is_dir()],
             key=cmp_to_key(compare_phase_num),
         )
+    except OSError:
+        return ops
+
+    if is_decimal:
+        base_int = normalized.split(".")[0]
+        removed_decimal = int(normalized.split(".")[1])
         dec_pattern = re.compile(rf"^{re.escape(base_int)}\.(\d+)-(.+)$")
         to_rename = []
         for d in entries:
             dm = dec_pattern.match(d)
             if dm and int(dm.group(1)) > removed_decimal:
-                to_rename.append({"dir": d, "old_decimal": int(dm.group(1)), "slug": dm.group(2)})
+                to_rename.append({
+                    "dir": d,
+                    "old_decimal": int(dm.group(1)),
+                    "slug": dm.group(2),
+                })
 
         # Sort descending to avoid conflicts
         to_rename.sort(key=lambda x: x["old_decimal"], reverse=True)
@@ -289,32 +490,30 @@ def _renumber_decimal_phases(
             new_phase_id = f"{base_int}.{new_decimal}"
             new_dir_name = f"{base_int}.{new_decimal}-{item['slug']}"
 
-            (phases_dir / item["dir"]).rename(phases_dir / new_dir_name)
-            renamed_dirs.append({"from": item["dir"], "to": new_dir_name})
+            ops.append({
+                "type": "rename_dir",
+                "from": item["dir"],
+                "to": new_dir_name,
+                "status": "pending",
+            })
 
-            # Rename files containing the old phase ID
-            dir_files = list((phases_dir / new_dir_name).iterdir())
-            for f in dir_files:
-                if f.is_file() and old_phase_id in f.name:
-                    new_name = f.name.replace(old_phase_id, new_phase_id)
-                    f.rename(f.parent / new_name)
-                    renamed_files.append({"from": f.name, "to": new_name})
-    except OSError as exc:
-        logger.debug("Failed to renumber decimal phases: %s", exc)
-
-
-def _renumber_integer_phases(
-    phases_dir: Path,
-    removed_int: int,
-    renamed_dirs: list[dict],
-    renamed_files: list[dict],
-) -> None:
-    """Renumber subsequent integer phases after one is removed."""
-    try:
-        entries = sorted(
-            [e.name for e in phases_dir.iterdir() if e.is_dir()],
-            key=cmp_to_key(compare_phase_num),
-        )
+            # Plan file renames within the directory
+            try:
+                dir_files = list((phases_dir / item["dir"]).iterdir())
+                for f in dir_files:
+                    if f.is_file() and old_phase_id in f.name:
+                        new_name = f.name.replace(old_phase_id, new_phase_id)
+                        ops.append({
+                            "type": "rename_file",
+                            "from": f.name,
+                            "to": new_name,
+                            "parent_dir": new_dir_name,
+                            "status": "pending",
+                        })
+            except OSError:
+                pass
+    else:
+        removed_int = int(normalized)
         to_rename = []
         for d in entries:
             dm = re.match(r"^(\d+)([A-Z])?(?:\.(\d+))?-(.+)$", d, re.IGNORECASE)
@@ -343,18 +542,30 @@ def _renumber_integer_phases(
             new_prefix = f"{new_padded}{letter}{dec_suffix}"
             new_dir_name = f"{new_prefix}-{item['slug']}"
 
-            (phases_dir / item["dir"]).rename(phases_dir / new_dir_name)
-            renamed_dirs.append({"from": item["dir"], "to": new_dir_name})
+            ops.append({
+                "type": "rename_dir",
+                "from": item["dir"],
+                "to": new_dir_name,
+                "status": "pending",
+            })
 
-            # Rename files with old prefix
-            dir_files = list((phases_dir / new_dir_name).iterdir())
-            for f in dir_files:
-                if f.is_file() and f.name.startswith(old_prefix):
-                    new_name = new_prefix + f.name[len(old_prefix):]
-                    f.rename(f.parent / new_name)
-                    renamed_files.append({"from": f.name, "to": new_name})
-    except OSError as exc:
-        logger.debug("Failed to renumber integer phases: %s", exc)
+            # Plan file renames within the directory
+            try:
+                dir_files = list((phases_dir / item["dir"]).iterdir())
+                for f in dir_files:
+                    if f.is_file() and f.name.startswith(old_prefix):
+                        new_name = new_prefix + f.name[len(old_prefix):]
+                        ops.append({
+                            "type": "rename_file",
+                            "from": f.name,
+                            "to": new_name,
+                            "parent_dir": new_dir_name,
+                            "status": "pending",
+                        })
+            except OSError:
+                pass
+
+    return ops
 
 
 def _update_roadmap_after_remove(

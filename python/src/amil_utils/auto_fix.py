@@ -55,6 +55,17 @@ _RENAMED_PARAMS: dict[str, str | None] = {
     "select": "index",
 }
 
+# Resilient message patterns for extracting the old parameter name from
+# pylint-odoo violation messages.  Tried in order; first match wins.
+_MESSAGE_PATTERNS: dict[str, list[re.Pattern]] = {
+    "W8111": [
+        re.compile(r'"(\w+)"\s+has been renamed'),          # current pylint-odoo format
+        re.compile(r"Parameter\s+'(\w+)'\s+is deprecated"),  # alternate format
+        re.compile(r"'(\w+)'\s+renamed\s+to"),               # fallback
+        re.compile(r'"(\w+)"\s+is deprecated'),              # minimal fallback
+    ],
+}
+
 # Default values for missing manifest keys (C8107)
 _MANIFEST_KEY_DEFAULTS: dict[str, str] = {
     "license": "LGPL-3",
@@ -396,10 +407,18 @@ def _fix_w8111_renamed_parameter(violation: Violation, file_path: Path) -> bool:
     """
     content = file_path.read_text(encoding="utf-8")
 
-    # Extract old parameter name from the violation message
-    # Message format: '"track_visibility" has been renamed to "tracking"'
-    match = re.search(r'"(\w+)"\s+has been renamed', violation.message)
+    # Extract old parameter name from the violation message.
+    # Try each pattern in _MESSAGE_PATTERNS["W8111"] in order; first match wins.
+    match: re.Match | None = None
+    for pattern in _MESSAGE_PATTERNS["W8111"]:
+        match = pattern.search(violation.message)
+        if match:
+            break
+
     if not match:
+        logger.warning(
+            "W8111: no message pattern matched for: %s", violation.message,
+        )
         return False
 
     old_param = match.group(1)
