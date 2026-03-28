@@ -339,8 +339,12 @@ def phase_remove(cwd: str | Path, target_phase: str, *, force: bool = False) -> 
     }
     manifest_path = _write_manifest(phases_dir, manifest)
 
-    # Snapshot ROADMAP.md so we can restore it on rollback
+    # Snapshot ROADMAP.md and STATE.md so we can restore on rollback
     roadmap_backup = roadmap_path.read_text(encoding="utf-8")
+    state_path = cwd / ".planning" / "STATE.md"
+    state_backup = None
+    if state_path.exists():
+        state_backup = state_path.read_text(encoding="utf-8")
 
     try:
         op_index = 0
@@ -377,7 +381,6 @@ def phase_remove(cwd: str | Path, target_phase: str, *, force: bool = False) -> 
         _update_manifest_op(manifest_path, op_index, "done")
 
         # Update STATE.md phase count
-        state_path = cwd / ".planning" / "STATE.md"
         state_updated = False
         if state_path.exists():
             state_content = state_path.read_text(encoding="utf-8")
@@ -397,8 +400,11 @@ def phase_remove(cwd: str | Path, target_phase: str, *, force: bool = False) -> 
             write_state_md(state_path, state_content, cwd)
             state_updated = True
 
-        # Success — remove manifest
-        manifest_path.unlink(missing_ok=True)
+        # Success — remove manifest (non-fatal to avoid triggering rollback)
+        try:
+            manifest_path.unlink(missing_ok=True)
+        except OSError as exc:
+            logger.debug("Failed to delete removal manifest: %s", exc)
 
         return {
             "removed": target_phase,
@@ -414,6 +420,12 @@ def phase_remove(cwd: str | Path, target_phase: str, *, force: bool = False) -> 
             roadmap_path.write_text(roadmap_backup, encoding="utf-8")
         except OSError as exc:
             logger.debug("Failed to restore ROADMAP.md during rollback: %s", exc)
+        # Restore STATE.md to pre-removal state
+        if state_backup is not None:
+            try:
+                state_path.write_text(state_backup, encoding="utf-8")
+            except OSError as exc:
+                logger.debug("Failed to restore STATE.md during rollback: %s", exc)
         # Rollback completed rename operations
         _rollback_operations(manifest_path, phases_dir)
         manifest_path.unlink(missing_ok=True)

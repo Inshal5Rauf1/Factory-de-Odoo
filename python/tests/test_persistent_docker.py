@@ -130,9 +130,7 @@ class TestPersistentDockerManagerUnit:
         assert result.success is False
         assert "Invalid module name" in result.errors[0]
 
-    def test_install_module_accepts_valid_name(self, tmp_path):
-        manager = PersistentDockerManager()
-        manager._running = True
+    def test_validate_module_name_accepts_valid_and_rejects_invalid(self):
         assert validate_module_name("uni_student") is None
         assert validate_module_name("hr_payroll") is None
         assert validate_module_name("0bad") is not None

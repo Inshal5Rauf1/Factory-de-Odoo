@@ -81,6 +81,23 @@ class TestComputeTiers:
         assert "a" in result["tiers"]["foundation"]
 
 
+class TestComputeTiersVersionAware:
+    """Tests for compute_tiers with odoo_version parameter."""
+
+    def test_compute_tiers_v17_includes_hr_contract(
+        self, _clear_caches: None,
+    ) -> None:
+        """compute_tiers with odoo_version='17.0' should not filter out hr_contract."""
+        modules = {
+            "my_mod": {"depends": ["hr_contract"]},
+        }
+        result = compute_tiers(modules, odoo_version="17.0")
+        # hr_contract is external so not in the result, but my_mod should
+        # sort successfully without raising (hr_contract is recognised as external)
+        assert "my_mod" in result["order"]
+        assert "hr_contract" not in result["order"]
+
+
 class TestDepGraphBuild:
     def test_builds_from_status(self, tmp_path: Path) -> None:
         planning = tmp_path / ".planning"

@@ -284,13 +284,19 @@ def topo_sort(
     return result
 
 
-def compute_tiers(modules: dict[str, dict]) -> dict:
+def compute_tiers(
+    modules: dict[str, dict], *, odoo_version: str = "19.0",
+) -> dict:
     """Compute tier labels based on max dependency depth.
+
+    Args:
+        modules: Mapping of {name: {"depends": [dep1, dep2]}}.
+        odoo_version: Odoo version string for filtering renamed/merged modules.
 
     Returns:
         {"tiers": {label: [names]}, "depths": {name: int}, "order": [names]}
     """
-    order = topo_sort(modules)
+    order = topo_sort(modules, odoo_version=odoo_version)
     depths: dict[str, int] = {}
 
     # Process in topological order so deps are computed first
@@ -339,7 +345,9 @@ def dep_graph_order(
     return topo_sort(modules, odoo_version=odoo_version)
 
 
-def dep_graph_tiers(cwd: str | Path) -> dict:
+def dep_graph_tiers(
+    cwd: str | Path, *, odoo_version: str = "19.0",
+) -> dict:
     """Return tier groupings based on dependency depth."""
     data = read_status_file(cwd)
     modules: dict[str, dict] = {}
@@ -347,7 +355,7 @@ def dep_graph_tiers(cwd: str | Path) -> dict:
     for name, mod in data.get("modules", {}).items():
         modules[name] = {"depends": mod.get("depends", [])}
 
-    return compute_tiers(modules)
+    return compute_tiers(modules, odoo_version=odoo_version)
 
 
 def dep_graph_can_generate(cwd: str | Path, module_name: str) -> dict:

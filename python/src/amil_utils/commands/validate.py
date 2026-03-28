@@ -33,7 +33,7 @@ def _cap_concurrency(requested: int) -> int:
                 mem_gb,
             )
             return max_safe
-    except ImportError:
+    except Exception:
         pass
     return requested
 
