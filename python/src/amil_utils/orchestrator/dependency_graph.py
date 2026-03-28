@@ -97,6 +97,7 @@ def validate_external_dependency(
         return {
             "dependency": dep_name,
             "renamed_to": renamed_to,
+            "type": "rename",
             "version": odoo_version,
             "message": (
                 f"Module '{dep_name}' was renamed to "
@@ -109,9 +110,10 @@ def validate_external_dependency(
         return {
             "dependency": dep_name,
             "renamed_to": merged_into,
+            "type": "merge",
             "version": odoo_version,
             "message": (
-                f"Module '{dep_name}' was renamed to "
+                f"Module '{dep_name}' was merged into "
                 f"'{merged_into}' in Odoo {odoo_version}"
             ),
         }

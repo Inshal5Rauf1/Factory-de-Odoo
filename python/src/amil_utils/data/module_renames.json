@@ -11,8 +11,7 @@
       "bus": "mail"
     },
     "modules_merged": {
-      "sale_async_emails": "sale",
-      "hr_contract": "hr"
+      "sale_async_emails": "sale"
     },
     "fields_renamed": {
       "res.users": {"groups_id": "group_ids"},

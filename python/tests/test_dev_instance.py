@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import ast
 import os
+import shutil
 import subprocess
 import urllib.request
 import xmlrpc.client
@@ -96,9 +97,11 @@ class TestDevInstanceConfig:
 
         assert "ODOO_DEV_PORT=8069" in content, ".env.example must set ODOO_DEV_PORT=8069"
 
+    @pytest.mark.skipif(not shutil.which("git"), reason="git not available")
     def test_env_not_tracked(self) -> None:
         """docker/dev/.env must NOT be tracked by git (security)."""
-        import subprocess
+        if not (Path(__file__).resolve().parent.parent.parent / ".git").exists():
+            pytest.skip("Not in a git checkout")
 
         result = subprocess.run(
             ["git", "ls-files", "--error-unmatch", "docker/dev/.env"],
