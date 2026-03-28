@@ -11,6 +11,7 @@ Tests cover:
 
 from __future__ import annotations
 
+import logging
 import tempfile
 import textwrap
 from pathlib import Path
@@ -23,6 +24,7 @@ from amil_utils.auto_fix import (
     FIXABLE_DOCKER_PATTERNS,
     FIXABLE_PYLINT_CODES,
     _DOCKER_PATTERN_KEYWORDS,
+    _MESSAGE_PATTERNS,
     fix_missing_mail_thread,
     fix_pylint_violation,
     fix_pylint_violations,
@@ -2463,3 +2465,113 @@ class TestFixW8161EnvTranslate:
                       severity="warning", message="_() used outside self.env")
         result = fix_pylint_violation(v, mod)
         assert result is False
+
+
+# ---------------------------------------------------------------------------
+# W8111 message pattern resilience
+# ---------------------------------------------------------------------------
+
+
+class TestW8111MessagePatternResilience:
+    """W8111: message patterns match multiple pylint-odoo message formats."""
+
+    _FIELD_SRC = textwrap.dedent('''\
+        from odoo import fields, models
+
+        class TestModel(models.Model):
+            _name = "test.model"
+            state = fields.Selection(track_visibility="onchange")
+    ''')
+
+    def _make_violation(self, message: str) -> Violation:
+        return Violation(
+            file="models/test_model.py", line=5, column=0,
+            rule_code="W8111", symbol="renamed-field-parameter",
+            severity="warning", message=message,
+        )
+
+    def _setup_module(self, tmp_path: Path) -> Path:
+        mod = tmp_path / "mod"
+        model_file = mod / "models" / "test_model.py"
+        model_file.parent.mkdir(parents=True)
+        model_file.write_text(self._FIELD_SRC, encoding="utf-8")
+        return mod
+
+    def test_current_format_matches(self, tmp_path: Path):
+        """Current pylint-odoo format: '"track_visibility" has been renamed to "tracking"'."""
+        mod = self._setup_module(tmp_path)
+        v = self._make_violation('"track_visibility" has been renamed to "tracking"')
+        result = fix_pylint_violation(v, mod)
+        assert result is True
+        content = (mod / "models" / "test_model.py").read_text(encoding="utf-8")
+        assert "tracking" in content
+        assert "track_visibility" not in content
+
+    def test_alternate_format_matches(self, tmp_path: Path):
+        """Alternate format: "Parameter 'track_visibility' is deprecated, use 'tracking'"."""
+        mod = self._setup_module(tmp_path)
+        v = self._make_violation("Parameter 'track_visibility' is deprecated, use 'tracking'")
+        result = fix_pylint_violation(v, mod)
+        assert result is True
+        content = (mod / "models" / "test_model.py").read_text(encoding="utf-8")
+        assert "tracking" in content
+        assert "track_visibility" not in content
+
+    def test_minimal_fallback_matches(self, tmp_path: Path):
+        """Minimal fallback format: '"track_visibility" is deprecated'."""
+        mod = self._setup_module(tmp_path)
+        v = self._make_violation('"track_visibility" is deprecated')
+        result = fix_pylint_violation(v, mod)
+        assert result is True
+        content = (mod / "models" / "test_model.py").read_text(encoding="utf-8")
+        assert "tracking" in content
+        assert "track_visibility" not in content
+
+    def test_unknown_format_returns_false_no_crash(self, tmp_path: Path):
+        """Completely unknown message format returns False and does not crash."""
+        mod = self._setup_module(tmp_path)
+        v = self._make_violation("Something completely unexpected happened")
+        result = fix_pylint_violation(v, mod)
+        assert result is False
+        # Source should be unchanged
+        content = (mod / "models" / "test_model.py").read_text(encoding="utf-8")
+        assert "track_visibility" in content
+
+    def test_unknown_format_logs_warning(self, tmp_path: Path, caplog):
+        """Unknown format logs a warning with the unmatched message."""
+        mod = self._setup_module(tmp_path)
+        v = self._make_violation("totally unrecognised format xyz")
+        with caplog.at_level(logging.WARNING, logger="amil_utils.auto_fix"):
+            fix_pylint_violation(v, mod)
+        assert any(
+            "W8111: no message pattern matched" in rec.message
+            for rec in caplog.records
+        )
+
+    def test_extracted_param_correct_current_format(self):
+        """Current format extracts the correct parameter name."""
+        pattern = _MESSAGE_PATTERNS["W8111"][0]
+        m = pattern.search('"track_visibility" has been renamed to "tracking"')
+        assert m is not None
+        assert m.group(1) == "track_visibility"
+
+    def test_extracted_param_correct_alternate_format(self):
+        """Alternate format extracts the correct parameter name."""
+        pattern = _MESSAGE_PATTERNS["W8111"][1]
+        m = pattern.search("Parameter 'oldname' is deprecated, use nothing")
+        assert m is not None
+        assert m.group(1) == "oldname"
+
+    def test_extracted_param_correct_renamed_to_format(self):
+        """Fallback 'renamed to' format extracts the correct parameter name."""
+        pattern = _MESSAGE_PATTERNS["W8111"][2]
+        m = pattern.search("'digits_compute' renamed to 'digits'")
+        assert m is not None
+        assert m.group(1) == "digits_compute"
+
+    def test_extracted_param_correct_minimal_format(self):
+        """Minimal fallback format extracts the correct parameter name."""
+        pattern = _MESSAGE_PATTERNS["W8111"][3]
+        m = pattern.search('"select" is deprecated')
+        assert m is not None
+        assert m.group(1) == "select"
