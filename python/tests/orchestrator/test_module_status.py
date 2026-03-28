@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import threading
 from pathlib import Path
 from unittest.mock import patch
@@ -10,6 +11,7 @@ import pytest
 
 from amil_utils.orchestrator.module_status import (
     VALID_TRANSITIONS,
+    _BACKWARD_TRANSITIONS,
     _atomic_write_json,
     get_generation_queue,
     module_status_get,
@@ -18,6 +20,10 @@ from amil_utils.orchestrator.module_status import (
     module_status_transition,
     read_status_file,
     tier_status,
+)
+from amil_utils.orchestrator.registry import (
+    read_registry_file,
+    update_from_spec,
 )
 
 
@@ -304,3 +310,124 @@ class TestAtomicWriteJsonModuleStatus:
         bak_path = planning / "module_status.json.bak"
         assert not bak_path.exists()
         assert target.exists()
+
+
+class TestBackwardTransitionCleanup:
+    """Tests for backward transition cleanup hooks (H1)."""
+
+    def _add_module_to_registry(self, tmp_path: Path, module_name: str) -> None:
+        """Add a module with models to the registry via update_from_spec."""
+        spec = {
+            "module_name": module_name,
+            "models": [
+                {
+                    "name": f"{module_name}.main_model",
+                    "description": f"Main model for {module_name}",
+                    "fields": [
+                        {"name": "name", "type": "Char"},
+                        {"name": "value", "type": "Integer"},
+                    ],
+                },
+            ],
+        }
+        update_from_spec(tmp_path, spec)
+
+    def test_spec_approved_to_planned_removes_module_from_registry(
+        self, tmp_path: Path
+    ) -> None:
+        """spec_approved -> planned removes the module's models from registry."""
+        (tmp_path / ".planning").mkdir()
+        module_status_init(tmp_path, "hr_payroll", "core")
+        self._add_module_to_registry(tmp_path, "hr_payroll")
+        module_status_transition(tmp_path, "hr_payroll", "spec_approved")
+
+        # Verify module is in registry before backward transition
+        registry_before = read_registry_file(tmp_path)
+        assert "hr_payroll.main_model" in registry_before["models"]
+
+        # Transition backward
+        module_status_transition(tmp_path, "hr_payroll", "planned")
+
+        # Verify module is removed from registry
+        registry_after = read_registry_file(tmp_path)
+        assert "hr_payroll.main_model" not in registry_after["models"]
+        assert "hr_payroll" not in registry_after["_meta"]["modules_contributing"]
+
+    def test_generated_to_spec_approved_logs_warning(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """generated -> spec_approved logs a backward transition warning."""
+        (tmp_path / ".planning").mkdir()
+        module_status_init(tmp_path, "hr_leave", "hr")
+        module_status_transition(tmp_path, "hr_leave", "spec_approved")
+        module_status_transition(tmp_path, "hr_leave", "generated")
+
+        with caplog.at_level(logging.WARNING, logger="amil_utils.orchestrator.module_status"):
+            module_status_transition(tmp_path, "hr_leave", "spec_approved")
+
+        assert any(
+            "transitioning backward" in record.message and "hr_leave" in record.message
+            for record in caplog.records
+        )
+
+    def test_forward_transition_no_cleanup(self, tmp_path: Path) -> None:
+        """Forward transitions (planned -> spec_approved) do not trigger cleanup."""
+        (tmp_path / ".planning").mkdir()
+        module_status_init(tmp_path, "hr_payroll", "core")
+        self._add_module_to_registry(tmp_path, "hr_payroll")
+
+        # Forward transition
+        module_status_transition(tmp_path, "hr_payroll", "spec_approved")
+
+        # Registry should still have the module
+        registry = read_registry_file(tmp_path)
+        assert "hr_payroll.main_model" in registry["models"]
+        assert "hr_payroll" in registry["_meta"]["modules_contributing"]
+
+    def test_other_modules_preserved_after_backward_transition(
+        self, tmp_path: Path
+    ) -> None:
+        """Other modules' data in the registry is preserved after backward transition."""
+        (tmp_path / ".planning").mkdir()
+
+        # Set up two modules
+        module_status_init(tmp_path, "hr_payroll", "core")
+        module_status_init(tmp_path, "hr_leave", "hr")
+        self._add_module_to_registry(tmp_path, "hr_payroll")
+        self._add_module_to_registry(tmp_path, "hr_leave")
+
+        module_status_transition(tmp_path, "hr_payroll", "spec_approved")
+        module_status_transition(tmp_path, "hr_leave", "spec_approved")
+
+        # Transition hr_payroll backward
+        module_status_transition(tmp_path, "hr_payroll", "planned")
+
+        # hr_leave should still be in registry
+        registry = read_registry_file(tmp_path)
+        assert "hr_leave.main_model" in registry["models"]
+        assert "hr_leave" in registry["_meta"]["modules_contributing"]
+        # hr_payroll should be gone
+        assert "hr_payroll.main_model" not in registry["models"]
+        assert "hr_payroll" not in registry["_meta"]["modules_contributing"]
+
+    def test_backward_transitions_frozenset_is_correct(self) -> None:
+        """The _BACKWARD_TRANSITIONS frozenset contains the expected pairs."""
+        assert ("spec_approved", "planned") in _BACKWARD_TRANSITIONS
+        assert ("generated", "spec_approved") in _BACKWARD_TRANSITIONS
+        assert len(_BACKWARD_TRANSITIONS) == 2
+
+    def test_spec_approved_to_planned_logs_warning(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """spec_approved -> planned also logs the backward transition warning."""
+        (tmp_path / ".planning").mkdir()
+        module_status_init(tmp_path, "hr_payroll", "core")
+        module_status_transition(tmp_path, "hr_payroll", "spec_approved")
+
+        with caplog.at_level(logging.WARNING, logger="amil_utils.orchestrator.module_status"):
+            module_status_transition(tmp_path, "hr_payroll", "planned")
+
+        assert any(
+            "transitioning backward" in record.message and "hr_payroll" in record.message
+            for record in caplog.records
+        )

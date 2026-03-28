@@ -435,3 +435,107 @@ class TestAtomicWriteJsonRegistry:
         bak_path = planning / "model_registry.json.bak"
         assert not bak_path.exists()
         assert target.exists()
+
+
+class TestRemoveModuleFromRegistry:
+    """Tests for remove_module_from_registry() backward transition cleanup."""
+
+    def test_removes_models_owned_by_module(self, tmp_path: Path) -> None:
+        """Models contributed by the target module are removed."""
+        _make_registry(tmp_path, {
+            "_meta": {
+                "version": 3,
+                "last_updated": None,
+                "modules_contributing": ["mod_a", "mod_b"],
+                "odoo_version": "19.0",
+            },
+            "models": {
+                "mod_a.model_one": {"name": "mod_a.model_one", "module": "mod_a", "fields": {}},
+                "mod_a.model_two": {"name": "mod_a.model_two", "module": "mod_a", "fields": {}},
+                "mod_b.model_one": {"name": "mod_b.model_one", "module": "mod_b", "fields": {}},
+            },
+        })
+        result = remove_module_from_registry(tmp_path, "mod_a")
+        assert "mod_a.model_one" not in result["models"]
+        assert "mod_a.model_two" not in result["models"]
+        assert "mod_b.model_one" in result["models"]
+        assert result["_meta"]["version"] == 4
+
+    def test_noop_when_module_has_no_models(self, tmp_path: Path) -> None:
+        """Removing a module with no models is a no-op (no error, models unchanged)."""
+        _make_registry(tmp_path, {
+            "_meta": {
+                "version": 2,
+                "last_updated": None,
+                "modules_contributing": ["mod_b"],
+                "odoo_version": "19.0",
+            },
+            "models": {
+                "mod_b.model_one": {"name": "mod_b.model_one", "module": "mod_b", "fields": {}},
+            },
+        })
+        result = remove_module_from_registry(tmp_path, "nonexistent_mod")
+        assert "mod_b.model_one" in result["models"]
+        assert len(result["models"]) == 1
+        assert result["_meta"]["version"] == 3
+
+    def test_cleans_contributing_lists(self, tmp_path: Path) -> None:
+        """The 'contributing' list on remaining models is cleaned of removed module."""
+        _make_registry(tmp_path, {
+            "_meta": {
+                "version": 1,
+                "last_updated": None,
+                "modules_contributing": ["mod_a", "mod_b"],
+                "odoo_version": "19.0",
+            },
+            "models": {
+                "mod_b.shared": {
+                    "name": "mod_b.shared",
+                    "module": "mod_b",
+                    "fields": {},
+                    "contributing": ["mod_a", "mod_b", "mod_c"],
+                },
+            },
+        })
+        result = remove_module_from_registry(tmp_path, "mod_a")
+        shared = result["models"]["mod_b.shared"]
+        assert "mod_a" not in shared["contributing"]
+        assert "mod_b" in shared["contributing"]
+        assert "mod_c" in shared["contributing"]
+
+    def test_removes_module_from_meta_contributing(self, tmp_path: Path) -> None:
+        """The module is removed from _meta.modules_contributing."""
+        _make_registry(tmp_path, {
+            "_meta": {
+                "version": 1,
+                "last_updated": None,
+                "modules_contributing": ["mod_a", "mod_b", "mod_c"],
+                "odoo_version": "19.0",
+            },
+            "models": {
+                "mod_a.thing": {"name": "mod_a.thing", "module": "mod_a", "fields": {}},
+            },
+        })
+        result = remove_module_from_registry(tmp_path, "mod_a")
+        assert "mod_a" not in result["_meta"]["modules_contributing"]
+        assert "mod_b" in result["_meta"]["modules_contributing"]
+        assert "mod_c" in result["_meta"]["modules_contributing"]
+
+    def test_persists_to_disk(self, tmp_path: Path) -> None:
+        """Registry is written atomically to disk after removal."""
+        _make_registry(tmp_path, {
+            "_meta": {
+                "version": 1,
+                "last_updated": None,
+                "modules_contributing": ["mod_a"],
+                "odoo_version": "19.0",
+            },
+            "models": {
+                "mod_a.thing": {"name": "mod_a.thing", "module": "mod_a", "fields": {}},
+            },
+        })
+        remove_module_from_registry(tmp_path, "mod_a")
+        # Re-read from disk
+        on_disk = read_registry_file(tmp_path)
+        assert "mod_a.thing" not in on_disk["models"]
+        assert on_disk["_meta"]["version"] == 2
