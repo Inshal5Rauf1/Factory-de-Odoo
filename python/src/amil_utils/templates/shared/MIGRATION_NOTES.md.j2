@@ -1,0 +1,45 @@
+{# MIGRATION_NOTES.md.j2 — Generated migration notes for version-specific patterns #}
+{# Only rendered when odoo_version < "19.0" #}
+# Migration Notes: {{ module_name }}
+
+> Generated for Odoo {{ odoo_version }}. Review these notes before upgrading.
+
+## Version-Specific Patterns Used
+
+{% if odoo_version < "18.0" %}
+### Odoo {{ odoo_version }} → 18.0
+
+- **`name_get()` method**: This module uses `name_get()` which is deprecated in 18.0+.
+  Replace with `_compute_display_name()` using `@api.depends()`.
+
+- **`<tree>` view tag**: Replace with `<list>` in Odoo 18.0+.
+
+- **`attrs` dictionary in views**: Replace with inline expressions
+  (e.g., `invisible="state == 'draft'"` instead of `attrs="{'invisible': [('state', '=', 'draft')]}"`)
+
+{% endif %}
+{% if odoo_version < "19.0" %}
+### Odoo {{ odoo_version }} → 19.0
+
+- **`_sql_constraints`**: Replace with `models.Constraint()` class in Odoo 19.0.
+  ```python
+  # Before ({{ odoo_version }}):
+  _sql_constraints = [('name_uniq', 'unique(name)', 'Name must be unique')]
+
+  # After (19.0):
+  name_uniq = models.Constraint('unique(name)', 'Name must be unique')
+  ```
+
+- **`category_id` on security groups**: Replace with `privilege_id` referencing `res.groups.privilege`.
+
+- **`expression.OR()`**: Replace with `Domain` class operators:
+  `from odoo.fields import Domain`
+
+{% endif %}
+
+## How to Migrate
+
+1. Update `__manifest__.py` version to target Odoo version
+2. Apply the changes listed above
+3. Run `pylint-odoo --valid-odoo-versions=<target>` to catch remaining issues
+4. Test with Docker: `amil-utils validate <module_name>`
