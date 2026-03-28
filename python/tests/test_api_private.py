@@ -528,7 +528,7 @@ class TestKnowledgeBaseApiPrivate:
 
     def test_knowledge_base_has_api_private_section(self):
         """models.md knowledge base contains @api.private section."""
-        kb_path = Path("/home/inshal-rauf/Factory-de-Odoo/amil/knowledge/models.md")
+        kb_path = Path(__file__).resolve().parent.parent.parent / "amil" / "knowledge" / "models.md"
         content = kb_path.read_text(encoding="utf-8")
         assert "### @api.private (Odoo 19.0+)" in content
         assert "@api.private" in content
