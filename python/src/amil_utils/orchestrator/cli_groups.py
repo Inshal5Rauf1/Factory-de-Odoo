@@ -14,7 +14,7 @@ from pathlib import Path
 
 import click
 
-from amil_utils.orchestrator.cli_helpers import _common, _emit
+from amil_utils.orchestrator.cli_helpers import _common, _emit, _safe_emit
 
 
 # ─── State commands ────────────────────────────────────────────────
@@ -30,7 +30,7 @@ def state_grp() -> None:
 def state_load_cmd(cwd: str, raw: bool) -> None:
     from amil_utils.orchestrator.state import state_load
 
-    _emit(state_load(cwd))
+    _safe_emit(state_load, cwd)
 
 
 @state_grp.command("json")
@@ -38,7 +38,7 @@ def state_load_cmd(cwd: str, raw: bool) -> None:
 def state_json_cmd(cwd: str, raw: bool) -> None:
     from amil_utils.orchestrator.state import state_json
 
-    _emit(state_json(cwd))
+    _safe_emit(state_json, cwd)
 
 
 @state_grp.command("get")
@@ -47,7 +47,7 @@ def state_json_cmd(cwd: str, raw: bool) -> None:
 def state_get_cmd(section: str | None, cwd: str, raw: bool) -> None:
     from amil_utils.orchestrator.state import state_get
 
-    _emit(state_get(cwd, section))
+    _safe_emit(state_get, cwd, section)
 
 
 @state_grp.command("update")
@@ -291,7 +291,7 @@ def roadmap_get_phase_cmd(phase_num: str, cwd: str, raw: bool) -> None:
 def roadmap_analyze_cmd(cwd: str, raw: bool) -> None:
     from amil_utils.orchestrator.roadmap import roadmap_analyze
 
-    _emit(roadmap_analyze(cwd))
+    _safe_emit(roadmap_analyze, cwd)
 
 
 @roadmap_grp.command("update-plan-progress")

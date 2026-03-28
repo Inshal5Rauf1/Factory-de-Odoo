@@ -212,3 +212,37 @@ class TestRawOutput:
         assert result.exit_code == 0
         data = json.loads(result.output)
         assert data["slug"] == "test"
+
+
+class TestSafeEmitErrorHandling:
+    def test_value_error_emits_json_error(self, runner, project, monkeypatch) -> None:
+        """When a library function raises ValueError, _safe_emit catches it
+        and emits {"error": "..."} instead of a traceback."""
+        import amil_utils.orchestrator.state as state_mod
+
+        def _raise_value_error(*args, **kwargs):
+            raise ValueError("bad input value")
+
+        monkeypatch.setattr(state_mod, "state_load", _raise_value_error)
+        result = runner.invoke(
+            orch_group, ["state", "load", "--cwd", str(project)]
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert "error" in data
+        assert data["error"] == "bad input value"
+
+    def test_os_error_emits_json_error(self, runner, project, monkeypatch) -> None:
+        """When a library function raises OSError, _safe_emit catches it."""
+        import amil_utils.orchestrator.state as state_mod
+
+        def _raise_os(*args, **kwargs):
+            raise OSError("disk failure")
+
+        monkeypatch.setattr(state_mod, "state_json", _raise_os)
+        result = runner.invoke(
+            orch_group, ["state", "json", "--cwd", str(project)]
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["error"] == "disk failure"
